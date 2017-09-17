@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
 import os
 
