@@ -1,4 +1,4 @@
-The RepEx replica Exchange package implemented via the Ensemble Toolkit 0.6 API.
+[WIP]: The backbone of the RepEx replica Exchange package implemented via the Ensemble Toolkit 0.6 API.
 
 
 driver_EnTK06.py: run script.
