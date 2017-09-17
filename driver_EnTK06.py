@@ -3,10 +3,10 @@ import os
 
 
 ## Uses the Pipeline of Ensembles to implement Synchronous Replica Exchange.
-## There are 4 replicas that run and exchange configurations as follows: 1 and 4, 2 and 3.
+## There are 4 GROMACS replicas that run and exchange configurations as follows: 1 and 4, 2 and 3.
 ## Exchange scheme is currently hard-coded. To implement replica exchange, an Exchange method must be instantiated as a stage between two MD stages.
 ## This Exchange Method may be pulled from the original RepEx implementation as-is or with little modification....if we're lucky. 
-##   
+## But of course, Murphy's Law exists.  
 
 
 # ------------------------------------------------------------------------------
