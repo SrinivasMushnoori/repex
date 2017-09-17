@@ -20,7 +20,7 @@ if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
 #  Hard code the old defines/state names
 
 if os.environ.get('RP_ENABLE_OLD_DEFINES') == None:
-    os.environ['RP_ENABLE_OLD_DEFINES'] == 'True'
+    os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
 
 if __name__ == '__main__':
