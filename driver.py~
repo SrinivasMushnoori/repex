@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+__author__       = "Antons Treikalis <antons.treikalis@rutgers.edu>"
+__copyright__    = "Copyright 2014, http://radical.rutgers.edu"
+__license__      = "MIT"
+__example_name__ = "Synchronous Replica Exchange Example with 'remote' \exchange (generic)."
+
+
+import os
+import sys
+import json
+import math
+import time
+import random
+import string
+import pprint
+import optparse
+import datetime
+from os import path
+import radical.pilot
+from radical.ensemblemd import Kernel
+from radical.ensemblemd import EnsemblemdError
+from radical.ensemblemd import ResourceHandle
+from radical.ensemblemd import Replica
+from radical.ensemblemd import EnsembleExchange
+
+# ------------------------------------------------------------------------------
+# Set default verbosity
+
+if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
+    os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
