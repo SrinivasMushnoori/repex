@@ -39,7 +39,8 @@ if __name__ == '__main__':
   
     s1 = Stage()
     s1_task_uids = []
-
+    s2 = Stage()
+    s2_task_uids = []
     for cnt in range(4):
 
         # Create a Task object
@@ -69,8 +70,8 @@ if __name__ == '__main__':
     
     # exchange happens here
 
-    for n0 in range(4)
-        t2.copy_input_data += ['$Pipline_%s_Stage_%s_Task_%s/out.gro'%(p.uid, s1.uid, s1_task_uids[5-n0]), '$Pipline_%s_Stage_%s_Task_%s/in.top'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/FF.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, s1.uid, s1_task_uids[n0])]
+    for n0 in range(1, 4):
+        t2.copy_input_data += ['$Pipline_%s_Stage_%s_Task_%s/out.gro'%(p.uid, s1.uid, s1_task_uids[n0]), '$Pipline_%s_Stage_%s_Task_%s/in.top'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/FF.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, s1.uid, s1_task_uids[n0])]
         t2.pre_exec = ['grompp -f in.mdp -c out.gro -o in.tpr -p in.top']
         t2.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out_exc'] 
         t2.cores = 1
@@ -88,7 +89,7 @@ if __name__ == '__main__':
 
             'resource': 'local.localhost',
             'walltime': 10,
-            'cores': 4,
+            'cores': 2,
             'project': '',
     }
 
