@@ -1,128 +1,115 @@
-### RepEx in EnTK 0.4.6 API: Incomplete
-
 #!/usr/bin/env python
 
-import sys
+from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
 import os
-import json
-import shutil
-
-from radical.ensemblemd import Kernel
-from radical.ensemblemd import PoE
-from radical.ensemblemd import EoP
-from radical.ensemblemd import EnsemblemdError
-from radical.ensemblemd import ResourceHandle
-
-#Used to register user defined kernels
-from radical.ensemblemd.engine import get_engine
 
 
+## Uses the Pipeline of Ensembles to implement Synchronous Replica Exchange.
+## There are 4 GROMACS replicas that run and exchange configurations as follows: 1 and 4, 2 and 3.
+## Exchange scheme is currently hard-coded. To implement replica exchange, an Exchange method must be instantiated as a stage between two MD stages.
+## This Exchange Method may be pulled from the original RepEx implementation as-is or with little modification....if we're lucky. 
+## But of course, Murphy's Law exists.  
 
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
 
 if os.environ.get('RADICAL_ENTK_VERBOSE') == None:
-	os.environ['RADICAL_ENTK_VERBOSE'] = 'REPORT'
+    os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
 
+#  Hard code the old defines/state names
 
-# ------------------------------------------------------------------------------
-#
+if os.environ.get('RP_ENABLE_OLD_DEFINES') == None:
+    os.environ['RP_ENABLE_OLD_DEFINES'] = 'True'
 
+if os.environ.get('RADICAL_PILOT_PROFILE') == None:
+    os.environ['RADICAL_PILOT_PROFILE'] = 'True'
 
-class RunExchange(PoE):
+if os.environ.get('export RADICAL_PILOT_DBURL') == None:
+    os.environ['export RADICAL_PILOT_DBURL'] = "mongodb://138.201.86.166:27017/ee_exp_4c"
+    
 
-    def __init__(self, stages, instances):
-		PoE.__init__(self, stages, instances)
+if __name__ == '__main__':
 
-
-        ##Stage1:GROMPP 
-    def stage_1(self, instance):
-        k1 = Kernel(name="md.gromacs")
-	k1.upload_input_data  = ['in.gro', 'in.top', '*.itp', 'in.mdp'] 
-        k1.executable = ['path/to/gromacs/gmx']
-        k1.arguments = ['grompp', '-f', 'in.mdp', '-c', 'in.gro', '-o', 'in.tpr', '-p', 'in.top']
-        k1.cores = 1
-        
-        return k1
-
-
-        ##Stage2:MDRUN
-    def stage_2(self, instance):
-        k2 = Kernel(name="md.gromacs")
-        k2.link_input_data = ['$STAGE_1/in.tpr > in.tpr']
-        k2.executable = ['path/to/gromacs/gmx']    
-        k2.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
-        k2.cores = 1              
-        
-        return k2
-
-        ##Stage3:Exchange
-    #def stage_3(self,instance):
-        #k3 = Kernel(name="exchange")
-        #### Explicitly define and instantiate Exchange method, for now, exchange is hard-coded
-
-          
+    # Create a Pipeline object
+    p = Pipeline()
 
 
 
+    ##########----------###########
+
+    ###Stage1=Simulation. Stage 2=Hardcoded copy followed by simulation.
+
+    # Create stage.
+
+  
+    s1 = Stage()
+    s1_task_uids = []
+    s2 = Stage()
+    s2_task_uids = []
+    for cnt in range(4):
+
+        # Create a Task object
+        t1 = Task() ##GROMPP
+        t1.executable = ['/home/ubuntu/gromacs/bin/gmx']  #MD Engine  
+        t1.upload_input_data = ['in.gro', 'in.top', 'FF.itp', 'matrini_v2.2.itp', 'in.mdp'] # Copy data from the local directory to the current task's location
+        t1.pre_exec = ['grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
+        t1.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
+        t1.cores = 1
 
 
 
+        # Add the Task to the Stage
+        s1.add_tasks(t1)
+        s1_task_uids.append(t1.uid)
 
-# ------------------------------------------------------------------------------
-#
-if __name__ == "__main__":
+    # Add Stage to the Pipeline
+    p.add_stages(s1)
 
-	# use the resource specified as argument, fall back to localhost
-	if   len(sys.argv)  > 2: 
-		print 'Usage:\t%s [resource]\n\n' % sys.argv[0]
-		sys.exit(1)
-	elif len(sys.argv) == 2: 
-		resource = sys.argv[1]
-	else: 
-		resource = 'local.localhost'
+        # Create another Stage object to hold checksum tasks
+    s2 = Stage() #HARD-CODED EXCHANGE FOLLOWED BY MD
 
-	try:
 
-		with open('%s/config.json'%os.path.dirname(os.path.abspath(__file__))) as data_file:    
-			config = json.load(data_file)
+    # Create a Task object
+    t2 = Task()
+    t2.executable = ['/home/ubuntu/gromacs/bin/gmx']  #MD Engine  
+    
+    # exchange happens here
 
-		# Create a new resource handle with one resource and a fixed
-		# number of cores and runtime.
-		cluster = ResourceHandle(
-				resource=resource,
-				cores=config[resource]["cores"],
-				walltime=15,
-				#username=None,
+    for n0 in range(1, 4):
+        t2.copy_input_data += ['$Pipline_%s_Stage_%s_Task_%s/out.gro'%(p.uid, s1.uid, s1_task_uids[n0]), '$Pipline_%s_Stage_%s_Task_%s/in.top'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/FF.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, s1.uid, s1_task_uids[n0])]
+        t2.pre_exec = ['grompp -f in.mdp -c out.gro -o in.tpr -p in.top']
+        t2.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out_exc'] 
+        t2.cores = 1
+ 
+        s2.add_tasks(t2)
+        s2_task_uids.append(t2.uid)
 
-				project=config[resource]['project'],
-				access_schema = config[resource]['schema'],
-				queue = config[resource]['queue'],
-				#database_url='mongodb://138.201.86.166:27017/ee_exp_4c',
-			)
+    # Add Stage to the Pipeline
+    p.add_stages(s2)
+ 
+    # Create a dictionary describe four mandatory keys:
+    # resource, walltime, cores and project
+    # resource is 'local.localhost' to execute locally
+    res_dict = {
 
-		# Allocate the resources. 
-		cluster.allocate()
+            'resource': 'local.localhost',
+            'walltime': 10,
+            'cores': 2,
+            'project': '',
+    }
 
-		# Set the 'instances' of the pipeline to 16. This means that 16 instances
-		# of each pipeline stage are executed.
-		#
-		# Execution of the 16 pipeline instances can happen concurrently or
-		# sequentially, depending on the resources (cores) available in the
-		# SingleClusterEnvironment.
-		ccount = RunExchange(stages=3,instances=2)
+    # Create Resource Manager object with the above resource description
+    rman = ResourceManager(res_dict)
 
-		cluster.run(ccount)
+    # Create Application Manager
+    appman = AppManager()
 
-		
+    # Assign resource manager to the Application Manager
+    appman.resource_manager = rman
 
-	except EnsemblemdError, er:
+    # Assign the workflow as a set of Pipelines to the Application Manager
+    appman.assign_workflow(set([p]))
 
-		print "Ensemble MD Toolkit Error: {0}".format(str(er))
-		raise # Just raise the execption again to get the backtrace
-
-	try:
-		cluster.deallocate()
-	except:
-		pass
+    # Run the Application Manager
+    appman.run()
