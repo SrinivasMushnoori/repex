@@ -51,9 +51,9 @@ if __name__ == '__main__':
 
         # Create a Task object
         t1 = Task() ##GROMPP
-        t1.executable = ['/home/ubuntu/gromacs/bin/gmx']  #MD Engine  
+        t1.executable = ['/opt/gromacs/bin/gmx_mpi']  #MD Engine  
         t1.upload_input_data = ['in.gro', 'in.top', 'FF.itp', 'matrini_v2.2.itp', 'in.mdp'] # Copy data from the local directory to the current task's location
-        t1.pre_exec = ['grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
+        t1.pre_exec = ['export LD_LIBRARY_PATH=/share/apps/gpu/cuda-8.0/lib64:$LD_LIBRARY_PATH', 'grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
         t1.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
         t1.cores = 1
 
@@ -93,10 +93,13 @@ if __name__ == '__main__':
     # resource is 'local.localhost' to execute locally
     res_dict = {
 
-            'resource': 'local.localhost',
+            #'resource': 'local.localhost',
+            'resource': 'xsede.comet',
             'walltime': 10,
             'cores': 2,
-            'project': '',
+            'access_schema': 'gsissh',
+            'queue': 'debug',
+            'project': 'TG-MCB090174',
     }
 
     # Create Resource Manager object with the above resource description
