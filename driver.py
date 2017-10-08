@@ -45,17 +45,16 @@ if __name__ == '__main__':
   
     s1 = Stage()
     s1_task_uids = []
-    s2 = Stage()
     s2_task_uids = []
     for cnt in range(4):
 
         # Create a Task object
         t1 = Task() ##GROMPP
-        t1.executable = ['/opt/gromacs/bin/gmx_mpi']  #MD Engine  
-        t1.upload_input_data = ['in.gro', 'in.top', 'FF.itp', 'matrini_v2.2.itp', 'in.mdp'] # Copy data from the local directory to the current task's location
-        t1.pre_exec = ['export LD_LIBRARY_PATH=/share/apps/gpu/cuda-8.0/lib64:$LD_LIBRARY_PATH', 'grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
+        t1.executable = ['/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d']  #MD Engine  
+        t1.upload_input_data = ['in.gro', 'in.top', 'FNF.itp', 'martini_v2.2.itp', 'in.mdp'] 
+        t1.pre_exec = ['module load gromacs', '/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
         t1.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
-        t1.cores = 1
+        t1.cores = 5
 
 
 
@@ -72,7 +71,7 @@ if __name__ == '__main__':
 
     # Create a Task object
     t2 = Task()
-    t2.executable = ['/home/ubuntu/gromacs/bin/gmx']  #MD Engine  
+    t2.executable = ['/opt/gromacs/bin/gmx_mpi']  #MD Engine  
     
     # exchange happens here
 
@@ -80,7 +79,7 @@ if __name__ == '__main__':
         t2.copy_input_data += ['$Pipline_%s_Stage_%s_Task_%s/out.gro'%(p.uid, s1.uid, s1_task_uids[n0]), '$Pipline_%s_Stage_%s_Task_%s/in.top'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/FF.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, s1.uid, s1_task_uids[n0])]
         t2.pre_exec = ['grompp -f in.mdp -c out.gro -o in.tpr -p in.top']
         t2.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out_exc'] 
-        t2.cores = 1
+        t2.cores = 5
  
         s2.add_tasks(t2)
         s2_task_uids.append(t2.uid)
@@ -94,11 +93,11 @@ if __name__ == '__main__':
     res_dict = {
 
             #'resource': 'local.localhost',
-            'resource': 'xsede.comet',
+            'resource': 'xsede.supermic',
             'walltime': 10,
-            'cores': 2,
+            'cores': 20,
             'access_schema': 'gsissh',
-            'queue': 'debug',
+            'queue': 'workq',
             'project': 'TG-MCB090174',
     }
 
