@@ -33,59 +33,41 @@ if __name__ == '__main__':
 
     # Create a Pipeline object
     p = Pipeline()
+    # Bookkeeping
+    stage_uids = []
+    task_uids = []
+
+    for N_Stg in range(2):
+        stg =  Stage() ## initialization
+        if N_Stg == 0:
+            for n0 in range(1):
+                t = Task()
+                t.executable = ['/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d']  #MD Engine  
+                t.upload_input_data = ['in.gro', 'in.top', 'FNF.itp', 'martini_v2.2.itp', 'in.mdp'] 
+                t.pre_exec = ['module load gromacs', '/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
+                t.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
+                t.cores = 5
+                stg.add_tasks(t)
+                task_uids.append(t.uid)
+            p.add_stages(stg)
+            stage_uids.append(stg.uid) 
 
 
 
-    ##########----------###########
+        else:
+        
+            for n0 in range(1):
+                t = Task()
+                t.executable = ['/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d']  #MD Engine  
+                t.copy_input_data += ['$Pipline_%s_Stage_%s_Task_%s/out.gro'%(p.uid, stage_uids[N_Stg-1], task_uids[n0])>'in.gro', '$Pipline_%s_Stage_%s_Task_%s/in.top'%(p.uid, stage_uids[N_Stg-1], task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/FF.itp'%(p.uid, stage_uids[N_Stg-1], task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, stage_uids[N_Stg-1], task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, stage_uids[N_Stg-1], task_uids[n0])]
+                t.pre_exec = ['module load gromacs', '/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
+                t.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
+                t.cores = 5
+                stg.add_tasks(t)
+                task_uids.append(t.uid)
+            p.add_stages(stg)
+            stage_uids.append(stg)          
 
-    ###Stage1=Simulation. Stage 2=Hardcoded copy followed by simulation.
-
-    # Create stage.
-
-  
-    s1 = Stage()
-    s1_task_uids = []
-    s2_task_uids = []
-    for cnt in range(4):
-
-        # Create a Task object
-        t1 = Task() ##GROMPP
-        t1.executable = ['/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d']  #MD Engine  
-        t1.upload_input_data = ['in.gro', 'in.top', 'FNF.itp', 'martini_v2.2.itp', 'in.mdp'] 
-        t1.pre_exec = ['module load gromacs', '/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
-        t1.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
-        t1.cores = 5
-
-
-
-        # Add the Task to the Stage
-        s1.add_tasks(t1)
-        s1_task_uids.append(t1.uid)
-
-    # Add Stage to the Pipeline
-    p.add_stages(s1)
-
-        # Create another Stage object to hold checksum tasks
-    s2 = Stage() #HARD-CODED EXCHANGE FOLLOWED BY MD
-
-
-    # Create a Task object
-    t2 = Task()
-    t2.executable = ['/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d']  #MD Engine 
-    
-    # exchange happens here
-
-    for n0 in range(1, 4):
-        t2.copy_input_data += ['$Pipline_%s_Stage_%s_Task_%s/out.gro'%(p.uid, s1.uid, s1_task_uids[n0])>'in.gro', '$Pipline_%s_Stage_%s_Task_%s/in.top'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/FF.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, s1.uid, s1_task_uids[n0])]
-        t2.pre_exec = ['module load gromacs', '/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d grompp -f in.mdp -c in.gro -o in.tpr -p in.top']
-        t2.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
-        t2.cores = 5
- 
-        s2.add_tasks(t2)
-        s2_task_uids.append(t2.uid)
-
-    # Add Stage to the Pipeline
-    p.add_stages(s2)
  
     # Create a dictionary describe four mandatory keys:
     # resource, walltime, cores and project
@@ -94,7 +76,7 @@ if __name__ == '__main__':
 
             #'resource': 'local.localhost',
             'resource': 'xsede.supermic',
-            'walltime': 10,
+            'walltime': 30,
             'cores': 20,
             'access_schema': 'gsissh',
             'queue': 'workq',
