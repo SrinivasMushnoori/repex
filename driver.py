@@ -75,8 +75,9 @@ if __name__ == '__main__':
     
     # exchange happens here
 
-    for n0 in range(1, 4):
-        t2.copy_input_data += ['$Pipline_%s_Stage_%s_Task_%s/out.gro'%(p.uid, s1.uid, s1_task_uids[n0])>'in.gro', '$Pipline_%s_Stage_%s_Task_%s/in.top'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/FF.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, s1.uid, s1_task_uids[n0])]
+    for n0 in range(4):
+        t2.copy_input_data = ['$Pipline_%s_Stage_%s_Task_%s/out.gro > in.gro'%(p.uid, s1.uid, s1_task_uids[n0]), '$Pipline_%s_Stage_%s_Task_%s/in.top'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/FNF.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, s1.uid, s1_task_uids[n0]),  '$Pipline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, s1.uid, s1_task_uids[n0])]
+        print t2.copy_input_data
         t2.pre_exec = ['module load gromacs', '/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d grompp -f in.mdp -c in.gro -o in.tpr -p in.top']
         t2.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
         t2.cores = 5
