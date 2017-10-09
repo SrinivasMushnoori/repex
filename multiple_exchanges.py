@@ -34,12 +34,13 @@ if __name__ == '__main__':
     # Create a Pipeline object
     p = Pipeline()
     # Bookkeeping
-    stage_uids = []
-    task_uids = []
-    Stages = 3
-    Replicas = 4
+    stage_uids = list()
+    task_uids = dict()
+    Stages = 20
+    Replicas = 2
     for N_Stg in range(Stages):
         stg =  Stage() ## initialization
+        task_uids['Stage_%s'%N_Stg] = list()
         if N_Stg == 0:
             for n0 in range(Replicas):
                 t = Task()
@@ -49,7 +50,7 @@ if __name__ == '__main__':
                 t.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
                 t.cores = 20
                 stg.add_tasks(t)
-                task_uids.append(t.uid)
+                task_uids['Stage_%s'%N_Stg].append(t.uid)
             p.add_stages(stg)
             stage_uids.append(stg.uid) 
 
@@ -60,14 +61,14 @@ if __name__ == '__main__':
             for n0 in range(Replicas):
                 t = Task()
                 t.executable = ['/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d']  #MD Engine  
-                t.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/out.gro > in.gro'%(p.uid, stage_uids[N_Stg-1], task_uids[n0]), '$Pipeline_%s_Stage_%s_Task_%s/in.top'%(p.uid, stage_uids[N_Stg-1], task_uids[n0]),  '$Pipeline_%s_Stage_%s_Task_%s/FNF.itp'%(p.uid, stage_uids[N_Stg-1], task_uids[n0]),  '$Pipeline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, stage_uids[N_Stg-1], task_uids[n0]),  '$Pipeline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, stage_uids[N_Stg-1], task_uids[n0])]
+                t.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/out.gro > in.gro'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]), '$Pipeline_%s_Stage_%s_Task_%s/in.top'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]),  '$Pipeline_%s_Stage_%s_Task_%s/FNF.itp'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]),  '$Pipeline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]),  '$Pipeline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0])]
                 t.pre_exec = ['module load gromacs', '/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
                 t.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
                 t.cores = 20
                 stg.add_tasks(t)
-                task_uids.append(t.uid)
+                task_uids['Stage_%s'%N_Stg].append(t.uid)
             p.add_stages(stg)
-            stage_uids.append(stg)          
+            stage_uids.append(stg.uid)          
 
  
     # Create a dictionary describe four mandatory keys:
@@ -77,8 +78,8 @@ if __name__ == '__main__':
 
             #'resource': 'local.localhost',
             'resource': 'xsede.supermic',
-            'walltime': 30,
-            'cores': 160,
+            'walltime': 60,
+            'cores': 40,
             'access_schema': 'gsissh',
             'queue': 'workq',
             'project': 'TG-MCB090174',
