@@ -1,3 +1,7 @@
+https://travis-ci.org/SrinivasMushnoori/RepEx_3.0.svg?branch=feature%2FT-Ex
+
+
+
 [WIP]: The backbone of the RepEx replica Exchange package implemented via the Ensemble Toolkit 0.6 API.
 
 
