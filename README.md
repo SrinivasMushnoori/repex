@@ -4,8 +4,11 @@
 [WIP]: The backbone of the RepEx replica Exchange package implemented via the Ensemble Toolkit 0.6 API.
 
 
-multiple_exchanges.py: run script for dummy exchange system performing 100 exchanges between 128 replicas.
+src/driver_main.py: run script for "dummy exchange" system performing 100 exchanges between 128 replicas. No actual "exchange" computation is occuring, purely data staging.
+
+
+src/Exchange_Method.py: Exchange Method base class. Inherited classes T_Exchange, U_Exchange, S_Exchange and pH_Exchange will be implemented during the development cycle.
 
 
 
-driver.py: run script in EnTK 0.4.6 API, currently broken, to be removed.
+old_drivers/driver.py: run script in EnTK 0.4.6 API, no longer supported, to be removed.
