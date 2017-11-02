@@ -1,7 +1,5 @@
 from radical.entk import Pipeline, Stage, Task
-from radical.entk import states
-from radical.entk.exceptions import *
-import pytest, threading
+import pytest
 
 def test_pipeline_initialization():
 
@@ -12,3 +10,5 @@ def test_pipeline_initialization():
     p = Pipeline()
 
     assert type(p._uid) == str
+
+    
