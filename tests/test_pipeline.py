@@ -1,4 +1,4 @@
-rom radical.entk import Pipeline, Stage, Task
+from radical.entk import Pipeline, Stage, Task
 from radical.entk import states
 from radical.entk.exceptions import *
 import pytest, threading
