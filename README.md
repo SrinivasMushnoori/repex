@@ -1,7 +1,7 @@
 
 <img src="https://travis-ci.org/SrinivasMushnoori/RepEx_3.0.svg?branch=master" alt="Travis CI"/>
 
-%Enhanced RepEx
+% Enhanced RepEx
 
 [WIP]: The backbone of the RepEx replica Exchange package implemented via the Ensemble Toolkit 0.6 API.
 
