@@ -25,8 +25,8 @@ if os.environ.get('RP_ENABLE_OLD_DEFINES') == None:
 if os.environ.get('RADICAL_PILOT_PROFILE') == None:
     os.environ['RADICAL_PILOT_PROFILE'] = 'True'
 
-if os.environ.get('export RADICAL_PILOT_DBURL') == None:
-    os.environ['export RADICAL_PILOT_DBURL'] = "mongodb://138.201.86.166:27017/ee_exp_4c"
+if os.environ.get('RADICAL_PILOT_DBURL') == None:
+    os.environ['RADICAL_PILOT_DBURL'] = "mongodb://138.201.86.166:27017/ee_exp_4c"
     
 
 if __name__ == '__main__':
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     # Bookkeeping
     stage_uids = list()
     task_uids = dict()
-    Stages = 20
+    Stages = 5
     Replicas = 2
     for N_Stg in range(Stages):
         stg =  Stage() ## initialization
@@ -48,7 +48,7 @@ if __name__ == '__main__':
                 t.upload_input_data = ['in.gro', 'in.top', 'FNF.itp', 'martini_v2.2.itp', 'in.mdp'] 
                 t.pre_exec = ['module load gromacs', '/usr/local/packages/gromacs/5.1.4/INTEL-140-MVAPICH2-2.0/bin/gmx_mpi_d grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
                 t.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
-                t.cores = 20
+                t.cores = 1
                 stg.add_tasks(t)
                 task_uids['Stage_%s'%N_Stg].append(t.uid)
             p.add_stages(stg)
@@ -76,10 +76,10 @@ if __name__ == '__main__':
     # resource is 'local.localhost' to execute locally
     res_dict = {
 
-            #'resource': 'local.localhost',
+#            'resource': 'local.localhost',
             'resource': 'xsede.supermic',
-            'walltime': 60,
-            'cores': 40,
+            'walltime': 30,
+            'cores': 1,
             'access_schema': 'gsissh',
             'queue': 'workq',
             'project': 'TG-MCB090174',
