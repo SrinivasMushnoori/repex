@@ -4,7 +4,7 @@ import pytest
 def test_pipeline_initialization():
 
     """
-    ***Purpose***: Test if pipeline attributes are correctly initialized upon creation
+    ***Purpose***: Test if pipeline is correctly initialized upon creation
     """
 
     p = Pipeline()
