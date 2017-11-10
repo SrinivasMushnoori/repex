@@ -12,3 +12,5 @@ def test_pipeline_initialization():
     assert type(p._uid) == str
 
     
+    #Further tests need to be written when Exchange_methods base class is implemented along with its inherited classes.  
+    
