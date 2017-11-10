@@ -9,7 +9,7 @@
 src/driver_main.py: run script for "dummy exchange" system performing 100 exchanges between 128 replicas. No actual "exchange" computation is occuring, purely data staging.
 
 
-src/Exchange_Method.py: Exchange Method base class. Inherited classes T_Exchange, U_Exchange, S_Exchange and pH_Exchange will be implemented during the development cycle.
+src/Exchange_Method.py: Exchange Method base class, currently being implemented. Inherited classes T_Exchange, U_Exchange, S_Exchange and pH_Exchange will be implemented during the development cycle.
 
 
 
