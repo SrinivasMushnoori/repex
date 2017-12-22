@@ -5,7 +5,10 @@ import os
 
 
 ## Uses the Pipeline of Ensembles to implement Synchronous Replica Exchange.
-## BlueWaters  
+## There are N AMBER replicas that run and exchange configurations (hard coded)
+## Exchange scheme is currently hard-coded. To implement replica exchange, an Exchange method must be instantiated as a stage between two MD stages.
+## This Exchange Method may be pulled from the original RepEx implementation as-is or with little modification....if we're lucky. 
+## But of course, Murphy's Law exists.  
 
 
 # ------------------------------------------------------------------------------
@@ -33,33 +36,33 @@ if __name__ == '__main__':
     # Bookkeeping
     stage_uids = list()
     task_uids = dict()
-    Stages = 5
-    Pre_Exec_Command_List = ['module swap PrgEnv-cray PrgEnv-gnu', 'module add fftw', 'module add cmake', 'module add boost', 'export CRAYPE_LINK_TYPE=dynamic', 'export CRAY_ADD_RPATH=yes']
+    Stages = 1
     Replicas = 2
+
+
     for N_Stg in range(Stages):
         stg =  Stage() ## initialization
         task_uids['Stage_%s'%N_Stg] = list()
         if N_Stg == 0:
             for n0 in range(Replicas):
                 t = Task()
-                t.executable = ['/u/sciteam/mushnoor/gromacs/gromacs-5.0.4/build-cpu/bin/gmx_mpi']  #MD Engine  
-                t.upload_input_data = ['in.gro', 'in.top', 'FNF.itp', 'martini_v2.2.itp', 'in.mdp'] 
-                t.pre_exec = Pre_Exec_Command_List + ['/u/sciteam/mushnoor/gromacs/gromacs-5.0.4/build-cpu/bin/gmx_mpi grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
-                print t.pre_exec
-                t.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
-                t.cores = 1
+                t.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine  
+                t.upload_input_data = ['inpcrd', 'prmtop', 'mdin'] 
+                t.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/'] 
+                t.arguments = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
+                t.cores = 32
+                t.mpi = True
                 stg.add_tasks(t)
                 task_uids['Stage_%s'%N_Stg].append(t.uid)
             p.add_stages(stg)
             stage_uids.append(stg.uid) 
 
 
-
         else:
         
             for n0 in range(Replicas):
                 t = Task()
-                t.executable = ['/u/sciteam/mushnoor/gromacs/gromacs-5.0.4/build-cpu/bin/gmx_mpi']  #MD Engine  
+                t.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine 
                 t.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/out.gro > in.gro'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]), '$Pipeline_%s_Stage_%s_Task_%s/in.top'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]),  '$Pipeline_%s_Stage_%s_Task_%s/FNF.itp'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]),  '$Pipeline_%s_Stage_%s_Task_%s/martini_v2.2.itp'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]),  '$Pipeline_%s_Stage_%s_Task_%s/in.mdp'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0])]
                 t.pre_exec = Pre_Exec_Command_List +  ['/u/sciteam/mushnoor/gromacs/gromacs-5.0.4/build-cpu/bin/gmx_mpi grompp -f in.mdp -c in.gro -o in.tpr -p in.top'] 
                 t.arguments = ['mdrun', '-s', 'in.tpr', '-deffnm', 'out']
@@ -78,7 +81,7 @@ if __name__ == '__main__':
 #            'resource': 'local.localhost',
             'resource': 'ncsa.bw_aprun',
             'walltime': 30,
-            'cores': 32,
+            'cores': 64,
             'access_schema': 'gsissh',
             'queue': 'debug',
             'project': 'bamm',
