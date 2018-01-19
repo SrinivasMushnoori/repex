@@ -38,8 +38,8 @@ if __name__ == '__main__':
     stage_uids = list()
     task_uids = dict()
 
-    Stages = 1
-    Replicas = 16
+    Stages = 3
+    Replicas = 2
     Replica_Cores = 32
 
     Pilot_Cores = Replicas * Replica_Cores
@@ -55,9 +55,9 @@ if __name__ == '__main__':
             for n0 in range(Replicas):
                 t = Task()
                 t.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine  
-                t.upload_input_data = ['inpcrd', 'prmtop', 'mdin'] 
+                t.upload_input_data = ['inpcrd', 'prmtop', 'mdin_{0}'.format(n0)] 
                 t.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/'] 
-                t.arguments = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
+                t.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
                 t.cores = Replica_Cores
                 stg.add_tasks(t)
                 task_uids['Stage_%s'%N_Stg].append(t.uid)
@@ -72,7 +72,7 @@ if __name__ == '__main__':
             t.executable = ['python']
             t.upload_input_data = ['exchangeMethods/RandEx.py']
             #t.link_input_data = ['']
-            t.arguments = [Replicas]
+            t.arguments = ['RandEx.py', Replicas]
             t.cores = 1
             t.mpi = False
             t.download_output_data = ['exchangePairs.txt'] 
@@ -86,10 +86,15 @@ if __name__ == '__main__':
         ######Subsequent MD stages    
         else:
             ### Open file,
-            with open(exchangePairs.txt) as file
+            ExchangePairs = []
+            with open('exchangePairs.txt', "rb") as file
             ### read file into list,
             ### use list ot populate data staging placeholders
-            
+                for i in file.readlines():
+                    tmp = i.split(" ")
+                    try:
+                        ExchangePairs.append((int(tmp[0]), int(tmp[1])))
+                    except:pass
 
             ###AND THEN, define the task
             for n0 in range(Replicas):
