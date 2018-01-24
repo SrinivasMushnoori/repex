@@ -84,6 +84,52 @@ def init_pipeline():
     return p
 
 
+def general_pipeline():
+
+    p = Pipeline()
+
+    #Bookkeeping
+    stage_uids = list()
+    task_uids = list() ## = dict()
+
+
+    #Create initial MD stage
+
+    s1 = Stage()
+
+    #Create MD task
+    for n0 in range (Replicas):
+        t1 = Task()
+        t1.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine
+    #   t1.copy_input_data = ['inpcrd', 'prmtop', 'mdin_{0}'.format(n0)]  ##Copy from previous PIPELINE, make sure bookkeeping is correct
+        t1.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/']
+        t1.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
+        t1.cores = Replica_Cores
+        t1.mpi = True
+        s1.add_tasks(t1)
+        task_uids.append(t1.uid)
+    p.add_stages(s1)
+    stage_uids.append(s1.uid)
+
+    s2= Stage()
+    
+    #Create Exchange Task
+
+    t2 = Task()
+    t2.executable = ['python']
+    t2.upload_input_data = ['exchangeMethods/RandEx.py']
+    t2.arguments = ['RandEx.py','{0}'.format(Replicas)]
+    t2.cores = 1
+    t2.mpi = False
+    t2.download_output_data = ['exchangePairs.txt']
+    s2.add_tasks(t2)
+    task_uids.append(t2.uid)
+    p.add_stages(s2)
+    stage_uids.append(s2.uid)
+
+    return p
+                                                
+
 if __name__ == '__main__':
 
     res_dict = {
@@ -110,14 +156,14 @@ if __name__ == '__main__':
      # Run the Application Manager
     appman.run()
     
-    #p = init_pipeline()
+    p = general_pipeline()
     #print p.uid
 
     # Assign the workflow as a set of Pipelines to the Application Manager
-    #appman.assign_workflow(set([p]))
+    appman.assign_workflow(set([p]))
 
     # Run the Application Manager
-    #appman.run()
+    appman.run()
 
 
 
