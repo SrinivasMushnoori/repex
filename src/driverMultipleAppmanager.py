@@ -47,39 +47,42 @@ def init_pipeline():
 
     #Create initial MD stage
 
-    s1 = Stage()
+    md_stg = Stage()
 
     #Create MD task
     for n0 in range (Replicas):    
-        t1 = Task()
-        t1.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine
-        t1.upload_input_data = ['inpcrd', 'prmtop', 'mdin_{0}'.format(n0)]
-        t1.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/']
-        t1.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
-        t1.cores = Replica_Cores
-        t1.mpi = True
-        s1.add_tasks(t1)
-        task_uids.append(t1.uid)
-    p.add_stages(s1)
-    stage_uids.append(s1.uid)
+        md_tsk = Task()
+        md_tsk.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine
+        md_tsk.upload_input_data = ['inpcrd', 'prmtop', 'mdin_{0}'.format(n0)]
+        md_tsk.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/']
+        md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
+        md_tsk.cores = Replica_Cores
+        md_tsk.mpi = True
+        md_stage.add_tasks(md_tsk)
+        task_uids.append(md_tsk.uid)
+    p.add_stages(md_stg)
+    stage_uids.append(md_stg.uid)
 
     #Create Exchange Stage
     
-    s2 = Stage()
+    ex_stg = Stage()
 
     #Create Exchange Task
 
-    t2 = Task()
-    t2.executable = ['python']
-    t2.upload_input_data = ['exchangeMethods/RandEx.py']
-    t2.arguments = ['RandEx.py','{0}'.format(Replicas)]
-    t2.cores = 1
-    t2.mpi = False
-    t2.download_output_data = ['exchangePairs.txt']
-    s2.add_tasks(t2)
-    task_uids.append(t2.uid)
-    p.add_stages(s2)
-    stage_uids.append(s2.uid)
+    ex_tsk = Task()
+    ex_tsk.executable = ['python']
+    ex_tsk.upload_input_data = ['exchangeMethods/RandEx.py']
+    for n1 in range Replicas:
+        ex_tsk.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/mdinfo > mdinfo_{0}'.format(n1)]
+    
+    ex_tsk.arguments = ['RandEx.py','{0}'.format(Replicas)]
+    ex_tsk.cores = 1
+    ex_tsk.mpi = False
+    ex_tsk.download_output_data = ['exchangePairs.txt']
+    ex_stg.add_tasks(ex_tsk)
+    task_uids.append(ex_tsk.uid)
+    p.add_stages(ex_stg)
+    stage_uids.append(ex_stg.uid)
 
     return p
 
@@ -95,37 +98,46 @@ def general_pipeline():
 
     #Create initial MD stage
 
-    s1 = Stage()
+    md_stg = Stage()
 
     #Create MD task
     for n0 in range (Replicas):
-        t1 = Task()
-        t1.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine
-    #   t1.copy_input_data = ['inpcrd', 'prmtop', 'mdin_{0}'.format(n0)]  ##Copy from previous PIPELINE, make sure bookkeeping is correct
-        t1.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/']
-        t1.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
-        t1.cores = Replica_Cores
-        t1.mpi = True
-        s1.add_tasks(t1)
-        task_uids.append(t1.uid)
-    p.add_stages(s1)
-    stage_uids.append(s1.uid)
+        md_tsk = Task()
+        md_tsk.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine
 
-    s2= Stage()
+        
+        md_tsk.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/restrt > inpcrd'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]),
+                                  '$Pipeline_%s_Stage_%s_Task_%s/prmtop'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]),
+                                  '$Pipeline_%s_Stage_%s_Task_%s/mdin_{0}'.format(n0)%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0])]
+                                   ##Above: Copy from previous PIPELINE, make sure bookkeeping is correct
+                                   ##### Never used .format(n) AND a %s at the same time. Test, try.
+                              
+        md_tsk.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/']
+        md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
+        md_tsk.cores = Replica_Cores
+        md_tsk.mpi = True
+        md_stg.add_tasks(md_tsk)
+        task_uids.append(md_tsk.uid)
+    p.add_stages(md_stg)
+    stage_uids.append(md_stg.uid)
+
+    #Create exchange stage 
+
+    ex_stg= Stage()
     
     #Create Exchange Task
 
-    t2 = Task()
-    t2.executable = ['python']
-    t2.upload_input_data = ['exchangeMethods/RandEx.py']
-    t2.arguments = ['RandEx.py','{0}'.format(Replicas)]
-    t2.cores = 1
-    t2.mpi = False
-    t2.download_output_data = ['exchangePairs.txt']
-    s2.add_tasks(t2)
-    task_uids.append(t2.uid)
-    p.add_stages(s2)
-    stage_uids.append(s2.uid)
+    ex_tsk = Task()
+    ex_tsk.executable = ['python']
+    ex_tsk.upload_input_data = ['exchangeMethods/RandEx.py']
+    ex_tsk.arguments = ['RandEx.py','{0}'.format(Replicas)]
+    ex_tsk.cores = 1
+    ex_tsk.mpi = False
+    ex_tsk.download_output_data = ['exchangePairs.txt']
+    ex_stg.add_tasks(ex_tsk)
+    task_uids.append(ex_tsk.uid)
+    p.add_stages(ex_stg)
+    stage_uids.append(ex_stg.uid)
 
     return p
                                                 
