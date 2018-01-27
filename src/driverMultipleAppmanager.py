@@ -23,14 +23,14 @@ if os.environ.get('RADICAL_PILOT_DBURL') == None:
 #---------------------------------------#
 ## User Settings
 
-Replicas = 8
+Replicas = 4
 Replica_Cores = 32
 Cycles = 4
 
 #---------------------------------------#
 
 
-
+Book = []
 
 Pilot_Cores = Replicas * Replica_Cores    
 
@@ -43,7 +43,7 @@ def init_pipeline():
     #Bookkeeping
     stage_uids = list()
     task_uids = list() ## = dict()
-        
+    d = dict()    
 
     #Create initial MD stage
 
@@ -55,14 +55,16 @@ def init_pipeline():
         md_tsk.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine
         md_tsk.upload_input_data = ['inpcrd', 'prmtop', 'mdin_{0}'.format(n0)]
         md_tsk.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/']
-        md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
+        md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out', '-inf', 'mdinfo_{0}'.format(n0)]
         md_tsk.cores = Replica_Cores
         md_tsk.mpi = True
-        md_stage.add_tasks(md_tsk)
+        d[n0] = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
+
+        md_stg.add_tasks(md_tsk)
         task_uids.append(md_tsk.uid)
     p.add_stages(md_stg)
     stage_uids.append(md_stg.uid)
-
+    print d 
     #Create Exchange Stage
     
     ex_stg = Stage()
@@ -72,8 +74,8 @@ def init_pipeline():
     ex_tsk = Task()
     ex_tsk.executable = ['python']
     ex_tsk.upload_input_data = ['exchangeMethods/RandEx.py']
-    for n1 in range Replicas:
-        ex_tsk.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/mdinfo > mdinfo_{0}'.format(n1)]
+    for n1 in range (Replicas):
+        ex_tsk.copy_input_data += ['%s/mdinfo_%s'%(d[n1],n1)]
     
     ex_tsk.arguments = ['RandEx.py','{0}'.format(Replicas)]
     ex_tsk.cores = 1
@@ -83,7 +85,7 @@ def init_pipeline():
     task_uids.append(ex_tsk.uid)
     p.add_stages(ex_stg)
     stage_uids.append(ex_stg.uid)
-
+    Book.append(d)
     return p
 
 
@@ -94,7 +96,7 @@ def general_pipeline():
     #Bookkeeping
     stage_uids = list()
     task_uids = list() ## = dict()
-
+     
 
     #Create initial MD stage
 
@@ -168,14 +170,14 @@ if __name__ == '__main__':
      # Run the Application Manager
     appman.run()
     
-    p = general_pipeline()
+    #p = general_pipeline()
     #print p.uid
 
     # Assign the workflow as a set of Pipelines to the Application Manager
-    appman.assign_workflow(set([p]))
+    #appman.assign_workflow(set([p]))
 
     # Run the Application Manager
-    appman.run()
+    #appman.run()
 
 
 
