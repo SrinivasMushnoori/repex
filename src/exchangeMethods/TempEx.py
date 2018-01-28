@@ -3,7 +3,7 @@
 import os
 import sys
 import math
-#import numpy as np
+import numpy as np
 
 ####------------
 
@@ -35,10 +35,24 @@ def TemperatureExchange(Replicas):
                 Replica_Energies.append(PotEng)
         f.close
                 
-
+    #print Replica_Energies
+    #print Replica_Temps
     ##### Perform Exchange Computation
 
-             
+
+    #Build exchange matrix [matrix of dimensionless energies, E/kT]
+    Kb = 0.0019872041    #Boltzmann Constant in kcal/mol
+    Replica_Temps = np.array(Replica_Temps)
+    Replica_Energies = np.array(Replica_Energies)
+    #Exchange_Matrix = np.multiply(Replica_Energies, np.reciprocal(np.multiply(Kb, Replica_Temps))) ###Might not be correct
+    Replica_Temps = np.reciprocal(np.multiply(Kb,Replica_Temps))
+    #Consider all pairs for exchange
+    print Replica_Temps
+    for i in range (Replicas):
+        for j in range (Replicas):
+            p = math.exp(np.multiply((Replica_Energies[i]-Replica_Energies[j]),(Replica_Temps[i]-Replica_Temps[j])
+            ###Once an exchange partner is found, move to the next i
+              #Find mechanism to skip values of i that have found exchange pairs as j              
 
 
 
