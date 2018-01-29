@@ -18,14 +18,14 @@ if os.environ.get('RADICAL_PILOT_PROFILE') == None:
     os.environ['RADICAL_PILOT_PROFILE'] = 'True'
 
 if os.environ.get('RADICAL_PILOT_DBURL') == None:
-    os.environ['RADICAL_PILOT_DBURL'] = "mongodb://138.201.86.166:27017/ee_exp_4c"
+    os.environ['RADICAL_PILOT_DBURL'] = "mongodb://smush:key1209@ds117848.mlab.com:17868/db_repex_1"
 
 #---------------------------------------#
 ## User Settings
 
 Replicas = 4
 Replica_Cores = 32
-Cycles = 4
+Cycles = 2
 
 #---------------------------------------#
 
@@ -86,17 +86,28 @@ def init_pipeline():
     p.add_stages(ex_stg)
     stage_uids.append(ex_stg.uid)
     Book.append(d)
+    print Book
     return p
 
 
-def general_pipeline():
+def general_pipeline(k):
 
+
+    #read exchangePairs.txt
+    #
+    with open("exchangePairs.txt","r") as f:
+        ExchangeArray = []
+        for line in f:
+            ExchangeArray.append(line)
+
+
+    
     p = Pipeline()
 
     #Bookkeeping
     stage_uids = list()
     task_uids = list() ## = dict()
-     
+    d = dict() 
 
     #Create initial MD stage
 
@@ -108,9 +119,9 @@ def general_pipeline():
         md_tsk.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine
 
         
-        md_tsk.copy_input_data = ['$Pipeline_%s_Stage_%s_Task_%s/restrt > inpcrd'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]),
-                                  '$Pipeline_%s_Stage_%s_Task_%s/prmtop'%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0]),
-                                  '$Pipeline_%s_Stage_%s_Task_%s/mdin_{0}'.format(n0)%(p.uid, stage_uids[N_Stg-1], task_uids['Stage_%s'%(N_Stg-1)][n0])]
+        md_tsk.copy_input_data = ['%s/restrt > inpcrd'%(Book[k-1][ExchangeArray[n0][1]]),
+                                  '%s/prmtop'%(Book[k-1][n0]),
+                                  '%s/mdin_{0}'.format(n0)%(Book[k-1][n0])]
                                    ##Above: Copy from previous PIPELINE, make sure bookkeeping is correct
                                    ##### Never used .format(n) AND a %s at the same time. Test, try.
                               
@@ -118,6 +129,8 @@ def general_pipeline():
         md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
         md_tsk.cores = Replica_Cores
         md_tsk.mpi = True
+        d[n0] = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
+
         md_stg.add_tasks(md_tsk)
         task_uids.append(md_tsk.uid)
     p.add_stages(md_stg)
@@ -132,6 +145,9 @@ def general_pipeline():
     ex_tsk = Task()
     ex_tsk.executable = ['python']
     ex_tsk.upload_input_data = ['exchangeMethods/RandEx.py']
+    for n1 in range (Replicas):
+        ex_tsk.copy_input_data += ['%s/mdinfo_%s'%(d[n1],n1)]
+
     ex_tsk.arguments = ['RandEx.py','{0}'.format(Replicas)]
     ex_tsk.cores = 1
     ex_tsk.mpi = False
@@ -140,8 +156,10 @@ def general_pipeline():
     task_uids.append(ex_tsk.uid)
     p.add_stages(ex_stg)
     stage_uids.append(ex_stg.uid)
-
+    Book.append(d)
+    print Book
     return p
+                                                                    
                                                 
 
 if __name__ == '__main__':
@@ -169,15 +187,16 @@ if __name__ == '__main__':
 
      # Run the Application Manager
     appman.run()
-    
-    #p = general_pipeline()
-    #print p.uid
 
-    # Assign the workflow as a set of Pipelines to the Application Manager
-    #appman.assign_workflow(set([p]))
+    for k in range (Cycles):
+        p = general_pipeline(k)
+        #print p.uid
 
-    # Run the Application Manager
-    #appman.run()
+        # Assign the workflow as a set of Pipelines to the Application Manager
+        appman.assign_workflow(set([p]))
+
+        # Run the Application Manager
+        appman.run()
 
 
 
