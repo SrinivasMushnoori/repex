@@ -98,8 +98,9 @@ def general_pipeline(k):
     with open("exchangePairs.txt","r") as f:
         ExchangeArray = []
         for line in f:
-            ExchangeArray.append(line)
-
+            ExchangeArray.append(int(line.split(' ')[1]))
+            #ExchangeArray.append(line)
+            
 
     
     p = Pipeline()
@@ -119,7 +120,7 @@ def general_pipeline(k):
         md_tsk.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine
 
         
-        md_tsk.copy_input_data = ['%s/restrt > inpcrd'%(Book[k-1][ExchangeArray[n0][1]]),
+        md_tsk.copy_input_data = ['%s/restrt > inpcrd'%(Book[k-1][ExchangeArray[n0]]),
                                   '%s/prmtop'%(Book[k-1][n0]),
                                   '%s/mdin_{0}'.format(n0)%(Book[k-1][n0])]
                                    ##Above: Copy from previous PIPELINE, make sure bookkeeping is correct
