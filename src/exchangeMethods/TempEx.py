@@ -48,26 +48,32 @@ def TemperatureExchange(Replicas):
     Replica_Temps = np.reciprocal(np.multiply(Kb,Replica_Temps))
     #Consider all pairs for exchange
     print Replica_Temps
+    exchangeList = []
     for i in range (Replicas):
         for j in range (Replicas):
-            p = math.exp(np.multiply((Replica_Energies[i]-Replica_Energies[j]),(Replica_Temps[i]-Replica_Temps[j])
+            p = math.exp(np.multiply((Replica_Energies[i]-Replica_Energies[j]),(Replica_Temps[i]-Replica_Temps[j])))
             ###Once an exchange partner is found, move to the next i
               #Find mechanism to skip values of i that have found exchange pairs as j              
+            if p > 1:
+                exchangeList.append('%d %d'%(i, j))
+                #i ,j append i,j to exchangeList
+                break
+            else:
+                q = random.rand()
+                if q < p:
+                    exchangeList.append('%d %d'%(i, j))
+                    #i,j append i,j to exchangeList
+                    break
+                else:
+                    exchangeList.append('%d %d'%(i, i))
+                
 
-
-
-
-    #Col1 = exchangeList[:len(exchangeList)/2]
-    #Col2= exchangeList[len(exchangeList)/2:]
-    ####exchangePairs = list(tuple)
-    #exchangePairs = zip(Col1, Col2)
-    ##Output exchange pairs to file
-
-    #f = open('exchangePairs.txt', 'w')
-    #for p in exchangePairs:
-        #line = ' '.join(str(x) for x in p)
-        #f.write(line + '\n')
-    #f.close
+    f = open('exchangePairs.txt', 'w')
+    for p in exchangePairs:
+        line = ' '.join(str(x) for x in p)
+        f.write(line + '\n')
+    f.close
+                    
 TemperatureExchange(Replicas)
 
                                                                 
