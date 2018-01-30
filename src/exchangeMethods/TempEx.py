@@ -8,10 +8,9 @@ import numpy as np
 ####------------
 
 
-Rep = sys.argv[1]
-Replicas = int(Rep)
-Col1=[]
-Col2=[]
+
+Replicas = int(sys.argv[1])
+
 def TemperatureExchange(Replicas):
     exchangeList = range(Replicas)
     #random.shuffle(exchangeList)
@@ -22,7 +21,7 @@ def TemperatureExchange(Replicas):
     Replica_Temps = []
     Replica_Energies = []
     for n in range (Replicas):
-        f = open('mdinfo_{0}'.format(n))
+        f = open('mdinfo_{0}'.format(n)) #Perhaps it's possible to read the outfile instead of mdinfo?
         lines = f.readlines()
         #f.close
         for i,j in enumerate(lines):
@@ -41,14 +40,23 @@ def TemperatureExchange(Replicas):
 
 
     #Build exchange matrix [matrix of dimensionless energies, E/kT]
+
     Kb = 0.0019872041    #Boltzmann Constant in kcal/mol
+
     Replica_Temps = np.array(Replica_Temps)
+
     Replica_Energies = np.array(Replica_Energies)
-    #Exchange_Matrix = np.multiply(Replica_Energies, np.reciprocal(np.multiply(Kb, Replica_Temps))) ###Might not be correct
-    Replica_Temps = np.reciprocal(np.multiply(Kb,Replica_Temps))
-    #Consider all pairs for exchange
-    print Replica_Temps
+
+    #Exchange_Matrix = np.multiply(Replica_Energies, np.reciprocal(np.multiply(Kb, Replica_Temps))) #possibly incorrect, also makes little sense
+
+    Replica_Temps = np.reciprocal(np.multiply(Kb,Replica_Temps)) # Turns this into dimensionless temperatures (beta)
+
+
+    ###Consider all pairs for exchange
+    #print Replica_Temps
+
     exchangeList = []
+
     for i in range (Replicas):
         for j in range (Replicas):
             p = math.exp(np.multiply((Replica_Energies[i]-Replica_Energies[j]),(Replica_Temps[i]-Replica_Temps[j])))
