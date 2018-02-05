@@ -129,7 +129,7 @@ def cycle(k):
                               
         #md_tsk.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/'] #Preexec, BLue Waters
         md_tsk.pre_exec = ['module load amber']
-        md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out']
+        md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out','-inf', 'mdinfo_{0}'.format(n0)]
         md_tsk.cores = Replica_Cores
         md_tsk.mpi = True
         d[n0] = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
