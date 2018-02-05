@@ -23,7 +23,7 @@ os.environ['RADICAL_PILOT_DBURL'] = "mongodb://smush:key1209@ds117848.mlab.com:1
 
 Replicas = 4
 Replica_Cores = 20
-Cycles = 1
+Cycles = 2
 #Resource = 'xsede.comet_ssh'
 #---------------------------------------#
 
@@ -65,7 +65,7 @@ def init_cycle():
         task_uids.append(md_tsk.uid)
     p.add_stages(md_stg)
     stage_uids.append(md_stg.uid)
-    print d 
+    #print d 
     #Create Exchange Stage
     
     ex_stg = Stage()
@@ -87,7 +87,7 @@ def init_cycle():
     p.add_stages(ex_stg)
     stage_uids.append(ex_stg.uid)
     Book.append(d)
-    print Book
+    #print Book
     return p
 
 
@@ -99,9 +99,9 @@ def cycle(k):
     with open("exchangePairs.dat","r") as f:
         ExchangeArray = []
         for line in f:
-            ExchangeArray.append(int(line.split(' ')[1]))
+            ExchangeArray.append(int(line.split()[1]))
             #ExchangeArray.append(line)
-            
+        #print ExchangeArray    
 
     
     p = Pipeline()
@@ -133,7 +133,7 @@ def cycle(k):
         md_tsk.cores = Replica_Cores
         md_tsk.mpi = True
         d[n0] = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
-
+        #print d
         md_stg.add_tasks(md_tsk)
         task_uids.append(md_tsk.uid)
     p.add_stages(md_stg)
@@ -149,8 +149,10 @@ def cycle(k):
     ex_tsk.executable = ['python']
     ex_tsk.upload_input_data = ['exchangeMethods/TempEx.py']
     for n1 in range (Replicas):
+        #print d[n1]
+        
         ex_tsk.copy_input_data += ['%s/mdinfo_%s'%(d[n1],n1)]
-
+    
     ex_tsk.arguments = ['TempEx.py','{0}'.format(Replicas)]
     ex_tsk.cores = 1
     ex_tsk.mpi = False
@@ -160,7 +162,8 @@ def cycle(k):
     p.add_stages(ex_stg)
     stage_uids.append(ex_stg.uid)
     Book.append(d)
-    print Book
+    #print d
+    #print Book
     return p
                                                                     
                                                 
