@@ -21,9 +21,9 @@ os.environ['RADICAL_PILOT_DBURL'] = "mongodb://smush:key1209@ds117848.mlab.com:1
 #---------------------------------------#
 ## User Settings
 
-Replicas = 4
+Replicas = 8
 Replica_Cores = 20
-Cycles = 2
+Cycles = 10
 #Resource = 'xsede.comet_ssh'
 #---------------------------------------#
 
@@ -76,7 +76,7 @@ def init_cycle():
     ex_tsk.executable = ['python']
     ex_tsk.upload_input_data = ['exchangeMethods/TempEx.py']
     for n1 in range (Replicas):
-        ex_tsk.copy_input_data += ['%s/mdinfo_%s'%(d[n1],n1)]
+        ex_tsk.link_input_data += ['%s/mdinfo_%s'%(d[n1],n1)]
     
     ex_tsk.arguments = ['TempEx.py','{0}'.format(Replicas)]
     ex_tsk.cores = 1
@@ -121,7 +121,7 @@ def cycle(k):
         #md_tsk.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine, Blue Waters
         md_tsk.executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI'] #MD Engine, SuperMIC 
         #md_tsk.executable = ['/opt/amber/bin/pmemd.MPI']
-        md_tsk.copy_input_data = ['%s/restrt > inpcrd'%(Book[k-1][ExchangeArray[n0]]),
+        md_tsk.link_input_data = ['%s/restrt > inpcrd'%(Book[k-1][ExchangeArray[n0]]),
                                   '%s/prmtop'%(Book[k-1][n0]),
                                   '%s/mdin_{0}'.format(n0)%(Book[k-1][n0])]
                                    ##Above: Copy from previous PIPELINE, make sure bookkeeping is correct
@@ -151,7 +151,7 @@ def cycle(k):
     for n1 in range (Replicas):
         #print d[n1]
         
-        ex_tsk.copy_input_data += ['%s/mdinfo_%s'%(d[n1],n1)]
+        ex_tsk.link_input_data += ['%s/mdinfo_%s'%(d[n1],n1)]
     
     ex_tsk.arguments = ['TempEx.py','{0}'.format(Replicas)]
     ex_tsk.cores = 1
