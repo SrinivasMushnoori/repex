@@ -4,7 +4,7 @@ import os
 import sys
 import math
 import numpy as np
-
+import random
 ####------------
 
 
@@ -47,10 +47,8 @@ def TemperatureExchange(Replicas):
 
     Replica_Energies = np.array(Replica_Energies)
 
-    #Exchange_Matrix = np.multiply(Replica_Energies, np.reciprocal(np.multiply(Kb, Replica_Temps))) #possibly incorrect, also makes little sense
-
     Replica_Temps = np.reciprocal(np.multiply(Kb,Replica_Temps)) # Turns this into dimensionless temperatures (beta)
-
+    #print Replica_Temps
 
     ###Consider all pairs for exchange
     #print Replica_Temps
@@ -67,17 +65,17 @@ def TemperatureExchange(Replicas):
                 #i ,j append i,j to exchangeList
                 break
             else:
-                q = random.rand()
+                q = random.random()
                 if q < p:
                     exchangeList.append('%d %d'%(i, j))
                     #i,j append i,j to exchangeList
                     break
                 else:
                     exchangeList.append('%d %d'%(i, i))
-                
+                    break
 
-    f = open('exchangePairs.txt', 'w')
-    for p in exchangePairs:
+    f = open('exchangePairs.dat', 'w')
+    for p in exchangeList:
         line = ' '.join(str(x) for x in p)
         f.write(line + '\n')
     f.close
