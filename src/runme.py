@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from radical.entk import Pipeline, Stage, Task, AppManager, ResourceManager
-#from exchangeMethods import RandEx 
 import os
 # ------------------------------------------------------------------------------
 # Set default verbosity
@@ -21,16 +20,16 @@ os.environ['RADICAL_PILOT_DBURL'] = "mongodb://smush:key1209@ds117848.mlab.com:1
 #---------------------------------------#
 ## User Settings
 
-Replicas = 8
-Replica_Cores = 20
-Cycles = 10
+Replicas = 128
+Replica_Cores = 32
+Cycles = 1
 #Resource = 'xsede.comet_ssh'
 #---------------------------------------#
 
 
 Book = []
-
-Pilot_Cores = (Replicas + 1) * Replica_Cores   
+Pilot_Cores = 512
+#Pilot_Cores = (Replicas + 1) * Replica_Cores   
 
 def init_cycle():
 
@@ -42,7 +41,21 @@ def init_cycle():
     stage_uids = list()
     task_uids = list() ## = dict()
     d = dict()    
-
+    dict_tarball = dict()
+    
+    #Create Tarball stage
+    tar_stg = Stage()
+    #Create Tar/untar task
+    tar_tsk = Task()
+    tar_tsk.executable = ['python']
+    tar_tsk.upload_input_data = ['Input_Files.tar', 'untar_input_files.py']
+    tar_tsk.arguments = ['untar_input_files.py','Input_Files.tar']
+    tar_tsk.cores = 1
+    tar_stg.add_tasks(tar_tsk)
+    #task_uids.append(tar_tsk.uid)
+    p.add_stages(tar_stg)
+    #stage_uids.append(tar_stg.uid)
+    dict_tarball[0] = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid,tar_stg.uid,tar_tsk.uid)
     #Create initial MD stage
 
     md_stg = Stage()
@@ -50,13 +63,18 @@ def init_cycle():
     #Create MD task
     for n0 in range (Replicas):    
         md_tsk = Task()
-        #md_tsk.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine, BW
-        md_tsk.executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI'] #MD Engine, SuperMIC
+        md_tsk.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine, BW
+        #md_tsk.executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI'] #MD Engine, SuperMIC
         #md_tsk.executable = ['/opt/amber/bin/pmemd.MPI']
-        md_tsk.upload_input_data = ['inpcrd', 'prmtop', 'mdin_{0}'.format(n0)]
-        #md_tsk.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/']
-        md_tsk.pre_exec = ['module load amber']    
-        md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out', '-inf', 'mdinfo_{0}'.format(n0)]
+        #md_tsk.upload_input_data = ['inpcrd', 'prmtop', 'mdin_{0}'.format(n0)]
+        #md_tsk.upload_input_data = ['inpcrd','prmtop','mdin']
+        md_tsk.link_input_data += ['%s/inpcrd'%dict_tarball[0],
+                                  '%s/prmtop'%dict_tarball[0],
+                                   '%s/mdin'%dict_tarball[0]]  
+        md_tsk.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/']
+        #md_tsk.pre_exec = ['module load amber']    
+        #md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(n0), '-inf', 'mdinfo_{0}'.format(n0)]
+        md_tsk.arguments = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(n0), '-inf', 'mdinfo_{0}'.format(n0)]
         md_tsk.cores = Replica_Cores
         md_tsk.mpi = True
         d[n0] = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
@@ -118,18 +136,20 @@ def cycle(k):
     #Create MD task
     for n0 in range (Replicas):
         md_tsk = Task()
-        #md_tsk.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine, Blue Waters
-        md_tsk.executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI'] #MD Engine, SuperMIC 
+        md_tsk.executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']  #MD Engine, Blue Waters
+        #md_tsk.executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI'] #MD Engine, SuperMIC 
         #md_tsk.executable = ['/opt/amber/bin/pmemd.MPI']
         md_tsk.link_input_data = ['%s/restrt > inpcrd'%(Book[k-1][ExchangeArray[n0]]),
                                   '%s/prmtop'%(Book[k-1][n0]),
-                                  '%s/mdin_{0}'.format(n0)%(Book[k-1][n0])]
-                                   ##Above: Copy from previous PIPELINE, make sure bookkeeping is correct
+                                  #'%s/mdin_{0}'.format(n0)%(Book[k-1][n0])]
+                                  '%s/mdin'%(Book[k-1][n0])]   
+                                  ##Above: Copy from previous PIPELINE, make sure bookkeeping is correct
                                    
                               
-        #md_tsk.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/'] #Preexec, BLue Waters
-        md_tsk.pre_exec = ['module load amber']
-        md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out','-inf', 'mdinfo_{0}'.format(n0)]
+        md_tsk.pre_exec = ['export AMBERHOME=$HOME/amber/amber14/'] #Preexec, BLue Waters
+        #md_tsk.pre_exec = ['module load amber']
+        #md_tsk.arguments = ['-O', '-i', 'mdin_{0}'.format(n0), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(n0),'-inf', 'mdinfo_{0}'.format(n0)]
+        md_tsk.arguments = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(n0),'-inf', 'mdinfo_{0}'.format(n0)]
         md_tsk.cores = Replica_Cores
         md_tsk.mpi = True
         d[n0] = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
@@ -171,16 +191,16 @@ def cycle(k):
 if __name__ == '__main__':
 
     res_dict = {
-                #'resource': 'ncsa.bw_aprun',
-                'resource': 'xsede.supermic',
+                'resource': 'ncsa.bw_aprun',
+                #'resource': 'xsede.supermic',
                 #'resource': 'xsede.comet',
-                'walltime': 30,
+                'walltime': 200,
                 'cores': Pilot_Cores,
                 'access_schema': 'gsissh',
-                #'queue': 'compute',
-                'queue': 'workq',
-                'project': 'TG-MCB090174',
-                #'project': 'bamm',
+                'queue': 'normal',
+                #'queue': 'workq',
+                #'project': 'TG-MCB090174',
+                'project': 'bamm',
                 }
 
     
@@ -199,15 +219,15 @@ if __name__ == '__main__':
      # Run the Application Manager
     appman.run()
 
-    for k in range (Cycles):
-        p = cycle(k)
+   # for k in range (Cycles):
+   #     p = cycle(k)
         #print p.uid
 
         # Assign the workflow as a set of Pipelines to the Application Manager
-        appman.assign_workflow(set([p]))
+   #     appman.assign_workflow(set([p]))
 
         # Run the Application Manager
-        appman.run()
+   #     appman.run()
 
 
 
