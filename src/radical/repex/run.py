@@ -6,6 +6,7 @@ import os
 # ------------------------------------------------------------------------------
 # Set default verbosity
 
+
 os.environ['RADICAL_SAGA_VERBOSE']   = 'INFO'
 os.environ['RP_ENABLE_OLD_DEFINES']  = 'True'
 os.environ['RADICAL_ENMD_PROFILING'] = '1'
@@ -30,7 +31,6 @@ ExchangeMethod = 'exchangeMethods/TempEx.py'
 MD_Executable  = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI'
 
 #---------------------------------------#
-
                                                 
 if __name__ == '__main__':
 
@@ -44,6 +44,7 @@ if __name__ == '__main__':
                 #'project': 'TG-MCB090174',
                 'project': 'bamm',
                 }
+
 
     SynchronousExchange=SynchronousExchange()
     
@@ -69,7 +70,3 @@ if __name__ == '__main__':
         appman.assign_workflow(set([Exchange])) # Assign the workflow as a set of Pipelines to the Application Manager       
 
         appman.run() # Run the Application Manager
-
-
-
-    appman.resource_terminate()
