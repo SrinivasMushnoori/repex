@@ -28,8 +28,8 @@ Cycles = 1
 
 
 Book = []
-Pilot_Cores = 512
-#Pilot_Cores = (Replicas + 1) * Replica_Cores   
+#Pilot_Cores = 512
+Pilot_Cores = (Replicas + 1) * Replica_Cores   
 
 def init_cycle():
 
