@@ -18,6 +18,13 @@ class SynchronousExchange(object):
     def __init__(self):
 
         self.Book = [] #Bookkeeping, maintains a record of all MD tasks carried out
+
+        # Profiler
+
+        self._uid = ru.generate_id('radical.repex.sync')
+        self._logger = ru.get_logger('radical.repex.sync')
+        self._prof = ru.Profiler(name=self._uid)
+        self._prof.prof('initiate Synchronous exchange', uid=self._uid)
            
     def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod):     # "Cycle" = 1 MD stage plus the subsequent exchange computation
 
