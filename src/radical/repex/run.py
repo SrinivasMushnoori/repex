@@ -24,7 +24,7 @@ os.environ['RADICAL_PILOT_DBURL']    = "mongodb://smush:key1209@ds117848.mlab.co
 
 Replicas       = 32
 Replica_Cores  = 32
-Cycles         = 50    #0 cycles = no exchange
+Cycles         = 2    #0 cycles = no exchange
 Resource       = 'ncsa.bw_aprun'
 Pilot_Cores    = Replica_Cores * (Replicas + 1)
 ExchangeMethod = 'exchangeMethods/TempEx.py' 
@@ -36,10 +36,10 @@ if __name__ == '__main__':
 
     res_dict = {
                 'resource': Resource,
-                'walltime': 250,
+                'walltime': 30,
                 'cores': Pilot_Cores,
                 'access_schema': 'gsissh',
-                'queue': 'normal',
+                'queue': 'debug',
                 #'queue': 'workq',
                 #'project': 'TG-MCB090174',
                 'project': 'bamm',
@@ -70,3 +70,6 @@ if __name__ == '__main__':
         appman.assign_workflow(set([Exchange])) # Assign the workflow as a set of Pipelines to the Application Manager       
 
         appman.run() # Run the Application Manager
+
+
+    appman.resource_terminate()
