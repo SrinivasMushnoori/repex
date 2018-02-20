@@ -31,7 +31,7 @@ class SynchronousExchange(object):
         #Create Tarball of input data
 
         tar = tarfile.open("Input_Files.tar","w")
-        for name in ["prmtop", "inpcrd", "mdin"]:
+        for name in ["InputFiles/prmtop", "InputFiles/inpcrd", "InputFiles/mdin"]:
             tar.add(name)
         #for r in range (Replicas):
             #tar.add('mdin_{0}'.format(r))
