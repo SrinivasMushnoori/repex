@@ -12,7 +12,7 @@ class SynchronousExchange(object):
     subsequent cycles. Each cycle (MD plus immediate exchange computation) must be specified as separate workflows.                                        
     """
     
-
+   
 
 
     def __init__(self):
@@ -24,11 +24,20 @@ class SynchronousExchange(object):
         self._uid = ru.generate_id('radical.repex.sync')
         self._logger = ru.get_logger('radical.repex.sync')
         self._prof = ru.Profiler(name=self._uid)
-        self._prof.prof('initiate Synchronous exchange', uid=self._uid)
+        #self._prof.prof('initiate Synchronous exchange', uid=self._uid)
            
     def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod):     # "Cycle" = 1 MD stage plus the subsequent exchange computation
 
+        """ 
+        Initial cycle consists of:
+        1) Create tarball of MD input data 
+        2) Transfer the tarball to pilot sandbox
+        3) Untar the tarball
+        4) Run first Cycle
+        """    
+        
         #Initialize Pipeline
+
         p = Pipeline()
 
         md_dict    = dict() #Bookkeeping
@@ -66,27 +75,36 @@ class SynchronousExchange(object):
                                                        untar_stg.uid,
                                                        untar_tsk.uid)
                  
+
+
         # First MD stage: needs to be defined separately since workflow is not built from a predetermined order
+
         md_stg = Stage()
         
 
         # MD tasks
 
+        #For all replicas, link MD run input files from the Untar directory
+
+
+        #Note to self: I should probably create an MD Task class in order to abstract the MD engine details....
+
+        
         for r in range (Replicas):
             md_tsk                  = Task()
             md_tsk.executable       = [MD_Executable]
             md_tsk.link_input_data += ['%s/inpcrd'%tar_dict[0],
                                        '%s/prmtop'%tar_dict[0],
-                                       #'%s/mdin_{0}'.format(r)%tar_dict[0]
-                                       '%s/mdin'%tar_dict[0] 
+                                       #'%s/mdin_{0}'.format(r)%tar_dict[0]  #Use for full temperature exchange
+                                       '%s/mdin'%tar_dict[0]  #Testing only
                                        ] 
             md_tsk.pre_exec         = ['export AMBERHOME=$HOME/amber/amber14/'] #Should be abstracted from the user?
-            md_tsk.arguments        = ['-O','-p','prmtop', '-i', 'mdin',               #'mdin_{0}'.format(r), # Use this for full Temperature Exchange
+            md_tsk.arguments        = ['-O','-p','prmtop', '-i', 'mdin',        #'mdin_{0}'.format(r), # Use this for full Temperature Exchange
                                        '-c','inpcrd','-o','out_{0}'.format(r),
                                        '-inf','mdinfo_{0}'.format(r)]
-            md_tsk.cores = Replica_Cores
-            md_tsk.mpi = True
-            md_dict[r] = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
+            md_tsk.cores            = Replica_Cores
+            md_tsk.mpi              = True
+            md_dict[r]              = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
 
             md_stg.add_tasks(md_tsk)
             #task_uids.append(md_tsk.uid)
@@ -95,10 +113,11 @@ class SynchronousExchange(object):
                                                     
 
         # First Exchange Stage
+        
         ex_stg = Stage()
 
         # Create Exchange Task. Exchange task performs a Metropolis Hastings thermodynamic balance condition
-        # and spits out the exchangePairs.dat file that contains a sorted list of ordered pairs. 
+        # check and spits out the exchangePairs.dat file that contains a sorted list of ordered pairs. 
         # Said pairs then exchange configurations by linking output configuration files appropriately.
 
         ex_tsk                      = Task()
@@ -110,7 +129,7 @@ class SynchronousExchange(object):
         ex_tsk.arguments            = ['TempEx.py','{0}'.format(Replicas)]
         ex_tsk.cores                = 1
         ex_tsk.mpi                  = False
-        ex_tsk.download_output_data = ['exchangePairs.dat']
+        ex_tsk.download_output_data = ['exchangePairs_0.dat']
         ex_stg.add_tasks(ex_tsk)
         #task_uids.append(ex_tsk.uid)
         p.add_stages(ex_stg)
@@ -124,9 +143,12 @@ class SynchronousExchange(object):
 
         """
         All cycles after the initial cycle
+        Pulls up exchange pairs file and generates the new workflow
         """
 
-        with open("exchangePairs.dat","r") as f:  # Read exchangePairs.dat
+
+        
+        with open('exchangePairs_{0}.dat'.format(Cycle),'r') as f:  # Read exchangePairs.dat
             ExchangeArray = []
             for line in f:
                 ExchangeArray.append(int(line.split()[1]))
@@ -183,7 +205,7 @@ class SynchronousExchange(object):
         ex_tsk.arguments            = ['TempEx.py','{0}'.format(Replicas)]
         ex_tsk.cores                = 1
         ex_tsk.mpi                  = False
-        ex_tsk.download_output_data = ['exchangePairs.dat']
+        ex_tsk.download_output_data = ['exchangePairs_{0}.dat'.format(Cycle+1)] # Finds exchange partners, also  Generates exchange history trace
 
         ex_stg.add_tasks(ex_tsk)
 

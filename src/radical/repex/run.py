@@ -27,8 +27,8 @@ Replica_Cores  = 32
 Cycles         = 2    #0 cycles = no exchange
 Resource       = 'ncsa.bw_aprun'
 Pilot_Cores    = Replica_Cores * (Replicas + 1)
-ExchangeMethod = 'exchangeMethods/TempEx.py' 
-MD_Executable  = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI'
+ExchangeMethod = 'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
+MD_Executable  = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
 
 #---------------------------------------#
                                                 
