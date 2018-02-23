@@ -22,13 +22,13 @@ os.environ['RADICAL_PILOT_DBURL']    = "mongodb://smush:key1209@ds117848.mlab.co
 #---------------------------------------#
 ## User settings
 
-Replicas       = 32
-Replica_Cores  = 32
+Replicas       = 8
+Replica_Cores  = 20
 Cycles         = 2    #0 cycles = no exchange
-Resource       = 'ncsa.bw_aprun'
+Resource       = 'xsede.supermic' #'ncsa.bw_aprun'
 Pilot_Cores    = Replica_Cores * (Replicas + 1)
 ExchangeMethod = 'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
-MD_Executable  = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
+MD_Executable  = '/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI'  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
 
 #---------------------------------------#
                                                 
@@ -39,10 +39,10 @@ if __name__ == '__main__':
                 'walltime': 30,
                 'cores': Pilot_Cores,
                 'access_schema': 'gsissh',
-                'queue': 'debug',
-                #'queue': 'workq',
-                #'project': 'TG-MCB090174',
-                'project': 'bamm',
+                #'queue': 'debug',
+                'queue': 'workq',
+                'project': 'TG-MCB090174',
+                #'project': 'bamm',
                 }
 
 

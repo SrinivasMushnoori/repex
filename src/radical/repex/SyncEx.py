@@ -4,6 +4,31 @@ import os
 import tarfile
 
 
+
+
+
+#class AMBERTask(Task):
+
+    #def __init__(self):
+        
+
+        #self.AMBERTask.cores = replica_cores
+        #self.MD_Executable = MD_Executable
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class SynchronousExchange(object):
 
     """ 
@@ -16,7 +41,8 @@ class SynchronousExchange(object):
 
 
     def __init__(self):
-
+        
+        #AMBERTask.__init__(self)
         self.Book = [] #Bookkeeping, maintains a record of all MD tasks carried out
 
         # Profiler
@@ -47,7 +73,7 @@ class SynchronousExchange(object):
         #Create Tarball of input data
 
         tar = tarfile.open("Input_Files.tar","w")
-        for name in ["InputFiles/prmtop", "InputFiles/inpcrd", "InputFiles/mdin"]:
+        for name in ["prmtop", "inpcrd", "mdin"]:
             tar.add(name)
         #for r in range (Replicas):
             #tar.add('mdin_{0}'.format(r))
@@ -98,7 +124,8 @@ class SynchronousExchange(object):
                                        #'%s/mdin_{0}'.format(r)%tar_dict[0]  #Use for full temperature exchange
                                        '%s/mdin'%tar_dict[0]  #Testing only
                                        ] 
-            md_tsk.pre_exec         = ['export AMBERHOME=$HOME/amber/amber14/'] #Should be abstracted from the user?
+            #md_tsk.pre_exec         = ['export AMBERHOME=$HOME/amber/amber14/'] #Should be abstracted from the user?
+            md_tsk.pre_exec       = ['module load amber']
             md_tsk.arguments        = ['-O','-p','prmtop', '-i', 'mdin',        #'mdin_{0}'.format(r), # Use this for full Temperature Exchange
                                        '-c','inpcrd','-o','out_{0}'.format(r),
                                        '-inf','mdinfo_{0}'.format(r)]
@@ -126,7 +153,7 @@ class SynchronousExchange(object):
         ex_tsk.upload_input_data    = [ExchangeMethod]  
         for r in range (Replicas):
             ex_tsk.link_input_data     += ['%s/mdinfo_%s'%(md_dict[r],r)]
-        ex_tsk.arguments            = ['TempEx.py','{0}'.format(Replicas)]
+        ex_tsk.arguments            = ['TempEx.py','{0}'.format(Replicas), '0']
         ex_tsk.cores                = 1
         ex_tsk.mpi                  = False
         ex_tsk.download_output_data = ['exchangePairs_0.dat']
@@ -197,12 +224,12 @@ class SynchronousExchange(object):
         #Create Exchange Task
         ex_tsk                      = Task()
         ex_tsk.executable           = ['python']
-        ex_tsk.upload_input_data    = ['exchangeMethods/TempEx.py']
+        ex_tsk.upload_input_data    = [ExchangeMethod]
         for r in range (Replicas):
 
             ex_tsk.link_input_data += ['%s/mdinfo_%s'%(md_dict[r],r)]
 
-        ex_tsk.arguments            = ['TempEx.py','{0}'.format(Replicas)]
+        ex_tsk.arguments            = ['TempEx.py','{0}'.format(Replicas), '{0}'.format(Cycle+1)]
         ex_tsk.cores                = 1
         ex_tsk.mpi                  = False
         ex_tsk.download_output_data = ['exchangePairs_{0}.dat'.format(Cycle+1)] # Finds exchange partners, also  Generates exchange history trace

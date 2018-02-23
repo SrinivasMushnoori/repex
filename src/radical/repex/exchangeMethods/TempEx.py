@@ -10,6 +10,7 @@ import random
 
 
 Replicas = int(sys.argv[1])
+Cycle = int(sys.argv[2])
 
 def TemperatureExchange(Replicas):
     exchangeList = range(Replicas)
@@ -74,7 +75,7 @@ def TemperatureExchange(Replicas):
                     exchangeList.append('%d %d'%(i, i))
                     break
 
-    f = open('exchangePairs.dat', 'w')
+    f = open('exchangePairs_{0}.dat'.format(Cycle), 'w')
     for p in exchangeList:
         line = ' '.join(str(x) for x in p)
         f.write(line + '\n')
