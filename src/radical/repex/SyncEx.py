@@ -6,29 +6,6 @@ import tarfile
 
 
 
-
-#class AMBERTask(Task):
-
-    #def __init__(self):
-        
-
-        #self.AMBERTask.cores = replica_cores
-        #self.MD_Executable = MD_Executable
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class SynchronousExchange(object):
 
     """ 
@@ -50,7 +27,7 @@ class SynchronousExchange(object):
         self._uid = ru.generate_id('radical.repex.sync')
         self._logger = ru.get_logger('radical.repex.sync')
         self._prof = ru.Profiler(name=self._uid)
-        #self._prof.prof('initiate Synchronous exchange', uid=self._uid)
+        #self._prof.prof('InitSyncEx', uid=self._uid)
            
     def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod):     # "Cycle" = 1 MD stage plus the subsequent exchange computation
 
@@ -63,7 +40,7 @@ class SynchronousExchange(object):
         """    
         
         #Initialize Pipeline
-
+        #self._prof.prof('InitTar', uid=self._uid)
         p = Pipeline()
 
         md_dict    = dict() #Bookkeeping
@@ -83,7 +60,7 @@ class SynchronousExchange(object):
         #Create Untar Stage
 
         untar_stg = Stage()
-        
+        self._prof.prof('InitTar', uid=self._uid)
         #Untar Task
 
         untar_tsk                   = Task()
@@ -106,7 +83,7 @@ class SynchronousExchange(object):
         # First MD stage: needs to be defined separately since workflow is not built from a predetermined order
 
         md_stg = Stage()
-        
+        self._prof.prof('InitMD_0', uid=self._uid)
 
         # MD tasks
 
@@ -142,7 +119,7 @@ class SynchronousExchange(object):
         # First Exchange Stage
         
         ex_stg = Stage()
-
+        self._prof.prof('InitEx_0', uid=self._uid)
         # Create Exchange Task. Exchange task performs a Metropolis Hastings thermodynamic balance condition
         # check and spits out the exchangePairs.dat file that contains a sorted list of ordered pairs. 
         # Said pairs then exchange configurations by linking output configuration files appropriately.
@@ -194,6 +171,7 @@ class SynchronousExchange(object):
 
 
         md_stg = Stage()
+        self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
         for r in range (Replicas):
             md_tsk                 = Task()
             md_tsk.executable      = [MD_Executable]  #MD Engine, Blue Waters
@@ -205,8 +183,8 @@ class SynchronousExchange(object):
                                       '%s/mdin'%(self.Book[0][r])]
                                       #'%s/mdin'%(self.Tarball_path[0])]
 
-            md_tsk.pre_exec        = ['export AMBERHOME=$HOME/amber/amber14/'] # Should be abstracted from user?
-            #md_tsk.pre_exec       = ['module load amber']
+            #md_tsk.pre_exec        = ['export AMBERHOME=$HOME/amber/amber14/'] # Should be abstracted from user?
+            md_tsk.pre_exec       = ['module load amber']
             #md_tsk.arguments      = ['-O', '-i', 'mdin_{0}'.format(r), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
             md_tsk.arguments       = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
             md_tsk.cores           = Replica_Cores
@@ -243,7 +221,9 @@ class SynchronousExchange(object):
         #stage_uids.append(ex_stg.uid)
 
         self.Book.append(md_dict)
-            #print d
+
+        self._prof.prof('EndEx_{0}'.format(Cycle), uid=self._uid)
+        #print d
             #print self.Book
         return q
 
