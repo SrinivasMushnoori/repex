@@ -24,10 +24,10 @@ class GROMACSTask(Task):
     def __init__(self, cores, mpi=True):
 
         super(GROMACSTask, self).__init__()
-        self.executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
+        self.executable = ['']
         self.cores      = cores
-        self.pre_exec   = ['module load amber']
-        #self.post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
+        self.pre_exec   = ['module load gromacs']
+        self.post_exec = ['gmx energy < Energy.input'] 
         self.mpi        = mpi
                                                             
                                         
