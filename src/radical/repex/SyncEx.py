@@ -4,9 +4,34 @@ import os
 import tarfile
 
 
+class Replica(object):
+
+    #A replica class to hold replica information, potentially useful for replica states in asynchronous exchange
+
+    def __init__(self, rid, Temp, EPtot, rstate):
+        self.rid    = rid     #Replica ID
+        self.Temp   = Temp    #Replica Temp
+        self.EPtot  = EPtot   #Replica Potential Energy
+        self.rstate = rstate  #Replica State
+
+                                        
 
 
-class SynchronousExchange(object):
+class AMBERTask(Task):
+
+    # AMBER specific MD task class.
+    
+    def __init__(self, cores, mpi=True):
+                 
+        super(AMBERTask, self).__init__()
+        self.executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
+        self.cores      = cores
+        self.pre_exec   = ['module load amber']
+        #self.post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
+        self.mpi        = mpi
+
+    
+class SynchronousExchange(AMBERTask,Replica):
 
     """ 
     Defines the Synchronous Replica Exchange Workflow. InitCycle() creates the workflow for the first cycle, i.e. 
@@ -19,16 +44,21 @@ class SynchronousExchange(object):
 
     def __init__(self):
         
-        #AMBERTask.__init__(self)
+       
         self.Book = [] #Bookkeeping, maintains a record of all MD tasks carried out
 
-        # Profiler
+    def Replica_Init(self,Replicas):
 
-        self._uid = ru.generate_id('radical.repex.sync')
-        self._logger = ru.get_logger('radical.repex.sync')
-        self._prof = ru.Profiler(name=self._uid)
-        #self._prof.prof('InitSyncEx', uid=self._uid)
+        Replica_List=dict()
+
+        for r in range(Replicas):
+            Replica_List[r] = Replica
+            (Replica_List[r]).rstate = 'I' #Initialize with idle state
+            
+            
            
+
+
     def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod):     # "Cycle" = 1 MD stage plus the subsequent exchange computation
 
         """ 
@@ -60,7 +90,7 @@ class SynchronousExchange(object):
         #Create Untar Stage
 
         untar_stg = Stage()
-        self._prof.prof('InitTar', uid=self._uid)
+        #self._prof.prof('InitTar', uid=self._uid)
         #Untar Task
 
         untar_tsk                   = Task()
@@ -83,7 +113,7 @@ class SynchronousExchange(object):
         # First MD stage: needs to be defined separately since workflow is not built from a predetermined order
 
         md_stg = Stage()
-        self._prof.prof('InitMD_0', uid=self._uid)
+        #self._prof.prof('InitMD_0', uid=self._uid)
 
         # MD tasks
 
@@ -92,22 +122,22 @@ class SynchronousExchange(object):
 
         #Note to self: I should probably create an MD Task class in order to abstract the MD engine details....
 
+        #Replica_List=[]
         
         for r in range (Replicas):
-            md_tsk                  = Task()
-            md_tsk.executable       = [MD_Executable]
-            md_tsk.link_input_data += ['%s/inpcrd'%tar_dict[0],
+
+            
+            md_tsk                  = AMBERTask(cores=Replica_Cores)
+            md_tsk.link_input_data += [
+                                       '%s/inpcrd'%tar_dict[0],
                                        '%s/prmtop'%tar_dict[0],
                                        #'%s/mdin_{0}'.format(r)%tar_dict[0]  #Use for full temperature exchange
                                        '%s/mdin'%tar_dict[0]  #Testing only
                                        ] 
             #md_tsk.pre_exec         = ['export AMBERHOME=$HOME/amber/amber14/'] #Should be abstracted from the user?
-            md_tsk.pre_exec       = ['module load amber']
             md_tsk.arguments        = ['-O','-p','prmtop', '-i', 'mdin',        #'mdin_{0}'.format(r), # Use this for full Temperature Exchange
                                        '-c','inpcrd','-o','out_{0}'.format(r),
                                        '-inf','mdinfo_{0}'.format(r)]
-            md_tsk.cores            = Replica_Cores
-            md_tsk.mpi              = True
             md_dict[r]              = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
 
             md_stg.add_tasks(md_tsk)
@@ -119,14 +149,13 @@ class SynchronousExchange(object):
         # First Exchange Stage
         
         ex_stg = Stage()
-        self._prof.prof('InitEx_0', uid=self._uid)
+        #self._prof.prof('InitEx_0', uid=self._uid)
         # Create Exchange Task. Exchange task performs a Metropolis Hastings thermodynamic balance condition
         # check and spits out the exchangePairs.dat file that contains a sorted list of ordered pairs. 
         # Said pairs then exchange configurations by linking output configuration files appropriately.
 
         ex_tsk                      = Task()
         ex_tsk.executable           = ['python']
-        #ex_tsk.upload_input_data    = ['exchangeMethods/TempEx.py']
         ex_tsk.upload_input_data    = [ExchangeMethod]  
         for r in range (Replicas):
             ex_tsk.link_input_data     += ['%s/mdinfo_%s'%(md_dict[r],r)]
@@ -171,7 +200,7 @@ class SynchronousExchange(object):
 
 
         md_stg = Stage()
-        self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
+        #self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
         for r in range (Replicas):
             md_tsk                 = Task()
             md_tsk.executable      = [MD_Executable]  #MD Engine, Blue Waters
@@ -222,11 +251,24 @@ class SynchronousExchange(object):
 
         self.Book.append(md_dict)
 
-        self._prof.prof('EndEx_{0}'.format(Cycle), uid=self._uid)
+        #self._prof.prof('EndEx_{0}'.format(Cycle), uid=self._uid)
         #print d
             #print self.Book
         return q
 
 
+    def mdtasklist():
+        return self.md_task_list
+ 
+    def extasklist():
+        return self.ex_task_list
+
+
+
+
+
+
+
+                            
 
                                                                                                
