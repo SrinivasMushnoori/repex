@@ -51,7 +51,7 @@ if __name__ == '__main__':
     uid = ru.generate_id('radical.repex.run')
     logger = ru.get_logger('radical.repex.run')
     prof = ru.Profiler(name=uid)
-    #prof.prof('InitSyncEx', uid=self._uid)
+    prof.prof('Init_workflow_creation', uid=self._uid)
                              
 
     SynchronousExchange=SynchronousExchange()
@@ -65,18 +65,18 @@ if __name__ == '__main__':
     Exchange                = SynchronousExchange.InitCycle(Replicas, Replica_Cores, MD_Executable, ExchangeMethod)
     
     appman.assign_workflow(set([Exchange])) # Assign the workflow as a set of Pipelines to the Application Manager 
-    prof.prof('InitSyncEx', uid=uid)
+    prof.prof('Run_Cycle_0', uid=uid)
     appman.run() # Run the Application Manager 
-    
+    prof.prof('End_Cycle_0', uid=uid)
     
 
     for Cycle in range (Cycles):
-        
+        prof.prof('Run_Cycle_{0}'.format(Cycle+1), uid=uid)
         Exchange            = SynchronousExchange.GeneralCycle(Replicas, Replica_Cores, Cycle, MD_Executable, ExchangeMethod)
         
     
         appman.assign_workflow(set([Exchange])) # Assign the workflow as a set of Pipelines to the Application Manager       
-        prof.prof('InitCycle_{0}'.format(Cycle+1), uid=uid)
+        prof.prof('Run_Cycle_{0}'.format(Cycle+1), uid=uid)
         appman.run() # Run the Application Manager
         prof.prof('EndCycle_{0}'.format(Cycle+1), uid=uid)
 
