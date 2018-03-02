@@ -47,7 +47,7 @@ class AMBERTask(Task):
         self._mpi        = mpi
 
     
-class SynchronousExchange(AMBERTask,Replica):
+class SynchronousExchange(object):
 
     """ 
     Defines the Synchronous Replica Exchange Workflow. InitCycle() creates the workflow for the first cycle, i.e. 
@@ -270,12 +270,12 @@ class SynchronousExchange(AMBERTask,Replica):
             #print self.Book
         return q
 
-    @staticmethod
+    @property
     def mdtasklist(self):
         print self.md_task_list
         return self.md_task_list
 
-    @staticmethod
+    @property
     def extasklist(self):
         print self.ex_task_list
         return self.ex_task_list
