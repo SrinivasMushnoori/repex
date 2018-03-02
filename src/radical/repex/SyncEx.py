@@ -40,11 +40,11 @@ class AMBERTask(Task):
     def __init__(self, cores, mpi=True):
                  
         super(AMBERTask, self).__init__()
-        self.executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
-        self.cores      = cores
-        self.pre_exec   = ['module load amber']
-        #self.post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
-        self.mpi        = mpi
+        self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
+        self._cores      = cores
+        self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
+        #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
+        self._mpi        = mpi
 
     
 class SynchronousExchange(AMBERTask,Replica):
@@ -62,6 +62,8 @@ class SynchronousExchange(AMBERTask,Replica):
         
        
         self.Book = [] #Bookkeeping, maintains a record of all MD tasks carried out
+        self.md_task_list = []
+        self.ex_task_list = []
 
     def Replica_Init(self,Replicas):
 
@@ -150,14 +152,13 @@ class SynchronousExchange(AMBERTask,Replica):
                                        #'%s/mdin_{0}'.format(r)%tar_dict[0]  #Use for full temperature exchange
                                        '%s/mdin'%tar_dict[0]  #Testing only
                                        ] 
-            #md_tsk.pre_exec         = ['export AMBERHOME=$HOME/amber/amber14/'] #Should be abstracted from the user?
             md_tsk.arguments        = ['-O','-p','prmtop', '-i', 'mdin',        #'mdin_{0}'.format(r), # Use this for full Temperature Exchange
                                        '-c','inpcrd','-o','out_{0}'.format(r),
                                        '-inf','mdinfo_{0}'.format(r)]
             md_dict[r]              = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
 
             md_stg.add_tasks(md_tsk)
-            #task_uids.append(md_tsk.uid)
+            self.md_task_list.append(md_tsk.uid)
         p.add_stages(md_stg)
         #stage_uids.append(md_stg.uid)
                                                     
@@ -182,7 +183,7 @@ class SynchronousExchange(AMBERTask,Replica):
         ex_stg.add_tasks(ex_tsk)
         #task_uids.append(ex_tsk.uid)
         p.add_stages(ex_stg)
-        #stage_uids.append(ex_stg.uid)
+        self.ex_task_list.append(ex_tsk.uid)
         self.Book.append(md_dict)
         #print self.Book
         return p
@@ -218,8 +219,7 @@ class SynchronousExchange(AMBERTask,Replica):
         md_stg = Stage()
         #self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
         for r in range (Replicas):
-            md_tsk                 = Task()
-            md_tsk.executable      = [MD_Executable]  #MD Engine, Blue Waters
+            md_tsk                 = AMBERTask(cores=Replica_Cores)
             md_tsk.link_input_data = ['%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
                                       '%s/prmtop'%(self.Book[0][r]),
                                       #'%s/prmtop'%(self.Tarball_path[0]),
@@ -228,16 +228,13 @@ class SynchronousExchange(AMBERTask,Replica):
                                       '%s/mdin'%(self.Book[0][r])]
                                       #'%s/mdin'%(self.Tarball_path[0])]
 
-            #md_tsk.pre_exec        = ['export AMBERHOME=$HOME/amber/amber14/'] # Should be abstracted from user?
-            md_tsk.pre_exec       = ['module load amber']
             #md_tsk.arguments      = ['-O', '-i', 'mdin_{0}'.format(r), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
             md_tsk.arguments       = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
-            md_tsk.cores           = Replica_Cores
-            md_tsk.mpi             = True
             md_dict[r]             = '$Pipeline_%s_Stage_%s_Task_%s'%(q.uid, md_stg.uid, md_tsk.uid)
             md_stg.add_tasks(md_tsk)
+            self.md_task_list.append(md_tsk.uid)
 
-            #task_uids.append(md_tsk.uid)
+        
         q.add_stages(md_stg)
                  
                                                                                             
@@ -260,6 +257,7 @@ class SynchronousExchange(AMBERTask,Replica):
         ex_stg.add_tasks(ex_tsk)
 
         #task_uids.append(ex_tsk.uid)
+        self.ex_task_list.append(ex_tsk.uid)
 
         q.add_stages(ex_stg)
 
@@ -272,11 +270,14 @@ class SynchronousExchange(AMBERTask,Replica):
             #print self.Book
         return q
 
-
-    def mdtasklist():
+    @staticmethod
+    def mdtasklist(self):
+        print self.md_task_list
         return self.md_task_list
- 
-    def extasklist():
+
+    @staticmethod
+    def extasklist(self):
+        print self.ex_task_list
         return self.ex_task_list
 
 

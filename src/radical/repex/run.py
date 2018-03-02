@@ -24,9 +24,9 @@ os.environ['RADICAL_PILOT_DBURL']    = "mongodb://smush:key1209@ds117848.mlab.co
 #---------------------------------------#
 ## User settings
 
-Replicas       = 32
+Replicas       = 8
 Replica_Cores  = 20
-Cycles         = 2    #0 cycles = no exchange
+Cycles         = 1    #0 cycles = no exchange
 Resource       = 'xsede.supermic' #'ncsa.bw_aprun'
 Pilot_Cores    = Replica_Cores * (Replicas + 1)
 ExchangeMethod = 'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     uid = ru.generate_id('radical.repex.run')
     logger = ru.get_logger('radical.repex.run')
     prof = ru.Profiler(name=uid)
-    prof.prof('Init_workflow_creation', uid=self._uid)
+    prof.prof('Create_Workflow_0', uid=uid)
                              
 
     SynchronousExchange=SynchronousExchange()
@@ -71,21 +71,22 @@ if __name__ == '__main__':
     
 
     for Cycle in range (Cycles):
-        prof.prof('Run_Cycle_{0}'.format(Cycle+1), uid=uid)
-        Exchange            = SynchronousExchange.GeneralCycle(Replicas, Replica_Cores, Cycle, MD_Executable, ExchangeMethod)
+        prof.prof('Create_Workflow_{0}'.format(Cycle+1), uid=uid)
+        Exchange_gen            = SynchronousExchange.GeneralCycle(Replicas, Replica_Cores, Cycle, MD_Executable, ExchangeMethod)
         
     
-        appman.assign_workflow(set([Exchange])) # Assign the workflow as a set of Pipelines to the Application Manager       
+        appman.assign_workflow(set([Exchange_gen])) # Assign the workflow as a set of Pipelines to the Application Manager       
         prof.prof('Run_Cycle_{0}'.format(Cycle+1), uid=uid)
         appman.run() # Run the Application Manager
-        prof.prof('EndCycle_{0}'.format(Cycle+1), uid=uid)
+        prof.prof('End_Cycle_{0}'.format(Cycle+1), uid=uid)
 
     appman.resource_terminate()
 
-    mdtasks  = SynchronousExchange.mdtasklist
-    extasks  = SynchronousExchange.extasklist
-
+    mdtasks  = SynchronousExchange.mdtasklist()
+    print mdtasks
+    extasks  = SynchronousExchange.extasklist()
+    
     profiler = Profiler(src='./%s'%appman.sid)
-    print 'Workflow Execution time: ', profiler.duration(objects = Exchange, states=['SCHEDULING', 'DONE']) 
-    #print 'MD Execution time: ', profiler.duration(objects = mdtasks, states=['SCHEDULING', 'EXECUTED'])
-    #print 'EX Execution time: ', profiler.duration(objects = extasks, states=['SCHEDULING', 'EXECUTED'])
+    #print 'Workflow Execution time: ', profiler.duration(objects = Exchange, states=['SCHEDULING', 'DONE']) 
+    print 'MD Execution time: ', profiler.duration(objects = mdtasks, states=['SCHEDULING', 'EXECUTED'])
+    print 'EX Execution time: ', profiler.duration(objects = extasks, states=['SCHEDULING', 'EXECUTED'])
