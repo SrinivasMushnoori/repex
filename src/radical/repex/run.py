@@ -24,7 +24,7 @@ os.environ['RADICAL_PILOT_DBURL']    = "mongodb://smush:key1209@ds117848.mlab.co
 #---------------------------------------#
 ## User settings
 
-Replicas       = 8
+Replicas       = 4
 Replica_Cores  = 20
 Cycles         = 1    #0 cycles = no exchange
 Resource       = 'xsede.supermic' #'ncsa.bw_aprun'
@@ -82,9 +82,9 @@ if __name__ == '__main__':
 
     appman.resource_terminate()
 
-    mdtasks  = SynchronousExchange.mdtasklist()
+    mdtasks  = SynchronousExchange.mdtasklist
     print mdtasks
-    extasks  = SynchronousExchange.extasklist()
+    extasks  = SynchronousExchange.extasklist
     
     profiler = Profiler(src='./%s'%appman.sid)
     #print 'Workflow Execution time: ', profiler.duration(objects = Exchange, states=['SCHEDULING', 'DONE']) 
