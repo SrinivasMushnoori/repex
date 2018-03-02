@@ -24,11 +24,11 @@ class GROMACSTask(Task):
     def __init__(self, cores, mpi=True):
 
         super(GROMACSTask, self).__init__()
-        self.executable = ['']
-        self.cores      = cores
-        self.pre_exec   = ['module load gromacs']
-        self.post_exec = ['gmx energy < Energy.input'] 
-        self.mpi        = mpi
+        self._executable = ['']
+        self._cores      = cores
+        self._pre_exec   = ['module load gromacs']
+        self._post_exec = ['gmx energy < Energy.input'] 
+        self._mpi        = mpi
                                                             
                                         
 
@@ -66,6 +66,9 @@ class SynchronousExchange(object):
         self.ex_task_list = []
 
     def Replica_Init(self,Replicas):
+
+        #Nothing actually happens to a replica object here, this is just bookkeeping
+        #potentially for a state/event model in the future
 
         Replica_List=dict()
 
