@@ -64,6 +64,7 @@ class SynchronousExchange(object):
         self.Book = [] #Bookkeeping, maintains a record of all MD tasks carried out
         self.md_task_list = []
         self.ex_task_list = []
+        #self.test = 1
 
     def Replica_Init(self,Replicas):
 
@@ -96,6 +97,10 @@ class SynchronousExchange(object):
 
         md_dict    = dict() #Bookkeeping
         tar_dict   = dict() #Bookkeeping
+
+        ##Write the input files
+
+        
 
 
         #Create Tarball of input data
@@ -188,7 +193,6 @@ class SynchronousExchange(object):
         p.add_stages(ex_stg)
         self.ex_task_list.append(ex_tsk.uid)
         self.Book.append(md_dict)
-        #print self.Book
         return p
 
                                                                                         
@@ -234,8 +238,9 @@ class SynchronousExchange(object):
             #md_tsk.arguments      = ['-O', '-i', 'mdin_{0}'.format(r), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
             md_tsk.arguments       = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
             md_dict[r]             = '$Pipeline_%s_Stage_%s_Task_%s'%(q.uid, md_stg.uid, md_tsk.uid)
-            md_stg.add_tasks(md_tsk)
             self.md_task_list.append(md_tsk.uid)
+            md_stg.add_tasks(md_tsk)
+        
 
         
         q.add_stages(md_stg)
@@ -267,20 +272,26 @@ class SynchronousExchange(object):
         #stage_uids.append(ex_stg.uid)
 
         self.Book.append(md_dict)
-
         #self._prof.prof('EndEx_{0}'.format(Cycle), uid=self._uid)
         #print d
-            #print self.Book
+        #print self.Book
         return q
+
+
+    @property
+    def totalmdlist(self):
+        print 'Book is', self.Book
+        return self.Book
+    
 
     @property
     def mdtasklist(self):
-        print self.md_task_list
+        #print 'MD Task List:', self.md_task_list
         return self.md_task_list
 
     @property
     def extasklist(self):
-        print self.ex_task_list
+        #print 'EX Task List', self.ex_task_list
         return self.ex_task_list
 
 
