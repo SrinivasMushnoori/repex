@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from radical.entk import AppManager, ResourceManager, Profiler
+from radical.entk import AppManager, ResourceManager
 from SyncEx import SynchronousExchange
 import os
 import radical.utils as ru
@@ -24,15 +24,16 @@ os.environ['RADICAL_PILOT_DBURL']    = "mongodb://smush:key1209@ds117848.mlab.co
 #---------------------------------------#
 ## User settings
 
-Replicas       = 4
-Replica_Cores  = 20
-Cycles         = 1    #0 cycles = no exchange
+Replicas       = 2
+Replica_Cores  = 32
+Cycles         = 2    #0 cycles = no exchange
 Resource       = 'xsede.supermic' #'ncsa.bw_aprun'
-Pilot_Cores    = Replica_Cores * (Replicas + 1)
+Pilot_Cores    = Replica_Cores * (Replicas)
+#Pilot_Cores    = Replica_Cores * 32
 ExchangeMethod = 'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
-MD_Executable  = '/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI'  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
+#MD_Executable  = '/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI'  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
 
-#MD_Executable = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI'
+MD_Executable = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI'
 #---------------------------------------#
                                                 
 if __name__ == '__main__':
@@ -52,41 +53,53 @@ if __name__ == '__main__':
     logger = ru.get_logger('radical.repex.run')
     prof = ru.Profiler(name=uid)
     prof.prof('Create_Workflow_0', uid=uid)
-                             
 
-    SynchronousExchange=SynchronousExchange()
+                       
+
+    synchronousExchange=SynchronousExchange()
     
 
     rman                    = ResourceManager(res_dict)
-    appman                  = AppManager(autoterminate=False, port=33004)  # Create Application Manager 
+    appman                  = AppManager(autoterminate=False, port=33068)  # Create Application Manager 
     appman.resource_manager = rman  # Assign resource manager to the Application Manager   
-
-
-    Exchange                = SynchronousExchange.InitCycle(Replicas, Replica_Cores, MD_Executable, ExchangeMethod)
     
-    appman.assign_workflow(set([Exchange])) # Assign the workflow as a set of Pipelines to the Application Manager 
-    prof.prof('Run_Cycle_0', uid=uid)
-    appman.run() # Run the Application Manager 
-    prof.prof('End_Cycle_0', uid=uid)
-    
-
-    for Cycle in range (Cycles):
-        prof.prof('Create_Workflow_{0}'.format(Cycle+1), uid=uid)
-        Exchange_gen            = SynchronousExchange.GeneralCycle(Replicas, Replica_Cores, Cycle, MD_Executable, ExchangeMethod)
         
+
+    Exchange                = synchronousExchange.InitCycle(Replicas, Replica_Cores, MD_Executable, ExchangeMethod)
     
+
+    appman.assign_workflow(set([Exchange])) # Assign the workflow as a set of Pipelines to the Application Manager 
+
+    prof.prof('Run_Cycle_0', uid=uid)
+
+    appman.run() # Run the Application Manager 
+
+    prof.prof('End_Cycle_0', uid=uid)
+
+
+
+    
+
+    
+    for Cycle in range (Cycles):
+
+        prof.prof('Create_Workflow_{0}'.format(Cycle+1), uid=uid)
+        
+        Exchange_gen            = synchronousExchange.GeneralCycle(Replicas, Replica_Cores, Cycle, MD_Executable, ExchangeMethod)
+        
         appman.assign_workflow(set([Exchange_gen])) # Assign the workflow as a set of Pipelines to the Application Manager       
+
         prof.prof('Run_Cycle_{0}'.format(Cycle+1), uid=uid)
+
         appman.run() # Run the Application Manager
+
         prof.prof('End_Cycle_{0}'.format(Cycle+1), uid=uid)
 
     appman.resource_terminate()
 
     mdtasks  = SynchronousExchange.mdtasklist
-    print mdtasks
     extasks  = SynchronousExchange.extasklist
     
-    profiler = Profiler(src='./%s'%appman.sid)
-    #print 'Workflow Execution time: ', profiler.duration(objects = Exchange, states=['SCHEDULING', 'DONE']) 
-    print 'MD Execution time: ', profiler.duration(objects = mdtasks, states=['SCHEDULING', 'EXECUTED'])
-    print 'EX Execution time: ', profiler.duration(objects = extasks, states=['SCHEDULING', 'EXECUTED'])
+    appman.resource_terminate()
+
+    
