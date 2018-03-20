@@ -24,16 +24,16 @@ os.environ['RADICAL_PILOT_DBURL']    = "mongodb://smush:key1209@ds117848.mlab.co
 #---------------------------------------#
 ## User settings
 
-Replicas       = 2
-Replica_Cores  = 32
-Cycles         = 2    #0 cycles = no exchange
+Replicas       = 8
+Replica_Cores  = 1
+Cycles         = 3    #0 cycles = no exchange
 Resource       = 'xsede.supermic' #'ncsa.bw_aprun'
 Pilot_Cores    = Replica_Cores * (Replicas)
 #Pilot_Cores    = Replica_Cores * 32
 ExchangeMethod = 'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
-#MD_Executable  = '/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI'  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
+MD_Executable  = '/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.'  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
 
-MD_Executable = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI'
+#MD_Executable = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI'
 #---------------------------------------#
                                                 
 if __name__ == '__main__':
