@@ -2,7 +2,7 @@ import radical.utils as ru
 from radical.entk import Pipeline, Stage, Task
 import os
 import tarfile
-
+import writeInputs
 
 class Replica(object):
 
@@ -66,6 +66,12 @@ class SynchronousExchange(object):
         self.ex_task_list = []
         #self.test = 1
 
+        self._uid = ru.generate_id('radical.repex.syncex')
+        self._logger = ru.get_logger('radical.repex.syncex')
+        self._prof = ru.Profiler(name=self._uid)
+        self._prof.prof('Init1', uid=self._uid)
+        
+
     def Replica_Init(self,Replicas):
 
         #Nothing actually happens to a replica object here, this is just bookkeeping
@@ -94,32 +100,45 @@ class SynchronousExchange(object):
         #Initialize Pipeline
         #self._prof.prof('InitTar', uid=self._uid)
         p = Pipeline()
+        p.name = 'initpipeline'
 
         md_dict    = dict() #Bookkeeping
         tar_dict   = dict() #Bookkeeping
 
         ##Write the input files
 
-        
+        self._prof.prof('InitWriteInputs', uid=self._uid)
 
+        writeInputs.writeInputs(max_temp=350,min_temp=250,replicas=Replicas,timesteps=1000)
 
+        self._prof.prof('EndWriteInputs', uid=self._uid)
+
+        self._prof.prof('InitTar', uid=self._uid)
         #Create Tarball of input data
 
         tar = tarfile.open("Input_Files.tar","w")
         for name in ["prmtop", "inpcrd", "mdin"]:
             tar.add(name)
-        #for r in range (Replicas):
-            #tar.add('mdin_{0}'.format(r))
+        for r in range (Replicas):
+            tar.add('mdin_{0}'.format(r))
         tar.close()
-        
+
+        #delete all input files outside the tarball
+
+        for r in range (Replicas):
+            os.remove('mdin_{0}'.format(r))
+
+        self._prof.prof('EndTar', uid=self._uid)
         
         #Create Untar Stage
 
         untar_stg = Stage()
-        #self._prof.prof('InitTar', uid=self._uid)
+        untar_stg.name = 'untarStg'
+    
         #Untar Task
 
         untar_tsk                   = Task()
+        untar_tsk.name              = 'untartsk'
         untar_tsk.executable        = ['python']
         
         untar_tsk.upload_input_data = ['untar_input_files.py','Input_Files.tar']
@@ -130,43 +149,38 @@ class SynchronousExchange(object):
         p.add_stages(untar_stg)
 
              
-        tar_dict[0] = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid,
-                                                       untar_stg.uid,
-                                                       untar_tsk.uid)
+        tar_dict[0] = '$Pipeline_%s_Stage_%s_Task_%s'%(p.name,
+                                                       untar_stg.name,
+                                                       untar_tsk.name)
                  
 
 
         # First MD stage: needs to be defined separately since workflow is not built from a predetermined order
 
         md_stg = Stage()
+        md_stg.name = 'mdstg'
         #self._prof.prof('InitMD_0', uid=self._uid)
 
         # MD tasks
-
-        #For all replicas, link MD run input files from the Untar directory
-
-
-        #Note to self: I should probably create an MD Task class in order to abstract the MD engine details....
-
-        #Replica_List=[]
-        
+               
         for r in range (Replicas):
 
             
             md_tsk                  = AMBERTask(cores=Replica_Cores)
+            md_tsk.name             = 'mdtsk{0}'.format(r)
             md_tsk.link_input_data += [
                                        '%s/inpcrd'%tar_dict[0],
                                        '%s/prmtop'%tar_dict[0],
-                                       #'%s/mdin_{0}'.format(r)%tar_dict[0]  #Use for full temperature exchange
-                                       '%s/mdin'%tar_dict[0]  #Testing only
+                                       '%s/mdin_{0}'.format(r)%tar_dict[0]  #Use for full temperature exchange
+                                       #'%s/mdin'%tar_dict[0]  #Testing only
                                        ] 
-            md_tsk.arguments        = ['-O','-p','prmtop', '-i', 'mdin',        #'mdin_{0}'.format(r), # Use this for full Temperature Exchange
+            md_tsk.arguments        = ['-O','-p','prmtop', '-i', 'mdin_{0}'.format(r), # Use this for full Temperature Exchange
                                        '-c','inpcrd','-o','out_{0}'.format(r),
                                        '-inf','mdinfo_{0}'.format(r)]
-            md_dict[r]              = '$Pipeline_%s_Stage_%s_Task_%s'%(p.uid, md_stg.uid, md_tsk.uid)
+            md_dict[r]              = '$Pipeline_%s_Stage_%s_Task_%s'%(p.name, md_stg.name, md_tsk.name)
 
             md_stg.add_tasks(md_tsk)
-            self.md_task_list.append(md_tsk.uid)
+            self.md_task_list.append(md_tsk.name)
         p.add_stages(md_stg)
         #stage_uids.append(md_stg.uid)
                                                     
@@ -174,6 +188,7 @@ class SynchronousExchange(object):
         # First Exchange Stage
         
         ex_stg = Stage()
+        ex_stg.name = 'exstg0'
         #self._prof.prof('InitEx_0', uid=self._uid)
         # Create Exchange Task. Exchange task performs a Metropolis Hastings thermodynamic balance condition
         # check and spits out the exchangePairs.dat file that contains a sorted list of ordered pairs. 
@@ -214,6 +229,7 @@ class SynchronousExchange(object):
                     
 
         q = Pipeline()
+        q.name = 'genpipeline{0}'.format(Cycle)
         #Bookkeeping
         stage_uids = list()
         task_uids = list() ## = dict()
@@ -227,18 +243,19 @@ class SynchronousExchange(object):
         #self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
         for r in range (Replicas):
             md_tsk                 = AMBERTask(cores=Replica_Cores)
+            md_tsk.name            = 'mdtsk{0}'.format(r)
             md_tsk.link_input_data = ['%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
                                       '%s/prmtop'%(self.Book[0][r]),
                                       #'%s/prmtop'%(self.Tarball_path[0]),
-                                      #'%s/mdin_{0}'.format(r)%(self.Book[k-1][r])]
+                                      '%s/mdin_{0}'.format(r)%(self.Book[Cycle-1][r])]
 
-                                      '%s/mdin'%(self.Book[0][r])]
+                                      #'%s/mdin'%(self.Book[0][r])]
                                       #'%s/mdin'%(self.Tarball_path[0])]
 
-            #md_tsk.arguments      = ['-O', '-i', 'mdin_{0}'.format(r), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
-            md_tsk.arguments       = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
-            md_dict[r]             = '$Pipeline_%s_Stage_%s_Task_%s'%(q.uid, md_stg.uid, md_tsk.uid)
-            self.md_task_list.append(md_tsk.uid)
+            md_tsk.arguments      = ['-O', '-i', 'mdin_{0}'.format(r), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
+            #md_tsk.arguments       = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
+            md_dict[r]             = '$Pipeline_%s_Stage_%s_Task_%s'%(q.name, md_stg.name, md_tsk.name)
+            self.md_task_list.append(md_tsk.name)
             md_stg.add_tasks(md_tsk)
         
 
@@ -248,9 +265,11 @@ class SynchronousExchange(object):
                                                                                             
                                                                                               
         ex_stg = Stage()
+        ex_stg.name = 'exstg{0}'.format(Cycle+1)
 
         #Create Exchange Task
         ex_tsk                      = Task()
+        ex_tsk.name                 = 'ex_tsk'
         ex_tsk.executable           = ['python']
         ex_tsk.upload_input_data    = [ExchangeMethod]
         for r in range (Replicas):
