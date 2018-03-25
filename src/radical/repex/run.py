@@ -2,7 +2,7 @@
 
 from radical.entk import AppManager, ResourceManager
 from SyncEx import SynchronousExchange
-import os
+import os, time
 import radical.utils as ru
 # ------------------------------------------------------------------------------
 # Set default verbosity
@@ -24,16 +24,18 @@ os.environ['RADICAL_PILOT_DBURL']    = "mongodb://smush:key1209@ds117848.mlab.co
 #---------------------------------------#
 ## User settings
 
-Replicas       = 8
-Replica_Cores  = 1
-Cycles         = 3    #0 cycles = no exchange
+Replicas       = 128
+Replica_Cores  = 20
+Cycles         = 9    #0 cycles = no exchange
 Resource       = 'xsede.supermic' #'ncsa.bw_aprun'
 Pilot_Cores    = Replica_Cores * (Replicas)
 #Pilot_Cores    = Replica_Cores * 32
-ExchangeMethod = 'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
-MD_Executable  = '/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.'  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
+ExchangeMethod = 'exchangeMethods/RandEx.py' #/path/to/your/exchange/method
+MD_Executable  = '/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/sander.MPI'  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
 
 #MD_Executable = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI'
+timesteps      = 1000 #Number of timesteps between exchanges
+
 #---------------------------------------#
                                                 
 if __name__ == '__main__':
@@ -54,6 +56,9 @@ if __name__ == '__main__':
     prof = ru.Profiler(name=uid)
     prof.prof('Create_Workflow_0', uid=uid)
 
+    with open('logfile.log', 'a') as logfile:
+        logfile.write( '%.5f' %time.time() + ',' + 'CreateWorkflow0' + '\n')
+
                        
 
     synchronousExchange=SynchronousExchange()
@@ -65,16 +70,22 @@ if __name__ == '__main__':
     
         
 
-    Exchange                = synchronousExchange.InitCycle(Replicas, Replica_Cores, MD_Executable, ExchangeMethod)
+    Exchange                = synchronousExchange.InitCycle(Replicas, Replica_Cores, MD_Executable, ExchangeMethod, timesteps)
     
 
     appman.assign_workflow(set([Exchange])) # Assign the workflow as a set of Pipelines to the Application Manager 
 
     prof.prof('Run_Cycle_0', uid=uid)
 
+    with open('logfile.log', 'a') as logfile:
+        logfile.write( '%.5f' %time.time() + ',' + 'RunCycle0' + '\n')
+
     appman.run() # Run the Application Manager 
 
     prof.prof('End_Cycle_0', uid=uid)
+
+    with open('logfile.log', 'a') as logfile:
+        logfile.write( '%.5f' %time.time() + ',' + 'EndCycle0' + '\n')
 
 
 
@@ -84,22 +95,34 @@ if __name__ == '__main__':
     for Cycle in range (Cycles):
 
         prof.prof('Create_Workflow_{0}'.format(Cycle+1), uid=uid)
-        
+
+        with open('logfile.log', 'a') as logfile:
+            logfile.write( '%.5f' %time.time() + ',' + 'CreateWorkflow{0}'.format(Cycle+1) + '\n')
+                        
         Exchange_gen            = synchronousExchange.GeneralCycle(Replicas, Replica_Cores, Cycle, MD_Executable, ExchangeMethod)
         
         appman.assign_workflow(set([Exchange_gen])) # Assign the workflow as a set of Pipelines to the Application Manager       
 
         prof.prof('Run_Cycle_{0}'.format(Cycle+1), uid=uid)
 
+        with open('logfile.log', 'a') as logfile:
+            logfile.write( '%.5f' %time.time() + ',' + 'RunCycle{0}'.format(Cycle+1) + '\n')
+                         
+
         appman.run() # Run the Application Manager
 
         prof.prof('End_Cycle_{0}'.format(Cycle+1), uid=uid)
 
+        with open('logfile.log', 'a') as logfile:
+            logfile.write( '%.5f' %time.time() + ',' + 'EndCycle{0}'.format(Cycle+1) + '\n')
+
     appman.resource_terminate()
 
-    mdtasks  = SynchronousExchange.mdtasklist
-    extasks  = SynchronousExchange.extasklist
-    
-    appman.resource_terminate()
+    mdtasks  = synchronousExchange.mdtasklist
+    extasks  = synchronousExchange.extasklist
+    print mdtasks
+
+    print extasks
+    #appman.resource_terminate()
 
     
