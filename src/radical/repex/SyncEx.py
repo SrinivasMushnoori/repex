@@ -3,6 +3,7 @@ from radical.entk import Pipeline, Stage, Task
 import os
 import tarfile
 import writeInputs
+import time
 
 class Replica(object):
 
@@ -69,7 +70,10 @@ class SynchronousExchange(object):
         self._uid = ru.generate_id('radical.repex.syncex')
         self._logger = ru.get_logger('radical.repex.syncex')
         self._prof = ru.Profiler(name=self._uid)
-        self._prof.prof('Init1', uid=self._uid)
+        self._prof.prof('Initinit', uid=self._uid)
+        timestamp=time.time()
+        with open('logfile.log', 'a') as logfile:
+            logfile.write( '%.5f' %time.time() + ',' + 'InitInit' + '\n')
         
 
     def Replica_Init(self,Replicas):
@@ -87,7 +91,7 @@ class SynchronousExchange(object):
            
 
 
-    def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod):     # "Cycle" = 1 MD stage plus the subsequent exchange computation
+    def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod, timesteps): # "Cycle" = 1 MD stage plus the subsequent exchange computation
 
         """ 
         Initial cycle consists of:
@@ -109,10 +113,20 @@ class SynchronousExchange(object):
 
         self._prof.prof('InitWriteInputs', uid=self._uid)
 
-        writeInputs.writeInputs(max_temp=350,min_temp=250,replicas=Replicas,timesteps=1000)
+        with open('logfile.log', 'a') as logfile:
+            logfile.write( '%.5f' %time.time() + ',' + 'InitWriteInputs' + '\n')
+                        
+
+        writeInputs.writeInputs(max_temp=350,min_temp=250,replicas=Replicas,timesteps=timesteps)
 
         self._prof.prof('EndWriteInputs', uid=self._uid)
 
+        with open('logfile.log', 'a') as logfile:
+            logfile.write( '%.5f' %time.time() + ',' + 'EndWriteInputs' + '\n')
+                        
+
+        with open('logfile.log', 'a') as logfile:
+            logfile.write( '%.5f' %time.time() + ',' + 'InitTar' + '\n')
         self._prof.prof('InitTar', uid=self._uid)
         #Create Tarball of input data
 
@@ -129,6 +143,9 @@ class SynchronousExchange(object):
             os.remove('mdin_{0}'.format(r))
 
         self._prof.prof('EndTar', uid=self._uid)
+
+        with open('logfile.log', 'a') as logfile:
+            logfile.write( '%.5f' %time.time() + ',' + 'EndTar' + '\n')
         
         #Create Untar Stage
 
@@ -158,8 +175,10 @@ class SynchronousExchange(object):
         # First MD stage: needs to be defined separately since workflow is not built from a predetermined order
 
         md_stg = Stage()
-        md_stg.name = 'mdstg'
-        #self._prof.prof('InitMD_0', uid=self._uid)
+        md_stg.name = 'mdstg0'
+        self._prof.prof('InitMD_0', uid=self._uid)
+        #with open('logfile.log', 'a') as logfile:
+         #   logfile.write( '%.5f' %time.time() + ',' + 'InitMD0' + '\n')
 
         # MD tasks
                
@@ -181,6 +200,7 @@ class SynchronousExchange(object):
 
             md_stg.add_tasks(md_tsk)
             self.md_task_list.append(md_tsk.name)
+            #print md_tsk.uid
         p.add_stages(md_stg)
         #stage_uids.append(md_stg.uid)
                                                     
@@ -189,24 +209,28 @@ class SynchronousExchange(object):
         
         ex_stg = Stage()
         ex_stg.name = 'exstg0'
-        #self._prof.prof('InitEx_0', uid=self._uid)
+        self._prof.prof('InitEx_0', uid=self._uid)
+        #with open('logfile.log', 'a') as logfile:
+         #   logfile.write( '%.5f' %time.time() + ',' + 'InitEx0' + '\n')
         # Create Exchange Task. Exchange task performs a Metropolis Hastings thermodynamic balance condition
         # check and spits out the exchangePairs.dat file that contains a sorted list of ordered pairs. 
         # Said pairs then exchange configurations by linking output configuration files appropriately.
 
         ex_tsk                      = Task()
+        ex_tsk.name                 = 'extsk0'
         ex_tsk.executable           = ['python']
         ex_tsk.upload_input_data    = [ExchangeMethod]  
         for r in range (Replicas):
             ex_tsk.link_input_data     += ['%s/mdinfo_%s'%(md_dict[r],r)]
-        ex_tsk.arguments            = ['TempEx.py','{0}'.format(Replicas), '0']
+        ex_tsk.arguments            = ['RandEx.py','{0}'.format(Replicas), '0']
         ex_tsk.cores                = 1
         ex_tsk.mpi                  = False
         ex_tsk.download_output_data = ['exchangePairs_0.dat']
         ex_stg.add_tasks(ex_tsk)
         #task_uids.append(ex_tsk.uid)
         p.add_stages(ex_stg)
-        self.ex_task_list.append(ex_tsk.uid)
+        self.ex_task_list.append(ex_tsk.name)
+        #self.ex_task_uids.append(ex_tsk.uid)
         self.Book.append(md_dict)
         return p
 
@@ -219,7 +243,9 @@ class SynchronousExchange(object):
         """
 
 
-        
+        self._prof.prof('InitcreateMDwokflow_{0}'.format(Cycle), uid=self._uid)
+        #with open('logfile.log', 'a') as logfile:
+         #   logfile.write( '%.5f' %time.time() + ',' + 'InitCreateMDwokflow{0}'.format(Cycle) + '\n')
         with open('exchangePairs_{0}.dat'.format(Cycle),'r') as f:  # Read exchangePairs.dat
             ExchangeArray = []
             for line in f:
@@ -240,7 +266,10 @@ class SynchronousExchange(object):
 
 
         md_stg = Stage()
-        #self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
+        md_stg.name = 'mdstage{0}'.format(Cycle)
+
+        self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
+    
         for r in range (Replicas):
             md_tsk                 = AMBERTask(cores=Replica_Cores)
             md_tsk.name            = 'mdtsk{0}'.format(r)
@@ -269,14 +298,14 @@ class SynchronousExchange(object):
 
         #Create Exchange Task
         ex_tsk                      = Task()
-        ex_tsk.name                 = 'ex_tsk'
+        ex_tsk.name                 = 'ex_tsk{0}'.format(Cycle+1)
         ex_tsk.executable           = ['python']
         ex_tsk.upload_input_data    = [ExchangeMethod]
         for r in range (Replicas):
 
             ex_tsk.link_input_data += ['%s/mdinfo_%s'%(md_dict[r],r)]
 
-        ex_tsk.arguments            = ['TempEx.py','{0}'.format(Replicas), '{0}'.format(Cycle+1)]
+        ex_tsk.arguments            = ['RandEx.py','{0}'.format(Replicas), '{0}'.format(Cycle+1)]
         ex_tsk.cores                = 1
         ex_tsk.mpi                  = False
         ex_tsk.download_output_data = ['exchangePairs_{0}.dat'.format(Cycle+1)] # Finds exchange partners, also  Generates exchange history trace
@@ -284,7 +313,7 @@ class SynchronousExchange(object):
         ex_stg.add_tasks(ex_tsk)
 
         #task_uids.append(ex_tsk.uid)
-        self.ex_task_list.append(ex_tsk.uid)
+        self.ex_task_list.append(ex_tsk.name)
 
         q.add_stages(ex_stg)
 
