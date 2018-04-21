@@ -1,0 +1,534 @@
+#time,event,comp,thread,uid,state,msg
+1524266207.4043,sync_abs,radical.entk.wfprocessor.0009-proc,MainThread,,,localhost.localdomain:138.201.86.166:1524266207.4:1524266207.4:ntp
+1524266207.4048,wfp process started,radical.entk.wfprocessor.0009-proc,MainThread,wfprocessor.0009,,
+1524266207.4050,creating dequeue-thread,radical.entk.wfprocessor.0009-proc,MainThread,wfprocessor.0009,,
+1524266207.4051,starting dequeue-thread,radical.entk.wfprocessor.0009-proc,MainThread,wfprocessor.0009,,
+1524266207.4052,dequeue-thread started,radical.entk.wfprocessor.0009-proc,dequeue-thread,wfprocessor.0009,,
+1524266207.4052,creating enqueue-thread,radical.entk.wfprocessor.0009-proc,MainThread,wfprocessor.0009,,
+1524266207.4062,starting enqueue-thread,radical.entk.wfprocessor.0009-proc,MainThread,wfprocessor.0009,,
+1524266207.4062,enqueue-thread started,radical.entk.wfprocessor.0009-proc,enqueue-thread,wfprocessor.0009,,
+1524266207.4110,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,pipeline.0009,SCHEDULING,
+1524266207.4114,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,pipeline.0009,,
+1524266207.4168,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,pipeline.0009,,
+1524266207.4174,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0019,SCHEDULING,pipeline.0009
+1524266207.4177,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0019,,pipeline.0009
+1524266207.4206,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0019,,pipeline.0009
+1524266207.4208,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0298,SCHEDULING,stage.0019
+1524266207.4210,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0298,,stage.0019
+1524266207.4313,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0298,,stage.0019
+1524266207.4325,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0298,SCHEDULED,stage.0019
+1524266207.4330,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0298,,stage.0019
+1524266207.4351,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0298,,stage.0019
+1524266207.4355,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0299,SCHEDULING,stage.0019
+1524266207.4365,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0299,,stage.0019
+1524266207.4376,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0299,,stage.0019
+1524266207.4382,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0299,SCHEDULED,stage.0019
+1524266207.4389,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0299,,stage.0019
+1524266207.4399,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0299,,stage.0019
+1524266207.4403,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0300,SCHEDULING,stage.0019
+1524266207.4409,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0300,,stage.0019
+1524266207.4423,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0300,,stage.0019
+1524266207.4430,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0300,SCHEDULED,stage.0019
+1524266207.4437,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0300,,stage.0019
+1524266207.4443,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0300,,stage.0019
+1524266207.4447,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0301,SCHEDULING,stage.0019
+1524266207.4451,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0301,,stage.0019
+1524266207.4463,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0301,,stage.0019
+1524266207.4471,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0301,SCHEDULED,stage.0019
+1524266207.4477,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0301,,stage.0019
+1524266207.4484,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0301,,stage.0019
+1524266207.4490,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0302,SCHEDULING,stage.0019
+1524266207.4494,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0302,,stage.0019
+1524266207.4512,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0302,,stage.0019
+1524266207.4519,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0302,SCHEDULED,stage.0019
+1524266207.4523,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0302,,stage.0019
+1524266207.4536,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0302,,stage.0019
+1524266207.4539,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0303,SCHEDULING,stage.0019
+1524266207.4542,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0303,,stage.0019
+1524266207.4559,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0303,,stage.0019
+1524266207.4566,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0303,SCHEDULED,stage.0019
+1524266207.4572,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0303,,stage.0019
+1524266207.4585,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0303,,stage.0019
+1524266207.4590,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0304,SCHEDULING,stage.0019
+1524266207.4594,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0304,,stage.0019
+1524266207.4609,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0304,,stage.0019
+1524266207.4616,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0304,SCHEDULED,stage.0019
+1524266207.4619,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0304,,stage.0019
+1524266207.4632,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0304,,stage.0019
+1524266207.4635,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0305,SCHEDULING,stage.0019
+1524266207.4639,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0305,,stage.0019
+1524266207.4654,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0305,,stage.0019
+1524266207.4662,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0305,SCHEDULED,stage.0019
+1524266207.4667,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0305,,stage.0019
+1524266207.4677,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0305,,stage.0019
+1524266207.4680,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0306,SCHEDULING,stage.0019
+1524266207.4684,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0306,,stage.0019
+1524266207.4702,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0306,,stage.0019
+1524266207.4711,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0306,SCHEDULED,stage.0019
+1524266207.4717,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0306,,stage.0019
+1524266207.4735,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0306,,stage.0019
+1524266207.4738,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0307,SCHEDULING,stage.0019
+1524266207.4743,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0307,,stage.0019
+1524266207.4762,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0307,,stage.0019
+1524266207.4774,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0307,SCHEDULED,stage.0019
+1524266207.4780,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0307,,stage.0019
+1524266207.4793,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0307,,stage.0019
+1524266207.4799,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0308,SCHEDULING,stage.0019
+1524266207.4802,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0308,,stage.0019
+1524266207.4818,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0308,,stage.0019
+1524266207.4827,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0308,SCHEDULED,stage.0019
+1524266207.4833,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0308,,stage.0019
+1524266207.4850,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0308,,stage.0019
+1524266207.4855,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0309,SCHEDULING,stage.0019
+1524266207.4858,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0309,,stage.0019
+1524266207.4875,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0309,,stage.0019
+1524266207.4880,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0309,SCHEDULED,stage.0019
+1524266207.4884,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0309,,stage.0019
+1524266207.4900,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0309,,stage.0019
+1524266207.4904,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0310,SCHEDULING,stage.0019
+1524266207.4910,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0310,,stage.0019
+1524266207.4926,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0310,,stage.0019
+1524266207.4933,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0310,SCHEDULED,stage.0019
+1524266207.4937,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0310,,stage.0019
+1524266207.4949,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0310,,stage.0019
+1524266207.4952,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0311,SCHEDULING,stage.0019
+1524266207.4958,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0311,,stage.0019
+1524266207.4974,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0311,,stage.0019
+1524266207.4984,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0311,SCHEDULED,stage.0019
+1524266207.4988,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0311,,stage.0019
+1524266207.5008,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0311,,stage.0019
+1524266207.5013,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0312,SCHEDULING,stage.0019
+1524266207.5017,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0312,,stage.0019
+1524266207.5045,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0312,,stage.0019
+1524266207.5053,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0312,SCHEDULED,stage.0019
+1524266207.5059,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0312,,stage.0019
+1524266207.5074,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0312,,stage.0019
+1524266207.5078,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0313,SCHEDULING,stage.0019
+1524266207.5084,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0313,,stage.0019
+1524266207.5099,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0313,,stage.0019
+1524266207.5108,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0313,SCHEDULED,stage.0019
+1524266207.5113,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0313,,stage.0019
+1524266207.5125,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0313,,stage.0019
+1524266207.5131,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0314,SCHEDULING,stage.0019
+1524266207.5135,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0314,,stage.0019
+1524266207.5154,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0314,,stage.0019
+1524266207.5161,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0314,SCHEDULED,stage.0019
+1524266207.5165,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0314,,stage.0019
+1524266207.5184,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0314,,stage.0019
+1524266207.5189,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0315,SCHEDULING,stage.0019
+1524266207.5193,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0315,,stage.0019
+1524266207.5210,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0315,,stage.0019
+1524266207.5219,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0315,SCHEDULED,stage.0019
+1524266207.5224,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0315,,stage.0019
+1524266207.5240,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0315,,stage.0019
+1524266207.5245,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0316,SCHEDULING,stage.0019
+1524266207.5249,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0316,,stage.0019
+1524266207.5265,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0316,,stage.0019
+1524266207.5274,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0316,SCHEDULED,stage.0019
+1524266207.5277,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0316,,stage.0019
+1524266207.5287,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0316,,stage.0019
+1524266207.5291,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0317,SCHEDULING,stage.0019
+1524266207.5294,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0317,,stage.0019
+1524266207.5309,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0317,,stage.0019
+1524266207.5314,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0317,SCHEDULED,stage.0019
+1524266207.5317,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0317,,stage.0019
+1524266207.5328,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0317,,stage.0019
+1524266207.5332,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0318,SCHEDULING,stage.0019
+1524266207.5336,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0318,,stage.0019
+1524266207.5349,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0318,,stage.0019
+1524266207.5367,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0318,SCHEDULED,stage.0019
+1524266207.5370,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0318,,stage.0019
+1524266207.5395,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0318,,stage.0019
+1524266207.5398,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0319,SCHEDULING,stage.0019
+1524266207.5410,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0319,,stage.0019
+1524266207.5436,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0319,,stage.0019
+1524266207.5445,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0319,SCHEDULED,stage.0019
+1524266207.5450,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0319,,stage.0019
+1524266207.5464,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0319,,stage.0019
+1524266207.5482,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0320,SCHEDULING,stage.0019
+1524266207.5506,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0320,,stage.0019
+1524266207.5513,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0320,,stage.0019
+1524266207.5521,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0320,SCHEDULED,stage.0019
+1524266207.5535,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0320,,stage.0019
+1524266207.5538,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0320,,stage.0019
+1524266207.5544,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0321,SCHEDULING,stage.0019
+1524266207.5549,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0321,,stage.0019
+1524266207.5562,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0321,,stage.0019
+1524266207.5570,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0321,SCHEDULED,stage.0019
+1524266207.5575,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0321,,stage.0019
+1524266207.5593,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0321,,stage.0019
+1524266207.5595,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0322,SCHEDULING,stage.0019
+1524266207.5599,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0322,,stage.0019
+1524266207.5613,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0322,,stage.0019
+1524266207.5618,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0322,SCHEDULED,stage.0019
+1524266207.5626,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0322,,stage.0019
+1524266207.5638,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0322,,stage.0019
+1524266207.5641,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0323,SCHEDULING,stage.0019
+1524266207.5646,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0323,,stage.0019
+1524266207.5660,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0323,,stage.0019
+1524266207.5667,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0323,SCHEDULED,stage.0019
+1524266207.5671,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0323,,stage.0019
+1524266207.5683,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0323,,stage.0019
+1524266207.5687,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0324,SCHEDULING,stage.0019
+1524266207.5690,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0324,,stage.0019
+1524266207.5705,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0324,,stage.0019
+1524266207.5713,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0324,SCHEDULED,stage.0019
+1524266207.5718,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0324,,stage.0019
+1524266207.5730,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0324,,stage.0019
+1524266207.5735,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0325,SCHEDULING,stage.0019
+1524266207.5740,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0325,,stage.0019
+1524266207.5754,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0325,,stage.0019
+1524266207.5760,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0325,SCHEDULED,stage.0019
+1524266207.5764,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0325,,stage.0019
+1524266207.5781,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0325,,stage.0019
+1524266207.5786,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0326,SCHEDULING,stage.0019
+1524266207.5789,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0326,,stage.0019
+1524266207.5804,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0326,,stage.0019
+1524266207.5813,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0326,SCHEDULED,stage.0019
+1524266207.5816,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0326,,stage.0019
+1524266207.5828,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0326,,stage.0019
+1524266207.5833,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0327,SCHEDULING,stage.0019
+1524266207.5838,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0327,,stage.0019
+1524266207.5851,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0327,,stage.0019
+1524266207.5859,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0327,SCHEDULED,stage.0019
+1524266207.5864,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0327,,stage.0019
+1524266207.5879,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0327,,stage.0019
+1524266207.5884,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0328,SCHEDULING,stage.0019
+1524266207.5887,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0328,,stage.0019
+1524266207.5902,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0328,,stage.0019
+1524266207.5909,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0328,SCHEDULED,stage.0019
+1524266207.5913,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0328,,stage.0019
+1524266207.5926,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0328,,stage.0019
+1524266207.5930,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0329,SCHEDULING,stage.0019
+1524266207.5936,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0329,,stage.0019
+1524266207.5948,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0329,,stage.0019
+1524266207.5955,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0329,SCHEDULED,stage.0019
+1524266207.5959,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0329,,stage.0019
+1524266207.5970,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0329,,stage.0019
+1524266207.5975,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0019,SCHEDULED,pipeline.0009
+1524266207.5978,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0019,,pipeline.0009
+1524266207.5992,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0019,,pipeline.0009
+1524266285.9505,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0305,DEQUEUEING,stage.0019
+1524266285.9508,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0305,,stage.0019
+1524266285.9528,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0305,,stage.0019
+1524266285.9533,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0305,DEQUEUED,stage.0019
+1524266285.9536,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0305,,stage.0019
+1524266285.9554,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0305,,stage.0019
+1524266285.9557,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0305,DONE,stage.0019
+1524266285.9560,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0305,,stage.0019
+1524266285.9578,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0305,,stage.0019
+1524266285.9587,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0304,DEQUEUEING,stage.0019
+1524266285.9590,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0304,,stage.0019
+1524266285.9616,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0304,,stage.0019
+1524266285.9622,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0304,DEQUEUED,stage.0019
+1524266285.9624,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0304,,stage.0019
+1524266285.9644,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0304,,stage.0019
+1524266285.9647,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0304,DONE,stage.0019
+1524266285.9652,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0304,,stage.0019
+1524266285.9666,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0304,,stage.0019
+1524266285.9691,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0303,DEQUEUEING,stage.0019
+1524266285.9699,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0303,,stage.0019
+1524266285.9717,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0303,,stage.0019
+1524266285.9721,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0303,DEQUEUED,stage.0019
+1524266285.9724,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0303,,stage.0019
+1524266285.9750,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0303,,stage.0019
+1524266285.9760,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0303,DONE,stage.0019
+1524266285.9764,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0303,,stage.0019
+1524266285.9789,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0303,,stage.0019
+1524266285.9912,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0302,DEQUEUEING,stage.0019
+1524266285.9922,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0302,,stage.0019
+1524266285.9941,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0302,,stage.0019
+1524266285.9986,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0302,DEQUEUED,stage.0019
+1524266285.9989,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0302,,stage.0019
+1524266286.0004,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0302,,stage.0019
+1524266286.0006,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0302,DONE,stage.0019
+1524266286.0010,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0302,,stage.0019
+1524266286.0027,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0302,,stage.0019
+1524266286.0037,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0301,DEQUEUEING,stage.0019
+1524266286.0040,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0301,,stage.0019
+1524266286.0055,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0301,,stage.0019
+1524266286.0060,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0301,DEQUEUED,stage.0019
+1524266286.0063,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0301,,stage.0019
+1524266286.0100,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0301,,stage.0019
+1524266286.0117,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0301,DONE,stage.0019
+1524266286.0190,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0301,,stage.0019
+1524266286.0244,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0301,,stage.0019
+1524266286.0265,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0300,DEQUEUEING,stage.0019
+1524266286.0349,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0300,,stage.0019
+1524266286.0372,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0300,,stage.0019
+1524266286.0377,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0300,DEQUEUED,stage.0019
+1524266286.0379,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0300,,stage.0019
+1524266286.0474,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0300,,stage.0019
+1524266286.0478,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0300,DONE,stage.0019
+1524266286.0481,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0300,,stage.0019
+1524266286.0504,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0300,,stage.0019
+1524266286.0529,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0299,DEQUEUEING,stage.0019
+1524266286.0539,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0299,,stage.0019
+1524266286.0567,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0299,,stage.0019
+1524266286.0580,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0299,DEQUEUED,stage.0019
+1524266286.0583,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0299,,stage.0019
+1524266286.0677,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0299,,stage.0019
+1524266286.0681,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0299,DONE,stage.0019
+1524266286.0685,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0299,,stage.0019
+1524266286.0707,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0299,,stage.0019
+1524266286.0723,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0298,DEQUEUEING,stage.0019
+1524266286.0727,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0298,,stage.0019
+1524266286.0750,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0298,,stage.0019
+1524266286.0754,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0298,DEQUEUED,stage.0019
+1524266286.0757,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0298,,stage.0019
+1524266286.0776,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0298,,stage.0019
+1524266286.0907,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0298,DONE,stage.0019
+1524266286.0913,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0298,,stage.0019
+1524266286.0929,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0298,,stage.0019
+1524266286.0951,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0310,DEQUEUEING,stage.0019
+1524266286.0958,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0310,,stage.0019
+1524266286.1004,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0310,,stage.0019
+1524266286.1012,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0310,DEQUEUED,stage.0019
+1524266286.1029,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0310,,stage.0019
+1524266286.1038,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0310,,stage.0019
+1524266286.1041,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0310,DONE,stage.0019
+1524266286.1044,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0310,,stage.0019
+1524266286.1056,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0310,,stage.0019
+1524266286.1108,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0309,DEQUEUEING,stage.0019
+1524266286.1111,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0309,,stage.0019
+1524266286.1154,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0309,,stage.0019
+1524266286.1159,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0309,DEQUEUED,stage.0019
+1524266286.1161,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0309,,stage.0019
+1524266286.1172,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0309,,stage.0019
+1524266286.1175,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0309,DONE,stage.0019
+1524266286.1178,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0309,,stage.0019
+1524266286.1196,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0309,,stage.0019
+1524266286.1206,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0308,DEQUEUEING,stage.0019
+1524266286.1215,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0308,,stage.0019
+1524266286.1234,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0308,,stage.0019
+1524266286.1239,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0308,DEQUEUED,stage.0019
+1524266286.1242,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0308,,stage.0019
+1524266286.1260,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0308,,stage.0019
+1524266286.1264,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0308,DONE,stage.0019
+1524266286.1267,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0308,,stage.0019
+1524266286.1283,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0308,,stage.0019
+1524266286.1293,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0307,DEQUEUEING,stage.0019
+1524266286.1298,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0307,,stage.0019
+1524266286.1322,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0307,,stage.0019
+1524266286.1325,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0307,DEQUEUED,stage.0019
+1524266286.1327,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0307,,stage.0019
+1524266286.1354,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0307,,stage.0019
+1524266286.1359,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0307,DONE,stage.0019
+1524266286.1364,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0307,,stage.0019
+1524266286.1548,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0307,,stage.0019
+1524266286.1560,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0315,DEQUEUEING,stage.0019
+1524266286.1566,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0315,,stage.0019
+1524266286.1581,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0315,,stage.0019
+1524266286.1585,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0315,DEQUEUED,stage.0019
+1524266286.1590,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0315,,stage.0019
+1524266286.1751,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0315,,stage.0019
+1524266286.1756,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0315,DONE,stage.0019
+1524266286.1761,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0315,,stage.0019
+1524266286.1785,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0315,,stage.0019
+1524266286.1796,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0314,DEQUEUEING,stage.0019
+1524266286.1800,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0314,,stage.0019
+1524266286.1822,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0314,,stage.0019
+1524266286.1829,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0314,DEQUEUED,stage.0019
+1524266286.1833,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0314,,stage.0019
+1524266286.1850,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0314,,stage.0019
+1524266286.1852,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0314,DONE,stage.0019
+1524266286.1855,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0314,,stage.0019
+1524266286.1866,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0314,,stage.0019
+1524266286.1876,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0313,DEQUEUEING,stage.0019
+1524266286.1880,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0313,,stage.0019
+1524266286.1893,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0313,,stage.0019
+1524266286.1900,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0313,DEQUEUED,stage.0019
+1524266286.1902,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0313,,stage.0019
+1524266286.1917,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0313,,stage.0019
+1524266286.1920,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0313,DONE,stage.0019
+1524266286.1924,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0313,,stage.0019
+1524266286.1942,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0313,,stage.0019
+1524266286.1957,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0312,DEQUEUEING,stage.0019
+1524266286.1960,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0312,,stage.0019
+1524266286.1985,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0312,,stage.0019
+1524266286.1989,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0312,DEQUEUED,stage.0019
+1524266286.1992,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0312,,stage.0019
+1524266286.2009,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0312,,stage.0019
+1524266286.2012,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0312,DONE,stage.0019
+1524266286.2015,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0312,,stage.0019
+1524266286.2034,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0312,,stage.0019
+1524266288.1961,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0311,DEQUEUEING,stage.0019
+1524266288.1968,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0311,,stage.0019
+1524266288.2079,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0311,,stage.0019
+1524266288.2089,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0311,DEQUEUED,stage.0019
+1524266288.2091,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0311,,stage.0019
+1524266288.2119,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0311,,stage.0019
+1524266288.2124,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0311,DONE,stage.0019
+1524266288.2129,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0311,,stage.0019
+1524266288.2145,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0311,,stage.0019
+1524266288.2200,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0316,DEQUEUEING,stage.0019
+1524266288.2205,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0316,,stage.0019
+1524266288.2350,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0316,,stage.0019
+1524266288.2357,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0316,DEQUEUED,stage.0019
+1524266288.2360,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0316,,stage.0019
+1524266288.2434,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0316,,stage.0019
+1524266288.2438,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0316,DONE,stage.0019
+1524266288.2441,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0316,,stage.0019
+1524266288.2494,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0316,,stage.0019
+1524266288.2510,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0325,DEQUEUEING,stage.0019
+1524266288.2515,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0325,,stage.0019
+1524266288.2527,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0325,,stage.0019
+1524266288.2534,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0325,DEQUEUED,stage.0019
+1524266288.2537,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0325,,stage.0019
+1524266288.2598,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0325,,stage.0019
+1524266288.2682,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0325,DONE,stage.0019
+1524266288.2694,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0325,,stage.0019
+1524266288.2792,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0325,,stage.0019
+1524266288.2811,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0324,DEQUEUEING,stage.0019
+1524266288.2817,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0324,,stage.0019
+1524266288.2857,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0324,,stage.0019
+1524266288.2864,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0324,DEQUEUED,stage.0019
+1524266288.2868,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0324,,stage.0019
+1524266288.3069,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0324,,stage.0019
+1524266288.3077,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0324,DONE,stage.0019
+1524266288.3082,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0324,,stage.0019
+1524266288.3115,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0324,,stage.0019
+1524266288.3136,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0323,DEQUEUEING,stage.0019
+1524266288.3144,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0323,,stage.0019
+1524266288.3168,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0323,,stage.0019
+1524266288.3176,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0323,DEQUEUED,stage.0019
+1524266288.3181,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0323,,stage.0019
+1524266288.3228,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0323,,stage.0019
+1524266288.3315,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0323,DONE,stage.0019
+1524266288.3318,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0323,,stage.0019
+1524266288.3418,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0323,,stage.0019
+1524266288.3432,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0322,DEQUEUEING,stage.0019
+1524266288.3434,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0322,,stage.0019
+1524266288.3449,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0322,,stage.0019
+1524266288.3451,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0322,DEQUEUED,stage.0019
+1524266288.3453,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0322,,stage.0019
+1524266288.3468,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0322,,stage.0019
+1524266288.3472,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0322,DONE,stage.0019
+1524266288.3477,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0322,,stage.0019
+1524266288.3598,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0322,,stage.0019
+1524266288.3609,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0321,DEQUEUEING,stage.0019
+1524266288.3616,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0321,,stage.0019
+1524266288.3683,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0321,,stage.0019
+1524266288.3689,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0321,DEQUEUED,stage.0019
+1524266288.3693,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0321,,stage.0019
+1524266288.3707,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0321,,stage.0019
+1524266288.3711,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0321,DONE,stage.0019
+1524266288.3714,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0321,,stage.0019
+1524266288.3798,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0321,,stage.0019
+1524266288.3806,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0320,DEQUEUEING,stage.0019
+1524266288.3809,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0320,,stage.0019
+1524266288.3950,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0320,,stage.0019
+1524266288.3956,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0320,DEQUEUED,stage.0019
+1524266288.3959,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0320,,stage.0019
+1524266288.3974,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0320,,stage.0019
+1524266288.3977,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0320,DONE,stage.0019
+1524266288.3981,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0320,,stage.0019
+1524266288.4001,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0320,,stage.0019
+1524266288.4011,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0319,DEQUEUEING,stage.0019
+1524266288.4018,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0319,,stage.0019
+1524266288.4031,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0319,,stage.0019
+1524266288.4034,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0319,DEQUEUED,stage.0019
+1524266288.4038,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0319,,stage.0019
+1524266288.4050,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0319,,stage.0019
+1524266288.4053,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0319,DONE,stage.0019
+1524266288.4057,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0319,,stage.0019
+1524266288.4075,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0319,,stage.0019
+1524266288.4084,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0318,DEQUEUEING,stage.0019
+1524266288.4096,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0318,,stage.0019
+1524266288.4114,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0318,,stage.0019
+1524266288.4146,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0318,DEQUEUED,stage.0019
+1524266288.4150,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0318,,stage.0019
+1524266288.4165,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0318,,stage.0019
+1524266288.4170,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0318,DONE,stage.0019
+1524266288.4172,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0318,,stage.0019
+1524266288.4201,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0318,,stage.0019
+1524266288.4215,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0317,DEQUEUEING,stage.0019
+1524266288.4220,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0317,,stage.0019
+1524266288.4270,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0317,,stage.0019
+1524266288.4280,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0317,DEQUEUED,stage.0019
+1524266288.4284,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0317,,stage.0019
+1524266288.4297,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0317,,stage.0019
+1524266288.4300,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0317,DONE,stage.0019
+1524266288.4302,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0317,,stage.0019
+1524266288.4445,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0317,,stage.0019
+1524266288.4521,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0326,DEQUEUEING,stage.0019
+1524266288.4529,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0326,,stage.0019
+1524266288.4544,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0326,,stage.0019
+1524266288.4550,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0326,DEQUEUED,stage.0019
+1524266288.4552,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0326,,stage.0019
+1524266288.4571,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0326,,stage.0019
+1524266288.4575,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0326,DONE,stage.0019
+1524266288.4578,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0326,,stage.0019
+1524266288.4597,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0326,,stage.0019
+1524266288.4607,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0329,DEQUEUEING,stage.0019
+1524266288.4613,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0329,,stage.0019
+1524266288.4633,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0329,,stage.0019
+1524266288.4638,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0329,DEQUEUED,stage.0019
+1524266288.4642,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0329,,stage.0019
+1524266288.4655,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0329,,stage.0019
+1524266288.4657,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0329,DONE,stage.0019
+1524266288.4663,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0329,,stage.0019
+1524266288.4679,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0329,,stage.0019
+1524266288.4688,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0328,DEQUEUEING,stage.0019
+1524266288.4695,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0328,,stage.0019
+1524266288.4717,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0328,,stage.0019
+1524266288.4723,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0328,DEQUEUED,stage.0019
+1524266288.4726,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0328,,stage.0019
+1524266288.4822,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0328,,stage.0019
+1524266288.4826,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0328,DONE,stage.0019
+1524266288.4829,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0328,,stage.0019
+1524266288.4848,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0328,,stage.0019
+1524266288.4864,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0327,DEQUEUEING,stage.0019
+1524266288.4883,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0327,,stage.0019
+1524266288.4913,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0327,,stage.0019
+1524266288.4917,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0327,DEQUEUED,stage.0019
+1524266288.4920,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0327,,stage.0019
+1524266288.4937,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0327,,stage.0019
+1524266288.4939,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0327,DONE,stage.0019
+1524266288.4944,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0327,,stage.0019
+1524266288.4955,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0327,,stage.0019
+1524266301.0752,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0306,DEQUEUEING,stage.0019
+1524266301.0761,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0306,,stage.0019
+1524266301.0793,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0306,,stage.0019
+1524266301.0796,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0306,DEQUEUED,stage.0019
+1524266301.0800,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0306,,stage.0019
+1524266301.0811,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0306,,stage.0019
+1524266301.0813,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0306,DONE,stage.0019
+1524266301.0817,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0306,,stage.0019
+1524266301.0829,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0306,,stage.0019
+1524266301.0833,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,stage.0019,DONE,pipeline.0009
+1524266301.0835,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,stage.0019,,pipeline.0009
+1524266301.0856,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,stage.0019,,pipeline.0009
+1524266301.0859,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0020,SCHEDULING,pipeline.0009
+1524266301.0867,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0020,,pipeline.0009
+1524266301.0882,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0020,,pipeline.0009
+1524266301.0885,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0330,SCHEDULING,stage.0020
+1524266301.0889,publishing obj with state SCHEDULING for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0330,,stage.0020
+1524266301.0911,obj with state SCHEDULING synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0330,,stage.0020
+1524266301.0924,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0330,SCHEDULED,stage.0020
+1524266301.0929,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0330,,stage.0020
+1524266301.0945,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,task.0330,,stage.0020
+1524266301.0952,advance,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0020,SCHEDULED,pipeline.0009
+1524266301.0956,publishing obj with state SCHEDULED for sync,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0020,,pipeline.0009
+1524266301.1049,obj with state SCHEDULED synchronized,radical.entk.wfprocessor.0009-proc,enqueue-thread,stage.0020,,pipeline.0009
+1524266308.8560,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0330,DEQUEUEING,stage.0020
+1524266308.8565,publishing obj with state DEQUEUEING for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0330,,stage.0020
+1524266308.8578,obj with state DEQUEUEING synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0330,,stage.0020
+1524266308.8666,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0330,DEQUEUED,stage.0020
+1524266308.8670,publishing obj with state DEQUEUED for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0330,,stage.0020
+1524266308.8685,obj with state DEQUEUED synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0330,,stage.0020
+1524266308.8687,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0330,DONE,stage.0020
+1524266308.8689,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0330,,stage.0020
+1524266308.8702,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,task.0330,,stage.0020
+1524266308.8707,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,stage.0020,DONE,pipeline.0009
+1524266308.8710,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,stage.0020,,pipeline.0009
+1524266308.8831,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,stage.0020,,pipeline.0009
+1524266308.8837,advance,radical.entk.wfprocessor.0009-proc,dequeue-thread,pipeline.0009,DONE,
+1524266308.8842,publishing obj with state DONE for sync,radical.entk.wfprocessor.0009-proc,dequeue-thread,pipeline.0009,,
+1524266308.8855,obj with state DONE synchronized,radical.entk.wfprocessor.0009-proc,dequeue-thread,pipeline.0009,,
+1524266308.8857,start termination,radical.entk.wfprocessor.0009-proc,MainThread,wfprocessor.0009,,
+1524266308.8880,terminating enqueue-thread,radical.entk.wfprocessor.0009-proc,enqueue-thread,wfprocessor.0009,,
+1524266308.8887,terminating dequeue-thread,radical.entk.wfprocessor.0009-proc,dequeue-thread,wfprocessor.0009,,
+1524266308.8887,termination done,radical.entk.wfprocessor.0009-proc,MainThread,wfprocessor.0009,,
+1524266308.8888,terminating wfp process,radical.entk.wfprocessor.0009-proc,MainThread,wfprocessor.0009,,
+1524266308.8888,END,radical.entk.wfprocessor.0009-proc,MainThread,,,
