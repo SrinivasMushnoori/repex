@@ -3,10 +3,8 @@ python: "2.7.13"
 
 # command to install dependencies
 install:
-  - pip install git+https://github.com/vivek-bala/radical.entk.git@arch/v0.6
-  - pip install git+https://github.com/radical-cybertools/radical.utils.git@v0.46.RC2
-  - pip install git+https://github.com/radical-cybertools/saga-python.git@v0.46.RC2
-  - pip install git+https://github.com/radical-cybertools/radical.pilot.git@v0.46.RC2
+  - pip install radical.pilot
+  - pip install radical.entk
 
 #env variables
 env:
