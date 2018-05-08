@@ -1,0 +1,173 @@
+2018-05-08 16:19:42,493: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : python.interpreter   version: 2.7.12 (default, Nov 20 2017, 18:23:56) [GCC 5.4.0 20160609]
+2018-05-08 16:19:42,493: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    :                      pid: 15288
+2018-05-08 16:19:42,493: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    :                      tid: MainThread
+2018-05-08 16:19:42,494: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : PTY prompt pattern: [\$#%>\]]\s*$
+2018-05-08 16:19:42,494: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : ssh copy  mode set to 'sftp'
+2018-05-08 16:19:42,495: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : ssh share mode set to 'auto'
+2018-05-08 16:19:42,495: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : ssh timeout    set to '2000.0'
+2018-05-08 16:19:42,495: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : running: /usr/bin/env TERM=vt100 X509_USER_PROXY=/tmp/x509up_u1011 /usr/bin/gsissh -t -o IdentityFile=/home/scm177/.ssh/id_rsa -o Port=2222 -o ControlMaster=auto -o ControlPath=/tmp/saga_ssh_scm177_%h_%p.ctrl -o TCPKeepAlive=no -o ServerAliveInterval=10 -o ServerAliveCountMax=20 -o ConnectTimeout=2000 supermic.cct-lsu.xsede.org
+2018-05-08 16:19:42,775: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : running: /usr/bin/env TERM=vt100 X509_USER_PROXY=/tmp/x509up_u1011 /usr/bin/gsissh -t -o IdentityFile=/home/scm177/.ssh/id_rsa -o Port=2222 -o ControlMaster=auto -o ControlPath=/tmp/saga_ssh_scm177_%h_%p.ctrl -o TCPKeepAlive=no -o ServerAliveInterval=10 -o ServerAliveCountMax=20 -o ConnectTimeout=2000 supermic.cct-lsu.xsede.org
+2018-05-08 16:19:43,055: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  150] [ 1250] (discard data: '
+SuperMIC at LSU (Open for general use) 
+
+23-Sep-2014
+
+SuperMIC is a 1.08 PetaFlop Peak Performance Xeon Phi accelerated cluster.  SuperMIC
+has 360 nodes each with 20 Intel Ivybridge 2.8 GHz cores, 64 GB of RAM, and two 
+Intel Xeon Phi 7120P co-processors. There are 20 nodes that have NVIDIA K20X GPUs.
+This cluster is 40% allocated to the XSEDE user community an 60% dedicated to
+authorized users of the LSU community.  Access is restricted to those who meet 
+the criteria as stated on our website.
+
+Quotas for the /home volume are enabled at 5 GB.  Please do
+not use the /home volume for batch job I/O, use the /work volume 
+instead.  Please limit the number of files per directory to 10,000.
+No disk GB quotas are in effect for the /work volume, but files are purged that 
+are older than 60 days.  There are quotas on file counts.  Manage your files,
+but it is against our policy to blatantly circumvent the purge procedure.  
+Misconfigured jobs that are wasting CPU resources are subject to deletion.
+
+********************************************************************************
+Allocations are required.  Using the -A qsub option to specify your allocation.
+********************************************************************************
+
+')
+2018-05-08 16:19:44,129: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : running: /usr/bin/env TERM=vt100 X509_USER_PROXY=/tmp/x509up_u1011 /usr/bin/gsissh -t -o IdentityFile=/home/scm177/.ssh/id_rsa -o Port=2222 -o ControlMaster=auto -o ControlPath=/tmp/saga_ssh_scm177_%h_%p.ctrl -o TCPKeepAlive=no -o ServerAliveInterval=10 -o ServerAliveCountMax=20 -o ConnectTimeout=2000 supermic.cct-lsu.xsede.org
+2018-05-08 16:19:44,409: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  150] [ 1250] (discard data: '
+SuperMIC at LSU (Open for general use) 
+
+23-Sep-2014
+
+SuperMIC is a 1.08 PetaFlop Peak Performance Xeon Phi accelerated cluster.  SuperMIC
+has 360 nodes each with 20 Intel Ivybridge 2.8 GHz cores, 64 GB of RAM, and two 
+Intel Xeon Phi 7120P co-processors. There are 20 nodes that have NVIDIA K20X GPUs.
+This cluster is 40% allocated to the XSEDE user community an 60% dedicated to
+authorized users of the LSU community.  Access is restricted to those who meet 
+the criteria as stated on our website.
+
+Quotas for the /home volume are enabled at 5 GB.  Please do
+not use the /home volume for batch job I/O, use the /work volume 
+instead.  Please limit the number of files per directory to 10,000.
+No disk GB quotas are in effect for the /work volume, but files are purged that 
+are older than 60 days.  There are quotas on file counts.  Manage your files,
+but it is against our policy to blatantly circumvent the purge procedure.  
+Misconfigured jobs that are wasting CPU resources are subject to deletion.
+
+********************************************************************************
+Allocations are required.  Using the -A qsub option to specify your allocation.
+********************************************************************************
+
+')
+2018-05-08 16:19:45,682: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : running: /usr/bin/env TERM=vt100 X509_USER_PROXY=/tmp/x509up_u1011 /usr/bin/gsisftp -o IdentityFile=/home/scm177/.ssh/id_rsa -o Port=2222 -o ControlMaster=auto -o ControlPath=/tmp/saga_ssh_scm177_%h_%p.ctrl -o TCPKeepAlive=no -o ServerAliveInterval=10 -o ServerAliveCountMax=20 -o ConnectTimeout=2000 supermic.cct-lsu.xsede.org
+2018-05-08 16:19:48,443: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : running: /usr/bin/env TERM=vt100 X509_USER_PROXY=/tmp/x509up_u1011 /usr/bin/gsissh -t -o IdentityFile=/home/scm177/.ssh/id_rsa -o Port=2222 -o ControlMaster=auto -o ControlPath=/tmp/saga_ssh_scm177_%h_%p.ctrl -o TCPKeepAlive=no -o ServerAliveInterval=10 -o ServerAliveCountMax=20 -o ConnectTimeout=2000 supermic.cct-lsu.xsede.org
+2018-05-08 16:19:48,726: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  163] [ 1250] (discard data: '
+SuperMIC at LSU (Open for general use) 
+
+23-Sep-2014
+
+SuperMIC is a 1.08 PetaFlop Peak Performance Xeon Phi accelerated cluster.  SuperMIC
+has 360 nodes each with 20 Intel Ivybridge 2.8 GHz cores, 64 GB of RAM, and two 
+Intel Xeon Phi 7120P co-processors. There are 20 nodes that have NVIDIA K20X GPUs.
+This cluster is 40% allocated to the XSEDE user community an 60% dedicated to
+authorized users of the LSU community.  Access is restricted to those who meet 
+the criteria as stated on our website.
+
+Quotas for the /home volume are enabled at 5 GB.  Please do
+not use the /home volume for batch job I/O, use the /work volume 
+instead.  Please limit the number of files per directory to 10,000.
+No disk GB quotas are in effect for the /work volume, but files are purged that 
+are older than 60 days.  There are quotas on file counts.  Manage your files,
+but it is against our policy to blatantly circumvent the purge procedure.  
+Misconfigured jobs that are wasting CPU resources are subject to deletion.
+
+********************************************************************************
+Allocations are required.  Using the -A qsub option to specify your allocation.
+********************************************************************************
+
+')
+2018-05-08 16:19:49,423: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : running: /usr/bin/env TERM=vt100 X509_USER_PROXY=/tmp/x509up_u1011 /usr/bin/gsissh -t -o IdentityFile=/home/scm177/.ssh/id_rsa -o Port=2222 -o ControlMaster=auto -o ControlPath=/tmp/saga_ssh_scm177_%h_%p.ctrl -o TCPKeepAlive=no -o ServerAliveInterval=10 -o ServerAliveCountMax=20 -o ConnectTimeout=2000 supermic.cct-lsu.xsede.org
+2018-05-08 16:19:49,697: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  164] [   42] (discard data: '
+SuperMIC at LSU (Open for general use) 
+
+')
+2018-05-08 16:19:49,698: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  164] [ 1208] (discard data: '23-Sep-2014
+
+SuperMIC is a 1.08 PetaFlop Peak Performance Xeon Phi accelerated cluster.  SuperMIC
+has 360 nodes each with 20 Intel Ivybridge 2.8 GHz cores, 64 GB of RAM, and two 
+Intel Xeon Phi 7120P co-processors. There are 20 nodes that have NVIDIA K20X GPUs.
+This cluster is 40% allocated to the XSEDE user community an 60% dedicated to
+authorized users of the LSU community.  Access is restricted to those who meet 
+the criteria as stated on our website.
+
+Quotas for the /home volume are enabled at 5 GB.  Please do
+not use the /home volume for batch job I/O, use the /work volume 
+instead.  Please limit the number of files per directory to 10,000.
+No disk GB quotas are in effect for the /work volume, but files are purged that 
+are older than 60 days.  There are quotas on file counts.  Manage your files,
+but it is against our policy to blatantly circumvent the purge procedure.  
+Misconfigured jobs that are wasting CPU resources are subject to deletion.
+
+********************************************************************************
+Allocations are required.  Using the -A qsub option to specify your allocation.
+********************************************************************************
+
+')
+2018-05-08 16:19:51,382: radical.saga.pty    : pmgr.0000.launching.0           : Thread-1       : WARNING : flush: [  164] [    1] (discard data: '
+')
+2018-05-08 16:19:51,390: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  163] [    1] (discard data: '
+')
+2018-05-08 16:19:51,749: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  163] [    1] (discard data: '
+')
+2018-05-08 16:19:51,997: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  163] [    1] (discard data: '
+')
+2018-05-08 16:19:52,243: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  163] [    1] (discard data: '
+')
+2018-05-08 16:19:52,500: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : PTY prompt pattern: [\$#%>\]]\s*$
+2018-05-08 16:19:52,501: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : ssh copy  mode set to 'sftp'
+2018-05-08 16:19:52,501: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : ssh share mode set to 'auto'
+2018-05-08 16:19:52,501: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : ssh timeout    set to '2000.0'
+2018-05-08 16:19:52,501: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : INFO    : running: /usr/bin/env TERM=vt100 X509_USER_PROXY=/tmp/x509up_u1011 /usr/bin/gsissh -t -o IdentityFile=/home/scm177/.ssh/id_rsa -o Port=2222 -o ControlMaster=auto -o ControlPath=/tmp/saga_ssh_scm177_%h_%p.ctrl -o TCPKeepAlive=no -o ServerAliveInterval=10 -o ServerAliveCountMax=20 -o ConnectTimeout=2000 supermic.cct-lsu.xsede.org
+2018-05-08 16:19:52,783: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  165] [ 1250] (discard data: '
+SuperMIC at LSU (Open for general use) 
+
+23-Sep-2014
+
+SuperMIC is a 1.08 PetaFlop Peak Performance Xeon Phi accelerated cluster.  SuperMIC
+has 360 nodes each with 20 Intel Ivybridge 2.8 GHz cores, 64 GB of RAM, and two 
+Intel Xeon Phi 7120P co-processors. There are 20 nodes that have NVIDIA K20X GPUs.
+This cluster is 40% allocated to the XSEDE user community an 60% dedicated to
+authorized users of the LSU community.  Access is restricted to those who meet 
+the criteria as stated on our website.
+
+Quotas for the /home volume are enabled at 5 GB.  Please do
+not use the /home volume for batch job I/O, use the /work volume 
+instead.  Please limit the number of files per directory to 10,000.
+No disk GB quotas are in effect for the /work volume, but files are purged that 
+are older than 60 days.  There are quotas on file counts.  Manage your files,
+but it is against our policy to blatantly circumvent the purge procedure.  
+Misconfigured jobs that are wasting CPU resources are subject to deletion.
+
+********************************************************************************
+Allocations are required.  Using the -A qsub option to specify your allocation.
+********************************************************************************
+
+')
+2018-05-08 16:20:08,449: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  163] [    1] (discard data: '
+')
+2018-05-08 16:20:08,449: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : WARNING : flush: [  163] [   56] (discard data: 'Shared connection to supermic.cct-lsu.xsede.org closed.
+')
+2018-05-08 16:20:08,451: radical.saga.pty    : pmgr.0000.launching.0           : MainThread     : ERROR   : flushing failed
+Traceback (most recent call last):
+  File "/home/scm177/VirtualEnvs/EnTK0.6_env/local/lib/python2.7/site-packages/saga/utils/pty_process.py", line 174, in flush
+    tmp = self.read (timeout=0.1)
+  File "/home/scm177/VirtualEnvs/EnTK0.6_env/local/lib/python2.7/site-packages/saga/utils/pty_process.py", line 679, in read
+    % (e, self.tail))
+NoSuccess: read from process failed '[Errno 5] Input/output error' : (d657267652d7072652d6770752d31342d67613231383164362d646576656c2e7461722e677a0a736167612d707974686f6e2d302e34372e332d6d657267652d7072652d6770752d6d61737465722e7461722e677a0a
+PROMPT-0->
+
+OK
+
+PROMPT-0->
+
+Shared connection to supermic.cct-lsu.xsede.org closed.
+) (/home/scm177/VirtualEnvs/EnTK0.6_env/local/lib/python2.7/site-packages/saga/utils/pty_process.py +679 (read)  :  % (e, self.tail)))
