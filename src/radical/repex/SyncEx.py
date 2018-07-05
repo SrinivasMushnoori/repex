@@ -263,7 +263,7 @@ class SynchronousExchange(object):
             md_tsk.link_input_data = ['%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
                                       '%s/prmtop'%(self.Book[0][r]),
                                       #'%s/prmtop'%(self.Tarball_path[0]),
-                                      '%s/mdin_{0}'.format(r)%(self.Book[Cycle-1][r])]
+                                      '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
 
                                       #'%s/mdin'%(self.Book[0][r])]
                                       #'%s/mdin'%(self.Tarball_path[0])]
