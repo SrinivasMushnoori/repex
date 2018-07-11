@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from radical.entk import AppManager, ResourceManager
+from radical.entk import AppManager
 from SyncEx import SynchronousExchange
 import os, time, pprint
 import radical.utils as ru
@@ -31,14 +31,14 @@ os.environ['RADICAL_PILOT_DBURL']          = "mongodb://smush:key1209@ds117848.m
 #---------------------------------------#
 ## User settings
 
-Replicas       = 16
+Replicas       = 4
 Replica_Cores  = 32
-Cycles         = 10    #0 cycles = no exchange
-Resource       = 'ncsa.bw_aprun'
+Cycles         = 0    #0 cycles = no exchange
+Resource       = 'xsede.supermic' #'ncsa.bw_aprun'
 Pilot_Cores    = Replica_Cores * (Replicas)
 ExchangeMethod = 'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
 MD_Executable = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI'
-timesteps      = 2000 #Number of timesteps between exchanges
+timesteps      = 1000 #Number of timesteps between exchanges
 
 #---------------------------------------#
                                                 
@@ -46,8 +46,8 @@ if __name__ == '__main__':
 
     res_dict = {
                 'resource': Resource,
-                'walltime': 60,
-                'cores': Pilot_Cores,
+                'walltime': 30,
+                'cpus': Pilot_Cores,
                 'access_schema': 'gsissh',
                 'queue': 'debug',
                 'project': 'bamm',
@@ -65,16 +65,15 @@ if __name__ == '__main__':
     synchronousExchange=SynchronousExchange()
     
 
-    rman                    = ResourceManager(res_dict)
     appman                  = AppManager(autoterminate=False, port=33068)  # Create Application Manager 
-    appman.resource_manager = rman  # Assign resource manager to the Application Manager   
+    appman.resource_desc    = res_dict  # Assign resource manager to the Application Manager   
     
         
 
     Exchange                = synchronousExchange.InitCycle(Replicas, Replica_Cores, MD_Executable, ExchangeMethod, timesteps)
     
 
-    appman.assign_workflow(set([Exchange])) # Assign the workflow as a set of Pipelines to the Application Manager 
+    appman.workflow = set([Exchange]) # Assign the workflow as a set of Pipelines to the Application Manager 
 
     prof.prof('Run_Cycle_0', uid=uid1)
 
@@ -92,7 +91,7 @@ if __name__ == '__main__':
                           
         Exchange_gen            = synchronousExchange.GeneralCycle(Replicas, Replica_Cores, Cycle, MD_Executable, ExchangeMethod)
         
-        appman.assign_workflow(set([Exchange_gen])) # Assign the workflow as a set of Pipelines to the Application Manager       
+        appman.workflow         = set([Exchange_gen]) # Assign the workflow as a set of Pipelines to the Application Manager       
 
         prof.prof('Run_Cycle_{0}'.format(Cycle+1), uid=uid1)
 
