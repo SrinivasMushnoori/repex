@@ -30,6 +30,5 @@ export RADICAL_PILOT_DBURL=mongodb://smush:key1209@ds117848.mlab.com:17868/db_re
 
 Run as follows:
 ```
-cd RepEx_3.0/src/radical/repex
 python run.py
 ```
