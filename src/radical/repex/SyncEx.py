@@ -38,11 +38,11 @@ class AMBERTask(Task):
 
     # AMBER specific MD task class.
     
-    def __init__(self, cores, mpi=True):
+    def __init__(self, cores, mpi=False):
                  
         super(AMBERTask, self).__init__()
-        self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
-        self._cores      = cores
+        self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd']
+        self._cpus      = cores
         self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
         #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
         self._mpi        = mpi
