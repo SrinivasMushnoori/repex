@@ -38,11 +38,12 @@ class AMBERTask(Task):
 
     # AMBER specific MD task class.
     
-    def __init__(self, cores, mpi=False):
+    def __init__(self, MD_Executable, cores, mpi=True):
                  
         super(AMBERTask, self).__init__()
-        self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd']
-        self._cpus      = cores
+        #self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
+        self._executable = ['MD_Executable']
+        self._cores      = cores
         self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
         #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
         self._mpi        = mpi
@@ -258,7 +259,7 @@ class SynchronousExchange(object):
         self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
     
         for r in range (Replicas):
-            md_tsk                 = AMBERTask(cores=Replica_Cores)
+            md_tsk                 = AMBERTask(cores=Replica_Cores, MD_Executable=MD_Executable)
             md_tsk.name            = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=Cycle)
             md_tsk.link_input_data = ['%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
                                       '%s/prmtop'%(self.Book[0][r]),
