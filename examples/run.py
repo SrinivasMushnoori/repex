@@ -21,11 +21,10 @@ os.environ['RADICAL_ENTK_VERBOSE']         = 'INFO'
 os.environ['RP_ENABLE_OLD_DEFINES']        = 'True'
 os.environ['SAGA_PTY_SSH_TIMEOUT']         = '2000'
 os.environ['RADICAL_VERBOSE']              = 'INFO'
-os.environ['RADICAL_PILOT_PROFILE']        = 'True'
+os.environ['RADICAL_PROFILE']        = 'True'
 os.environ['RADICAL_REPEX_SYNCEX_PROFILE'] = 'True'
 os.environ['RADICAL_REPEX_RUN_PROFILE']    = 'True'
-os.environ['RADICAL_PILOT_DBURL']          = "mongodb://smush:key1209@ds117848.mlab.com:17868/db_repex_1"
-
+os.environ['RADICAL_PILOT_DBURL']          = "mongodb://smush:key1209@ds233551.mlab.com:33551/db_repex_2" 
 
 
 #---------------------------------------#
@@ -34,11 +33,11 @@ os.environ['RADICAL_PILOT_DBURL']          = "mongodb://smush:key1209@ds117848.m
 Replicas       = 4
 Replica_Cores  = 32
 Cycles         = 0    #0 cycles = no exchange
-Resource       = 'xsede.supermic' #'ncsa.bw_aprun'
+Resource       = 'ncsa.bw_aprun'
 Pilot_Cores    = Replica_Cores * (Replicas)
 ExchangeMethod = 'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
 MD_Executable = '/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI'
-timesteps      = 1000 #Number of timesteps between exchanges
+timesteps      = 100 #Number of timesteps between exchanges
 
 #---------------------------------------#
                                                 
