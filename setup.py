@@ -14,7 +14,7 @@ if __name__ == "__main__":
                                   'radical.entk' ],
 
             scripts=['bin/repex-version',
-                     'bin/repex-run',
+                     'bin/repex'                     
                      ],
             zip_safe=True,
             )
