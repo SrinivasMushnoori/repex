@@ -38,15 +38,22 @@ class AMBERTask(Task):
 
     # AMBER specific MD task class.
     
-    def __init__(self, MD_Executable, cores, mpi=False):
+    def __init__(self, MD_Executable, cores):
                  
         super(AMBERTask, self).__init__()
         #self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
         self._executable = [MD_Executable]
-        self._cores      = cores
-        #self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
+        #self._cpu_reqs['processes']   = cores
+        #self._cpu_reqs['process_type'] = '' 
+        self._cpu_reqs = { 
+                            'processes': cores,
+                            'process_type': '',
+                            'threads_per_process': 1,
+                            'thread_type': None
+                        }
+        self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
         #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
-        self._mpi        = mpi
+        
 
     
 class SynchronousExchange(object):
@@ -152,7 +159,7 @@ class SynchronousExchange(object):
         
         untar_tsk.upload_input_data = ['untar_input_files.py','Input_Files.tar']
         untar_tsk.arguments         = ['untar_input_files.py','Input_Files.tar']
-        untar_tsk.cores             = 1
+        untar_tsk.cpu_reqs          = 1
 
         untar_stg.add_tasks(untar_tsk)
         p.add_stages(untar_stg)
@@ -177,6 +184,7 @@ class SynchronousExchange(object):
             
             md_tsk                  = AMBERTask(cores=Replica_Cores, MD_Executable=MD_Executable)
             md_tsk.name             = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
+            md_tsk.pre_exec         = ['module load amber']
             md_tsk.link_input_data += [
                                        '%s/inpcrd'%tar_dict[0],
                                        '%s/prmtop'%tar_dict[0],
@@ -208,7 +216,8 @@ class SynchronousExchange(object):
 
         ex_tsk                      = Task()
         ex_tsk.name                 = 'extsk0'
-        ex_tsk.executable           = ['python']
+        ex_tsk.pre_exec             = ['module load python/2.7.10']
+        ex_tsk.executable           = ['/opt/python/bin/python']
         ex_tsk.upload_input_data    = [ExchangeMethod]  
         for r in range (Replicas):
             ex_tsk.link_input_data     += ['%s/mdinfo_%s'%(md_dict[r],r)]
@@ -288,7 +297,7 @@ class SynchronousExchange(object):
         #Create Exchange Task
         ex_tsk                      = Task()
         ex_tsk.name                 = 'extsk{0}'.format(Cycle+1)
-        ex_tsk.executable           = ['python']
+        ex_tsk.executable           = ['/opt/python/bin/python']
         ex_tsk.upload_input_data    = [ExchangeMethod]
         for r in range (Replicas):
 
