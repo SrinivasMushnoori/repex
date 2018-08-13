@@ -51,6 +51,7 @@ class AMBERTask(Task):
                             'threads_per_process': 1,
                             'thread_type': None
                         }
+        self._lfs_per_process = 4096
         self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
         #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
         
@@ -160,7 +161,7 @@ class SynchronousExchange(object):
         untar_tsk.upload_input_data = ['untar_input_files.py','Input_Files.tar']
         untar_tsk.arguments         = ['untar_input_files.py','Input_Files.tar']
         untar_tsk.cpu_reqs          = 1
-
+        untar_tsk.post_exec         = ['']
         untar_stg.add_tasks(untar_tsk)
         p.add_stages(untar_stg)
 
@@ -189,10 +190,14 @@ class SynchronousExchange(object):
                                        '%s/inpcrd'%tar_dict[0],
                                        '%s/prmtop'%tar_dict[0],
                                        '%s/mdin_{0}'.format(r)%tar_dict[0]  #Use for full temperature exchange
-                                       #'%s/mdin'%tar_dict[0]  #Testing only
                                        ] 
-            md_tsk.arguments        = ['-O','-p','prmtop', '-i', 'mdin_{0}'.format(r), # Use this for full Temperature Exchange
-                                       '-c','inpcrd','-o','out_{0}'.format(r),
+            md_tsk.arguments        = ['-O',  
+                                       '-p',  'prmtop', 
+                                       '-i',  'mdin_{0}'.format(r), 
+                                       '-c',  'inpcrd',
+                                       '-o',  '$NODE_LFS_PATH/out-{replica}-{cycle}'.format(replica=r,cycle=0),
+                                       '-r',  '$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=r,cycle=0), 
+                                       '-x',  '$NODE_LFS_PATH/mdcrd-{replica}-{cycle}'.format(replica=r,cycle=0),
                                        '-inf','mdinfo_{0}'.format(r)]
             md_dict[r]              = '$Pipeline_%s_Stage_%s_Task_%s'%(p.name, md_stg.name, md_tsk.name)
 
@@ -259,7 +264,7 @@ class SynchronousExchange(object):
         md_dict = dict()
 
 
-        #Create initial MD stage
+        #Create MD stage
 
 
         md_stg = Stage()
@@ -270,17 +275,24 @@ class SynchronousExchange(object):
         for r in range (Replicas):
             md_tsk                 = AMBERTask(cores=Replica_Cores, MD_Executable=MD_Executable)
             md_tsk.name            = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=Cycle)
-            md_tsk.link_input_data = ['%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
+            #md_tsk.link_input_data = ['%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
+            #                          '%s/prmtop'%(self.Book[0][r]),
+            #                          '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
+            
+            md_tsk.link_input_data = ['$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=ExchangeArray[r],cycle=Cycle-1) > '$NODE_LFS_PATH/inpcrd',
+                                      #'%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
                                       '%s/prmtop'%(self.Book[0][r]),
-                                      #'%s/prmtop'%(self.Tarball_path[0]),
                                       '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
 
-                                      #'%s/mdin'%(self.Book[0][r])]
-                                      #'%s/mdin'%(self.Tarball_path[0])]
-
-            md_tsk.arguments      = ['-O', '-i', 'mdin_{0}'.format(r), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
-            md_tsk.tag              = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
-            #md_tsk.arguments       = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
+            md_tsk.arguments      = ['-O', 
+                                     '-i', 'mdin_{0}'.format(r), 
+                                     '-p', 'prmtop', 
+                                     '-c', '$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle-1),  
+                                     '-o', '$NODE_LFS_PATH/out-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
+                                     '-r', '$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
+                                     '-x', '$NODE_LFS_PATH/mdcrd-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
+                                     '-inf', 'mdinfo_{0}'.format(r)]
+            #md_tsk.tag              = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
             md_dict[r]             = '$Pipeline_%s_Stage_%s_Task_%s'%(q.name, md_stg.name, md_tsk.name)
             self.md_task_list.append(md_tsk)
             md_stg.add_tasks(md_tsk)
