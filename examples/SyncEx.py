@@ -41,10 +41,10 @@ class AMBERTask(Task):
     def __init__(self, cores, mpi=True):
                  
         super(AMBERTask, self).__init__()
-        self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
+        #self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
+        self._executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']
         self._cores      = cores
-        self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
-        #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
+        #self._pre_exec   = ['export AMBERHOME=$HOME/amber/amber14/'] 
         self._mpi        = mpi
 
     
@@ -124,7 +124,7 @@ class SynchronousExchange(object):
         #Create Tarball of input data
 
         tar = tarfile.open("Input_Files.tar","w")
-        for name in ["prmtop", "inpcrd", "mdin"]:
+        for name in ["inputFiles/prmtop", "inputFiles/inpcrd", "inputFiles/mdin"]:
             tar.add(name)
         for r in range (Replicas):
             tar.add('mdin_{0}'.format(r))
