@@ -29,5 +29,6 @@ export RADICAL_PILOT_DBURL=mongodb://smush:key1209@ds117848.mlab.com:17868/db_re
 
 Run as follows (ensure that you are in the "examples" directory):
 ```
-repex simconfig.json resconfig_supermic.json
+repex simconfig.json resconfig_<resource>.json
 ```
+on the appropriate computing resource.
