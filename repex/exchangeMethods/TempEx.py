@@ -59,6 +59,7 @@ def TemperatureExchange(Replicas):
     for i in range (Replicas):
         for j in range (Replicas):
             p = math.exp(np.multiply((Replica_Energies[i]-Replica_Energies[j]),(Replica_Temps[i]-Replica_Temps[j])))
+            print p
             ###Once an exchange partner is found, move to the next i
               #Find mechanism to skip values of i that have found exchange pairs as j              
             if p > 1:
@@ -74,7 +75,7 @@ def TemperatureExchange(Replicas):
                 else:
                     exchangeList.append('%d %d'%(i, i))
                     break
-
+    
     f = open('exchangePairs_{0}.dat'.format(Cycle), 'w')
     for p in exchangeList:
         line = ' '.join(str(x) for x in p)

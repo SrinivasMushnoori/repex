@@ -5,7 +5,7 @@ import shutil
 
       
 
-def writeInputs(max_temp,min_temp,replicas,timesteps):
+def writeInputs(max_temp,min_temp,replicas,timesteps,basename):
 
     max_temp  = max_temp
     min_temp  = min_temp
@@ -22,11 +22,11 @@ def writeInputs(max_temp,min_temp,replicas,timesteps):
     ##    create new copy of mdin_{n}
     ##    Find and replace temperature in the file
     ##    write new file
-    InputFile="mdin"
+    InputFile=os.getcwd() + "/" + basename +".mdin"
         
     for i in range (len(Temps_List)):
         
-        mdinFile = open('mdin','r')
+        mdinFile = open(os.getcwd() + '/' + basename + '.mdin','r')
 
         placeholder1='@temperature@'
         placeholder2='@timesteps@'

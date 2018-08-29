@@ -38,13 +38,14 @@ class AMBERTask(Task):
 
     # AMBER specific MD task class.
     
-    def __init__(self, cores, mpi=True):
+    def __init__(self, MD_Executable, cores, mpi=True):
                  
         super(AMBERTask, self).__init__()
         #self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
-        self._executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']
+        self._executable = [MD_Executable]
         self._cores      = cores
-        #self._pre_exec   = ['export AMBERHOME=$HOME/amber/amber14/'] 
+        self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
+        #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
         self._mpi        = mpi
 
     
@@ -91,7 +92,7 @@ class SynchronousExchange(object):
            
 
 
-    def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod, timesteps): # "Cycle" = 1 MD stage plus the subsequent exchange computation
+    def InitCycle(self, Replicas, Replica_Cores, md_executable, ExchangeMethod, timesteps): # "Cycle" = 1 MD stage plus the subsequent exchange computation
 
         """ 
         Initial cycle consists of:
@@ -124,7 +125,7 @@ class SynchronousExchange(object):
         #Create Tarball of input data
 
         tar = tarfile.open("Input_Files.tar","w")
-        for name in ["inputFiles/prmtop", "inputFiles/inpcrd", "inputFiles/mdin"]:
+        for name in ["prmtop", "inpcrd", "mdin"]:
             tar.add(name)
         for r in range (Replicas):
             tar.add('mdin_{0}'.format(r))
@@ -174,7 +175,7 @@ class SynchronousExchange(object):
         for r in range (Replicas):
 
             
-            md_tsk                  = AMBERTask(cores=Replica_Cores)
+            md_tsk                  = AMBERTask(cores=Replica_Cores, MD_Executable=md_executable)
             md_tsk.name             = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
             md_tsk.link_input_data += [
                                        '%s/inpcrd'%tar_dict[0],
@@ -258,7 +259,7 @@ class SynchronousExchange(object):
         self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
     
         for r in range (Replicas):
-            md_tsk                 = AMBERTask(cores=Replica_Cores)
+            md_tsk                 = AMBERTask(cores=Replica_Cores, MD_Executable=MD_Executable)
             md_tsk.name            = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=Cycle)
             md_tsk.link_input_data = ['%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
                                       '%s/prmtop'%(self.Book[0][r]),

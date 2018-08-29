@@ -38,14 +38,22 @@ class AMBERTask(Task):
 
     # AMBER specific MD task class.
     
-    def __init__(self, cores, mpi=True):
+    def __init__(self, MD_Executable, cores):
                  
         super(AMBERTask, self).__init__()
         #self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
-        self._executable = ['/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI']
-        self._cores      = cores
-        #self._pre_exec   = ['export AMBERHOME=$HOME/amber/amber14/'] 
-        self._mpi        = mpi
+        self._executable = [MD_Executable]
+        #self._cpu_reqs['processes']   = cores
+        #self._cpu_reqs['process_type'] = '' 
+        self._cpu_reqs = { 
+                            'processes': cores,
+                            'process_type': '',
+                            'threads_per_process': 1,
+                            'thread_type': None
+                        }
+        self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
+        #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
+        
 
     
 class SynchronousExchange(object):
@@ -71,9 +79,7 @@ class SynchronousExchange(object):
         self._logger = ru.get_logger('radical.repex.syncex')
         self._prof = ru.Profiler(name=self._uid)
         self._prof.prof('Initinit', uid=self._uid)
-        #timestamp=time.time()
-        #with open('logfile.log', 'a') as logfile:
-            #logfile.write( '%.5f' %time.time() + ',' + 'InitInit' + '\n')
+ 
         
 
     def Replica_Init(self,Replicas):
@@ -91,7 +97,7 @@ class SynchronousExchange(object):
            
 
 
-    def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod, timesteps): # "Cycle" = 1 MD stage plus the subsequent exchange computation
+    def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod, timesteps, Basename): # "Cycle" = 1 MD stage plus the subsequent exchange computation
 
         """ 
         Initial cycle consists of:
@@ -115,7 +121,7 @@ class SynchronousExchange(object):
 
                              
 
-        writeInputs.writeInputs(max_temp=350,min_temp=250,replicas=Replicas,timesteps=timesteps)
+        writeInputs.writeInputs(max_temp=350,min_temp=250,replicas=Replicas,timesteps=timesteps, basename=Basename)
 
         self._prof.prof('EndWriteInputs', uid=self._uid)
 
@@ -124,7 +130,9 @@ class SynchronousExchange(object):
         #Create Tarball of input data
 
         tar = tarfile.open("Input_Files.tar","w")
-        for name in ["inputFiles/prmtop", "inputFiles/inpcrd", "inputFiles/mdin"]:
+        for name in [Basename+".prmtop", 
+                     Basename+".inpcrd", 
+                     Basename+".mdin"]:
             tar.add(name)
         for r in range (Replicas):
             tar.add('mdin_{0}'.format(r))
@@ -151,7 +159,7 @@ class SynchronousExchange(object):
         
         untar_tsk.upload_input_data = ['untar_input_files.py','Input_Files.tar']
         untar_tsk.arguments         = ['untar_input_files.py','Input_Files.tar']
-        untar_tsk.cores             = 1
+        untar_tsk.cpu_reqs          = 1
 
         untar_stg.add_tasks(untar_tsk)
         p.add_stages(untar_stg)
@@ -174,8 +182,9 @@ class SynchronousExchange(object):
         for r in range (Replicas):
 
             
-            md_tsk                  = AMBERTask(cores=Replica_Cores)
+            md_tsk                  = AMBERTask(cores=Replica_Cores, MD_Executable=MD_Executable)
             md_tsk.name             = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
+            md_tsk.pre_exec         = ['module load amber']
             md_tsk.link_input_data += [
                                        '%s/inpcrd'%tar_dict[0],
                                        '%s/prmtop'%tar_dict[0],
@@ -207,7 +216,8 @@ class SynchronousExchange(object):
 
         ex_tsk                      = Task()
         ex_tsk.name                 = 'extsk0'
-        ex_tsk.executable           = ['python']
+        ex_tsk.pre_exec             = ['module load python/2.7.10']
+        ex_tsk.executable           = ['/opt/python/bin/python']
         ex_tsk.upload_input_data    = [ExchangeMethod]  
         for r in range (Replicas):
             ex_tsk.link_input_data     += ['%s/mdinfo_%s'%(md_dict[r],r)]
@@ -258,7 +268,7 @@ class SynchronousExchange(object):
         self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
     
         for r in range (Replicas):
-            md_tsk                 = AMBERTask(cores=Replica_Cores)
+            md_tsk                 = AMBERTask(cores=Replica_Cores, MD_Executable=MD_Executable)
             md_tsk.name            = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=Cycle)
             md_tsk.link_input_data = ['%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
                                       '%s/prmtop'%(self.Book[0][r]),
@@ -269,6 +279,7 @@ class SynchronousExchange(object):
                                       #'%s/mdin'%(self.Tarball_path[0])]
 
             md_tsk.arguments      = ['-O', '-i', 'mdin_{0}'.format(r), '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
+            md_tsk.tag              = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
             #md_tsk.arguments       = ['-O', '-i', 'mdin', '-p', 'prmtop', '-c', 'inpcrd', '-o', 'out_{0}'.format(r),'-inf', 'mdinfo_{0}'.format(r)]
             md_dict[r]             = '$Pipeline_%s_Stage_%s_Task_%s'%(q.name, md_stg.name, md_tsk.name)
             self.md_task_list.append(md_tsk)
@@ -286,7 +297,7 @@ class SynchronousExchange(object):
         #Create Exchange Task
         ex_tsk                      = Task()
         ex_tsk.name                 = 'extsk{0}'.format(Cycle+1)
-        ex_tsk.executable           = ['python']
+        ex_tsk.executable           = ['/opt/python/bin/python']
         ex_tsk.upload_input_data    = [ExchangeMethod]
         for r in range (Replicas):
 
