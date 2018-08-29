@@ -27,7 +27,7 @@ export RADICAL_REPEX_RUN_PROFILE=True
 export RADICAL_PILOT_DBURL=mongodb://smush:key1209@ds117848.mlab.com:17868/db_repex_1
 ```
 
-Run as follows:
+Run as follows (ensure that you are in the "examples" directory):
 ```
-python run.py
+repex simconfig.json resconfig_supermic.json
 ```
