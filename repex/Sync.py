@@ -51,7 +51,7 @@ class AMBERTask(Task):
                             'threads_per_process': 1,
                             'thread_type': None
                         }
-        self._lfs_per_process = 4096
+        #self._lfs_per_process = 4096
         self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
         #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
         
@@ -161,7 +161,7 @@ class SynchronousExchange(object):
         untar_tsk.upload_input_data = ['untar_input_files.py','Input_Files.tar']
         untar_tsk.arguments         = ['untar_input_files.py','Input_Files.tar']
         untar_tsk.cpu_reqs          = 1
-        untar_tsk.post_exec         = ['']
+        #untar_tsk.post_exec         = ['']
         untar_stg.add_tasks(untar_tsk)
         p.add_stages(untar_stg)
 
@@ -195,9 +195,12 @@ class SynchronousExchange(object):
                                        '-p',  'prmtop', 
                                        '-i',  'mdin_{0}'.format(r), 
                                        '-c',  'inpcrd',
-                                       '-o',  '$NODE_LFS_PATH/out-{replica}-{cycle}'.format(replica=r,cycle=0),
-                                       '-r',  '$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=r,cycle=0), 
-                                       '-x',  '$NODE_LFS_PATH/mdcrd-{replica}-{cycle}'.format(replica=r,cycle=0),
+                                       '-o',  'out-{replica}-{cycle}'.format(replica=r,cycle=0),
+                                       '-r',  'rstrt-{replica}-{cycle}'.format(replica=r,cycle=0), 
+                                       '-x',  'mdcrd-{replica}-{cycle}'.format(replica=r,cycle=0),
+                                       #'-o',  '$NODE_LFS_PATH/out-{replica}-{cycle}'.format(replica=r,cycle=0),
+                                       #'-r',  '$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=r,cycle=0), 
+                                       #'-x',  '$NODE_LFS_PATH/mdcrd-{replica}-{cycle}'.format(replica=r,cycle=0),
                                        '-inf','mdinfo_{0}'.format(r)]
             md_dict[r]              = '$Pipeline_%s_Stage_%s_Task_%s'%(p.name, md_stg.name, md_tsk.name)
 
