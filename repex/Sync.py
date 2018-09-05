@@ -4,10 +4,11 @@ import os
 import tarfile
 import writeInputs
 import time
+import writeInputs
 
 class Replica(object):
 
-    #A replica class to hold replica information, potentially useful for replica states in asynchronous exchange
+    #A replica class to hold replica information
 
     def __init__(self, rid, Temp, EPtot, rstate):
         self.rid    = rid     #Replica ID
@@ -196,7 +197,8 @@ class SynchronousExchange(object):
                                        '-i',  'mdin_{0}'.format(r), 
                                        '-c',  'inpcrd',
                                        '-o',  'out-{replica}-{cycle}'.format(replica=r,cycle=0),
-                                       '-r',  'rstrt-{replica}-{cycle}'.format(replica=r,cycle=0), 
+                                       '-r',  'restrt'.format(replica=r,cycle=0), 
+                                       #'-r',  'rstrt-{replica}-{cycle}'.format(replica=r,cycle=0), 
                                        '-x',  'mdcrd-{replica}-{cycle}'.format(replica=r,cycle=0),
                                        #'-o',  '$NODE_LFS_PATH/out-{replica}-{cycle}'.format(replica=r,cycle=0),
                                        #'-r',  '$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=r,cycle=0), 
@@ -278,19 +280,22 @@ class SynchronousExchange(object):
         for r in range (Replicas):
             md_tsk                 = AMBERTask(cores=Replica_Cores, MD_Executable=MD_Executable)
             md_tsk.name            = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=Cycle)
-            #md_tsk.link_input_data = ['%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
-            #                          '%s/prmtop'%(self.Book[0][r]),
-            #                          '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
-            
-            md_tsk.link_input_data = ['$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=ExchangeArray[r],cycle=Cycle-1) > '$NODE_LFS_PATH/inpcrd',
-                                      #'%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
+            md_tsk.link_input_data = ['%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
                                       '%s/prmtop'%(self.Book[0][r]),
                                       '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
+            
+            
+            ### The Following softlinking scheme is to be used ONLY if node local file system is to be used: not fully supported yet.
+            #md_tsk.link_input_data = ['$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=ExchangeArray[r],cycle=Cycle-1) > '$NODE_LFS_PATH/inpcrd',
+            #                          #'%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
+            #                          '%s/prmtop'%(self.Book[0][r]),
+            #                          '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
 
             md_tsk.arguments      = ['-O', 
                                      '-i', 'mdin_{0}'.format(r), 
                                      '-p', 'prmtop', 
-                                     '-c', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle-1),  
+                                     '-c', 'inpcrd'
+                                     #'-c', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle-1),  
                                      '-o', 'out-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
                                      '-r', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
                                      '-x', 'mdcrd-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
