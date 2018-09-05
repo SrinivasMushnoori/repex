@@ -19,5 +19,6 @@ RepEx is a flexible, scalable, extensible replica exchange package. It is being 
    installation
    user_guide
    examples
+   developer_api
 
 

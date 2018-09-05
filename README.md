@@ -10,8 +10,6 @@ RepEx replica exchange package implemented via the Ensemble Toolkit 0.7 API.
 https://repex-30.readthedocs.io/en/latest/
 
 
-
-
 Before execution, set the following environmental variables:
 
 ```
