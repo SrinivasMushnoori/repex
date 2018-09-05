@@ -9,6 +9,8 @@ Install RepEx by running the following commands::
 
     pip install radical.pilot
     pip install radical.entk
+    pip install radical.utils
+    pip install git+https://github.com/radical-cybertools/radical.analytics.git@feature/entk-integration
     git clone https://github.com/SrinivasMushnoori/repex.git
     cd repex
     python setup.py install
