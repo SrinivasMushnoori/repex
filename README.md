@@ -1,5 +1,5 @@
 
-<!img src="https://travis-ci.org/SrinivasMushnoori/RepEx_3.0.svg?branch=master" alt="Travis CI"/>
+<img src="https://travis-ci.org/SrinivasMushnoori/RepEx_3.0.svg?branch=master" alt="Travis CI"/>
 
 # Enhanced RepEx
 
