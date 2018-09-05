@@ -34,11 +34,11 @@ with open(simconfig) as simconf:
 with open(resconfig) as resconf:
     resdata = json.load(resconf)
 
-Replicas       = simdata["Replicas"]
-Replica_Cores  = simdata["Replica_Cores"]
-Cycles         = simdata["Cycles"]    #0 cycles = no exchange
-ExchangeMethod = simdata["ExchangeMethod"]  #'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
-MD_Executable  = simdata["MD_Executable"]  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
+Replicas       = simdata["replicas"]
+Replica_Cores  = simdata["replica_cores"]
+Cycles         = simdata["cycles"]    #0 cycles = no exchange
+ExchangeMethod = simdata["exchange_method"]  #'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
+MD_Executable  = simdata["md_executable"]  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
 timesteps      = simdata["timesteps"] #100 #Number of timesteps between exchanges
 Basename       = simdata["basename"]     #'ace-ala'
 #Pilot_Cores    = Replica_Cores * (Replicas)                                                
@@ -51,10 +51,10 @@ if __name__ == '__main__':
                 "resource"      : str(resdata["resource"]),
                 "walltime"      : int(resdata["walltime"]),
                 "cpus" : Pilot_Cores,
-                "gpus_per_node" : int(resdata["gpus_per_node"]),
-                "access_schema" : str(resdata["access_schema"]),
-                "queue"         : str(resdata["queue"]),
-                "project"       : str(resdata["project"]),  #'TG-MCB090174',
+                #"gpus_per_node" : int(resdata["gpus_per_node"]),
+                #"access_schema" : str(resdata["access_schema"]),
+                #"queue"         : str(resdata["queue"]),
+                #"project"       : str(resdata["project"]),  #'TG-MCB090174',
               }
 
     uid1 = ru.generate_id('radical.repex.run')
