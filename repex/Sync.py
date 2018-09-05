@@ -99,7 +99,7 @@ class SynchronousExchange(object):
            
 
 
-    def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod, timesteps, Basename): # "Cycle" = 1 MD stage plus the subsequent exchange computation
+    def InitCycle(self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod, min_temp, max_temp, timesteps, Basename): # "Cycle" = 1 MD stage plus the subsequent exchange computation
 
         """ 
         Initial cycle consists of:
@@ -123,7 +123,7 @@ class SynchronousExchange(object):
 
                              
 
-        writeInputs.writeInputs(max_temp=350,min_temp=250,replicas=Replicas,timesteps=timesteps, basename=Basename)
+        writeInputs.writeInputs(max_temp=max_temp,min_temp=min_temp,replicas=Replicas,timesteps=timesteps, basename=Basename)
 
         self._prof.prof('EndWriteInputs', uid=self._uid)
 

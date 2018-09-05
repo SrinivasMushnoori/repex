@@ -41,6 +41,8 @@ ExchangeMethod = simdata["exchange_method"]  #'exchangeMethods/TempEx.py' #/path
 MD_Executable  = simdata["md_executable"]  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
 timesteps      = simdata["timesteps"] #100 #Number of timesteps between exchanges
 Basename       = simdata["basename"]     #'ace-ala'
+min_temp       = simdata["min_temp"]
+max_temp       = simdata["max_temp"]
 #Pilot_Cores    = Replica_Cores * (Replicas)                                                
 Pilot_Cores    = resdata["cpus"]  
 
@@ -69,7 +71,7 @@ if __name__ == '__main__':
     appman                  = AppManager(autoterminate=False, port=32769)  # Create Application Manager
     appman.resource_desc = res_dict # Assign resource manager to the Application Manager      
    
-    Exchange                = synchronousExchange.InitCycle(Replicas, Replica_Cores, MD_Executable, ExchangeMethod, timesteps, Basename)
+    Exchange                = synchronousExchange.InitCycle(Replicas, Replica_Cores, MD_Executable, ExchangeMethod, min_temp, max_temp, timesteps, Basename)
     
     appman.workflow = set([Exchange]) # Assign the workflow as a set of Pipelines to the Application Manager 
 
