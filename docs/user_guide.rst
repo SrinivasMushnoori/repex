@@ -34,18 +34,6 @@ The Simulation configuration file looks like::
 Most of this file is self explanatory: it allows the user to input replica exchange simulation parameters such as number of replicas, cores per replica, timesteps between exchange attempts, and a temperature range. However, some caution is advised while setting the ``exchangemethod``, ``md_executable`` and ``basename`` entries. 
 
 
-The Resource Configuration file looks like::
-
-
-    "resource"      : "<resource_name>",
-    "walltime"      : 30,
-    "cpus"          : 24,
-    "gpus_per_node" : 0,
-    "access_schema" : "<schema>",
-    "queue"         : "<queue>",
-    "project"       : "<allocation>"
-
-
 There are three mandatory keys here: ``resource`` , ``walltime`` and ``cpus`` .
 
 
