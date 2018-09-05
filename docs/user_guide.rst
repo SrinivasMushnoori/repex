@@ -5,16 +5,18 @@
 User Guide
 **********
 
-**1. Invoking RepEx**
+***1. Invoking RepEx***
 
 Once you have installed RepEx, you can run synchronous replica exchange workloads. To invoke repex, run::
 
     repex simconfig.json resconfig.json
 
-**2. Configuration Files**
+***2. Configuration Files***
 
 You will notice that this requires two ``.json`` files, one for simulation configuration ``simconfig.json`` and one for resource configuration ``resconfig.json``
 A simulation is completely described by these two files. 
+
+**2.1 The Simulation Configuration File**
 
 The Simulation configuration file looks like::
 
@@ -31,18 +33,37 @@ The Simulation configuration file looks like::
 
 Most of this file is self explanatory: it allows the user to input replica exchange simulation parameters such as number of replicas, cores per replica, timesteps between exchange attempts, and a temperature range. However, some caution is advised while setting the ``exchangemethod``, ``md_executable`` and ``basename`` entries. 
 
-*2.1 MD Executable*
+*2.1.1 MD Executable*
 
 The path to your MD executable on the *target* resource is specified here.
 
-*2.2 Basename*
+*2.1.2 Basename*
 
 RepEx needs a basename to locate the files which will be used as input parameters for the MD component. These may include (depending on the MD engine) a coordinate file, a topology file, and a run-input file. 
 
 
-*2.3 Exchange Method*
+*2.1.3 Exchange Method*
 
-RepEx provides an interface that enables the user to write their own exchange methods. This method is defined by the user in an independent python file, and the abspath must be specified here. Below is the ``Temperature Exchange`` method, as an illustration::
+RepEx provides an interface that enables the user to write their own exchange methods. This method is defined by the user in an independent python file, and the abspath must be specified here. 
+
+
+**2.2 The Resource Configuration Files**
+ 
+The Resource configuration file specifies the target resource configuration::
+
+	"resource"      : "resource.name",
+	"walltime"      : 30,
+	"cpus"          : 64,
+	"gpus_per_node" : 0,
+	"access_schema" : "gsissh",
+	"queue"         : "debug",
+	"project"       : "allocation"
+
+
+
+***3. Defining the Exchange Method:***
+
+Below is the ``Temperature Exchange`` method, as an illustration::
 
     #!/usr/bin/env python
 

@@ -290,10 +290,10 @@ class SynchronousExchange(object):
             md_tsk.arguments      = ['-O', 
                                      '-i', 'mdin_{0}'.format(r), 
                                      '-p', 'prmtop', 
-                                     '-c', '$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle-1),  
-                                     '-o', '$NODE_LFS_PATH/out-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
-                                     '-r', '$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
-                                     '-x', '$NODE_LFS_PATH/mdcrd-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
+                                     '-c', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle-1),  
+                                     '-o', 'out-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
+                                     '-r', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
+                                     '-x', 'mdcrd-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
                                      '-inf', 'mdinfo_{0}'.format(r)]
             #md_tsk.tag              = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
             md_dict[r]             = '$Pipeline_%s_Stage_%s_Task_%s'%(q.name, md_stg.name, md_tsk.name)
