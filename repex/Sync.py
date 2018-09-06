@@ -297,7 +297,8 @@ class SynchronousExchange(object):
                                      '-c', 'inpcrd',
                                      #'-c', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle-1),  
                                      '-o', 'out-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
-                                     '-r', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
+                                     '-r', 'restrt',
+                                     #'-r', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
                                      '-x', 'mdcrd-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
                                      '-inf', 'mdinfo_{0}'.format(r)]
             #md_tsk.tag              = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
