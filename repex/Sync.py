@@ -4,7 +4,7 @@ import os
 import tarfile
 import writeInputs
 import time
-import writeInputs
+import git
 
 
 class Replica(object):
@@ -26,7 +26,12 @@ class GROMACSTask(Task):
 
         super(GROMACSTask, self).__init__()
         self._executable = ['']
-        self._cores = cores
+        self._cpu_reqs = {
+            'processes': cores,
+            'process_type': '',
+            'threads_per_process': 1,
+            'thread_type': None
+        }
         self._pre_exec = ['module load gromacs']
         self._post_exec = ['gmx energy < Energy.input']
         self._mpi = mpi
@@ -98,14 +103,14 @@ class SynchronousExchange(object):
         """
 
         #Initialize Pipeline
-        #self._prof.prof('InitTar', uid=self._uid)
+        self._prof.prof('InitTar', uid=self._uid)
         p = Pipeline()
         p.name = 'initpipeline'
 
         md_dict = dict()  #Bookkeeping
         tar_dict = dict()  #Bookkeeping
 
-        ##Write the input files
+        #Write the input files
 
         self._prof.prof('InitWriteInputs', uid=self._uid)
 
@@ -139,17 +144,21 @@ class SynchronousExchange(object):
 
         #Create Untar Stage
 
+        repo = git.Repo('.', search_parent_directories=True)
+        aux_function_path = repo.working_tree_dir
+
+
         untar_stg = Stage()
         untar_stg.name = 'untarStg'
 
         #Untar Task
-
+        
         untar_tsk = Task()
         untar_tsk.name = 'untartsk'
         untar_tsk.executable = ['python']
 
         untar_tsk.upload_input_data = [
-            'untar_input_files.py', 'Input_Files.tar'
+            str(aux_function_path)+'/repex/untar_input_files.py', 'Input_Files.tar'
         ]
         untar_tsk.arguments = ['untar_input_files.py', 'Input_Files.tar']
         untar_tsk.cpu_reqs = 1

@@ -5,15 +5,16 @@ import sys
 import math
 import random
 
-
 ####------------
 
 Rep = sys.argv[1]
 Cycle = int(sys.argv[2])
 Replicas = int(Rep)
-Col1=[]
-Col2=[]
-def RandomExchange(Replicas,Cycle):
+Col1 = []
+Col2 = []
+
+
+def RandomExchange(Replicas, Cycle):
     exchangeList1 = range(Replicas)
     random.shuffle(exchangeList1)
     exchangeList2 = range(Replicas)
@@ -21,7 +22,7 @@ def RandomExchange(Replicas,Cycle):
 
     Col1 = exchangeList1
     Col2 = exchangeList2
-    ####exchangePairs = list(tuple) 
+    ####exchangePairs = list(tuple)
     exchangePairs = zip(Col1, Col2)
     ##Output exchange pairs to file
 
@@ -30,5 +31,6 @@ def RandomExchange(Replicas,Cycle):
         line = ' '.join(str(x) for x in p)
         f.write(line + '\n')
     f.close
-        
-RandomExchange(Replicas,Cycle)
+
+
+RandomExchange(Replicas, Cycle)
