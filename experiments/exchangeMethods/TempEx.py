@@ -90,9 +90,11 @@ def TemperatureExchange(Replicas):
     
     with open('exchangePairs_{0}.dat'.format(Cycle), 'w') as f:
         for p in exchangeList:
-            line = ' '.join(str(x) for x in p)
-            f.write(line + '\n')
-    
+            print p, p[0], p[1]
+            row_str = str(p[0]) + " " + str(p[1]) 
+            f.write(p)
+            f.write('\n')
+
                     
 TemperatureExchange(Replicas)
 

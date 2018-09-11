@@ -169,7 +169,7 @@ class SynchronousExchange(object):
         tar_dict[0] = '$Pipeline_%s_Stage_%s_Task_%s' % (
             p.name, untar_stg.name, untar_tsk.name)
 
-        # First MD stage: needs to be defined separately since workflow is not built from a predetermined order
+        # First MD stage: needs to be defined separately since workflow is not built from a predetermined order, also equilibration needs to happen first. 
 
         md_stg = Stage()
         md_stg.name = 'mdstg0'
@@ -237,7 +237,8 @@ class SynchronousExchange(object):
         ex_tsk.upload_input_data = [ExchangeMethod]
         for r in range(Replicas):
             ex_tsk.link_input_data += ['%s/mdinfo_%s' % (md_dict[r], r)]
-        ex_tsk.arguments = ['TempEx.py', '{0}'.format(Replicas), '0']
+        ex_tsk.pre_exec = ['mv *.py exchangemethod.py']
+        ex_tsk.arguments = ['exchangemethod.py', '{0}'.format(Replicas), '0']
         ex_tsk.cores = 1
         ex_tsk.mpi = False
         ex_tsk.download_output_data = ['exchangePairs_0.dat']
@@ -335,9 +336,9 @@ class SynchronousExchange(object):
         for r in range(Replicas):
 
             ex_tsk.link_input_data += ['%s/mdinfo_%s' % (md_dict[r], r)]
-
+        ex_tsk.pre_exec = ['mv *.py exchangemethod.py']
         ex_tsk.arguments = [
-            'TempEx.py', '{0}'.format(Replicas), '{0}'.format(Cycle + 1)
+            'exchangemethod.py', '{0}'.format(Replicas), '{0}'.format(Cycle + 1)
         ]
         ex_tsk.cores = 1
         ex_tsk.mpi = False
