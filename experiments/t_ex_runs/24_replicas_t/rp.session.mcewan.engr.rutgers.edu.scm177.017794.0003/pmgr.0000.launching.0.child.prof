@@ -1,0 +1,17 @@
+#time,event,comp,thread,uid,state,msg
+1537463071.7114,sync_abs,pmgr.0000.launching.0.child,MainThread,,,mcewan.engr.rutgers.edu:128.6.238.207:1537463071.71:1537463071.71:sys
+1537463071.7371,component_init,pmgr.0000.launching.0.child,MainThread,,,
+1537463075.3586,get,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,
+1537463075.3591,advance,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_LAUNCHING,
+1537463075.3593,publish,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_LAUNCHING,
+1537463076.7563,staging_in_start,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1537463082.4422,staging_in_stop,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1537463082.4423,submission_start,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1537463086.3863,submission_stop,pmgr.0000.launching.0.child,MainThread,pilot.0000,,
+1537463086.3864,advance,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_ACTIVE_PENDING,
+1537463086.3867,publish,pmgr.0000.launching.0.child,MainThread,pilot.0000,PMGR_ACTIVE_PENDING,
+1537464905.0538,advance,pmgr.0000.launching.0.child,pmgr.0000.launching.0.child.idler._pilot_watcher_cb,pilot.0000,CANCELED,
+1537464905.0540,publish,pmgr.0000.launching.0.child,pmgr.0000.launching.0.child.idler._pilot_watcher_cb,pilot.0000,CANCELED,
+1537464912.2909,flush,pmgr.0000.launching.0.child,pmgr.0000.launching.0.child.subscriber._cancel_monitor_cb,,,
+1537464912.6066,component_final,pmgr.0000.launching.0.child,pmgr.0000.launching.0.child.subscriber._cancel_monitor_cb,,,
+1537464912.6066,END,pmgr.0000.launching.0.child,pmgr.0000.launching.0.child.subscriber._cancel_monitor_cb,,,

@@ -1,0 +1,353 @@
+{
+    "config": {}, 
+    "entities": {
+        "appmanager": {
+            "event_model": {}, 
+            "state_model": null, 
+            "state_values": null
+        }, 
+        "pipeline": {
+            "event_model": {}, 
+            "state_model": {
+                "CANCELED": 9, 
+                "DESCRIBED": 1, 
+                "DONE": 9, 
+                "FAILED": 9, 
+                "SCHEDULING": 2
+            }, 
+            "state_values": {
+                "1": "DESCRIBED", 
+                "2": "SCHEDULING", 
+                "9": [
+                    "DONE", 
+                    "CANCELED", 
+                    "FAILED"
+                ]
+            }
+        }, 
+        "stage": {
+            "event_model": {}, 
+            "state_model": {
+                "CANCELED": 9, 
+                "DESCRIBED": 1, 
+                "DONE": 9, 
+                "FAILED": 9, 
+                "SCHEDULED": 3, 
+                "SCHEDULING": 2
+            }, 
+            "state_values": {
+                "1": "DESCRIBED", 
+                "2": "SCHEDULING", 
+                "3": "SCHEDULED", 
+                "9": [
+                    "FAILED", 
+                    "CANCELED", 
+                    "DONE"
+                ]
+            }
+        }, 
+        "task": {
+            "event_model": {}, 
+            "state_model": {
+                "CANCELED": 9, 
+                "DEQUEUED": 8, 
+                "DEQUEUEING": 7, 
+                "DESCRIBED": 1, 
+                "DONE": 9, 
+                "EXECUTED": 6, 
+                "FAILED": 9, 
+                "SCHEDULED": 3, 
+                "SCHEDULING": 2, 
+                "SUBMITTED": 5, 
+                "SUBMITTING": 4
+            }, 
+            "state_values": {
+                "1": "DESCRIBED", 
+                "2": "SCHEDULING", 
+                "3": "SCHEDULED", 
+                "4": "SUBMITTING", 
+                "5": "SUBMITTED", 
+                "6": "EXECUTED", 
+                "7": "DEQUEUEING", 
+                "8": "DEQUEUED", 
+                "9": [
+                    "DONE", 
+                    "CANCELED", 
+                    "FAILED"
+                ]
+            }
+        }
+    }, 
+    "tree": {
+        "appmanager.0000": {
+            "cfg": {}, 
+            "children": [
+                "wfprocessor.0040", 
+                "resource_manager.0000", 
+                "task_manager.0000", 
+                "pipeline.0040"
+            ], 
+            "etype": "appmanager", 
+            "has": [
+                "pipeline", 
+                "wfprocessor", 
+                "resource_manager", 
+                "task_manager"
+            ], 
+            "uid": "appmanager.0000"
+        }, 
+        "pipeline.0040": {
+            "cfg": {}, 
+            "children": [
+                "stage.0081", 
+                "stage.0082"
+            ], 
+            "etype": "pipeline", 
+            "has": [
+                "stage"
+            ], 
+            "uid": "pipeline.0040"
+        }, 
+        "resource_manager.0000": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "resource_manager", 
+            "has": [], 
+            "uid": "resource_manager.0000"
+        }, 
+        "stage.0081": {
+            "cfg": {}, 
+            "children": [
+                "task.1001", 
+                "task.1002", 
+                "task.1003", 
+                "task.1004", 
+                "task.1005", 
+                "task.1006", 
+                "task.1007", 
+                "task.1008", 
+                "task.1009", 
+                "task.1010", 
+                "task.1011", 
+                "task.1012", 
+                "task.1013", 
+                "task.1014", 
+                "task.1015", 
+                "task.1016", 
+                "task.1017", 
+                "task.1018", 
+                "task.1019", 
+                "task.1020", 
+                "task.1021", 
+                "task.1022", 
+                "task.1023", 
+                "task.1024"
+            ], 
+            "etype": "stage", 
+            "has": [
+                "task"
+            ], 
+            "uid": "stage.0081"
+        }, 
+        "stage.0082": {
+            "cfg": {}, 
+            "children": [
+                "task.1025"
+            ], 
+            "etype": "stage", 
+            "has": [
+                "task"
+            ], 
+            "uid": "stage.0082"
+        }, 
+        "task.1001": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1001"
+        }, 
+        "task.1002": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1002"
+        }, 
+        "task.1003": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1003"
+        }, 
+        "task.1004": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1004"
+        }, 
+        "task.1005": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1005"
+        }, 
+        "task.1006": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1006"
+        }, 
+        "task.1007": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1007"
+        }, 
+        "task.1008": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1008"
+        }, 
+        "task.1009": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1009"
+        }, 
+        "task.1010": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1010"
+        }, 
+        "task.1011": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1011"
+        }, 
+        "task.1012": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1012"
+        }, 
+        "task.1013": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1013"
+        }, 
+        "task.1014": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1014"
+        }, 
+        "task.1015": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1015"
+        }, 
+        "task.1016": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1016"
+        }, 
+        "task.1017": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1017"
+        }, 
+        "task.1018": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1018"
+        }, 
+        "task.1019": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1019"
+        }, 
+        "task.1020": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1020"
+        }, 
+        "task.1021": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1021"
+        }, 
+        "task.1022": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1022"
+        }, 
+        "task.1023": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1023"
+        }, 
+        "task.1024": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1024"
+        }, 
+        "task.1025": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task", 
+            "has": [], 
+            "uid": "task.1025"
+        }, 
+        "task_manager.0000": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "task_manager", 
+            "has": [], 
+            "uid": "task_manager.0000"
+        }, 
+        "wfprocessor.0040": {
+            "cfg": {}, 
+            "children": [], 
+            "etype": "wfprocessor", 
+            "has": [], 
+            "uid": "wfprocessor.0040"
+        }
+    }
+}

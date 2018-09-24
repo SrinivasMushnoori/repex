@@ -1,0 +1,13 @@
+#time,event,comp,thread,uid,state,msg
+1537776570.4733,sync_abs,pmgr.0000,MainThread,,,mcewan.engr.rutgers.edu:128.6.238.207:1537776570.44:1537776677.11:ntp
+1537776570.5361,component_init,pmgr.0000,MainThread,,,
+1537776570.5540,setup_done,pmgr.0000,MainThread,pmgr.0000,,
+1537776573.0479,advance,pmgr.0000,MainThread,pilot.0000,NEW,
+1537776573.0555,advance,pmgr.0000,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,
+1537776573.0556,publish,pmgr.0000,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,
+1537776573.0556,put,pmgr.0000,MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,pmgr.launching.queue.input.0000
+1537776573.0564,advance,pmgr.0000,pmgr.0000.subscriber._state_sub_cb,pilot.0000,PMGR_LAUNCHING,
+1537776596.8708,advance,pmgr.0000,pmgr.0000.subscriber._state_sub_cb,pilot.0000,PMGR_ACTIVE_PENDING,
+1537776630.6630,advance,pmgr.0000,pmgr.0000.idler._state_pull_cb,pilot.0000,PMGR_ACTIVE,
+1537776630.6632,publish,pmgr.0000,pmgr.0000.idler._state_pull_cb,pilot.0000,PMGR_ACTIVE,
+1537787419.8272,advance,pmgr.0000,pmgr.0000.subscriber._state_sub_cb,pilot.0000,CANCELED,
