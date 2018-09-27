@@ -6,6 +6,7 @@ import os, sys, time, pprint, json, pickle
 import radical.utils as ru
 import radical.analytics as ra
 import radical.entk as re
+import pprint
 
 # ------------------------------------------------------------------------------
 # Set default verbosity
@@ -22,7 +23,10 @@ os.environ['RADICAL_VERBOSE']              = 'INFO'
 os.environ['RADICAL_PILOT_PROFILE']        = 'True'
 os.environ['RADICAL_REPEX_SYNCEX_PROFILE'] = 'True'
 os.environ['RADICAL_REPEX_RUN_PROFILE']    = 'True'
-os.environ['RADICAL_PILOT_DBURL'] = "mongodb://smush:key1209@ds147361.mlab.com:47361/db_repex_4"
+#os.environ['RADICAL_PILOT_DBURL'] = "mongodb://smush:key1209@ds147361.mlab.com:47361/db_repex_4"
+#os.environ['RADICAL_PILOT_DBURL'] = "mongodb://smush:key1209@ds111113.mlab.com:11113/repex_db_5"
+#os.environ['RADICAL_PILOT_DBURL'] = "mongodb://smush:key1209@ds111063.mlab.com:11063/db_repex_6"
+os.environ['RADICAL_PILOT_DBURL'] = "mongodb://smush:key1209@ds213183.mlab.com:13183/db_repex_7"
 
 
 simconfig = sys.argv[1]
@@ -33,30 +37,33 @@ with open(simconfig) as simconf:
 
 with open(resconfig) as resconf:
     resdata = json.load(resconf)
-
-Replicas       = simdata["replicas"]
-Replica_Cores  = simdata["replica_cores"]
-Cycles         = simdata["cycles"]    #0 cycles = no exchange
-ExchangeMethod = simdata["exchange_method"]  #'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
+    
+replicas       = simdata["replicas"]
+replica_cores  = simdata["replica_cores"]
+cycles         = simdata["cycles"]    #0 cycles = no exchange
+exchange_method = simdata["exchange_method"]  #'exchangeMethods/TempEx.py' #/path/to/your/exchange/method
 MD_Executable  = simdata["md_executable"]  #'/u/sciteam/mushnoor/amber/amber14/bin/sander.MPI' #/path/to/your/MD/Executable
 timesteps      = simdata["timesteps"] #100 #Number of timesteps between exchanges
-Basename       = simdata["basename"]     #'ace-ala'
+basename       = simdata["basename"]     #'ace-ala'
 min_temp       = simdata["min_temp"]
 max_temp       = simdata["max_temp"]
-#Pilot_Cores    = Replica_Cores * (Replicas)                                                
+#Pilot_Cores    = replica_cores * (replicas)                                                
 Pilot_Cores    = resdata["cpus"]  
 
 if __name__ == '__main__':
     
-    print resdata
+    #pprint(resdata)
+    #print type(resdata)
+    #res_dict = (resdata)
+    #print res_dict
     res_dict ={
                 "resource"      : str(resdata["resource"]),
                 "walltime"      : int(resdata["walltime"]),
                 "cpus" : Pilot_Cores,
-                #"gpus_per_node" : int(resdata["gpus_per_node"]),
-                #"access_schema" : str(resdata["access_schema"]),
-                #"queue"         : str(resdata["queue"]),
-                #"project"       : str(resdata["project"]),  #'TG-MCB090174',
+                "gpus_per_node" : int(resdata["gpus_per_node"]),
+                "access_schema" : str(resdata["access_schema"]),
+                "queue"         : str(resdata["queue"]),
+                "project"       : str(resdata["project"]),  #'TG-MCB090174',
               }
 
     uid1 = ru.generate_id('radical.repex.run')
@@ -68,36 +75,36 @@ if __name__ == '__main__':
     synchronousExchange=SynchronousExchange()
     
 
-    appman                  = AppManager(autoterminate=False, port=32769)  # Create Application Manager
+    appman                  = AppManager(autoterminate=False, port=32773)  # Create Application Manager
     appman.resource_desc = res_dict # Assign resource manager to the Application Manager      
    
-    Exchange                = synchronousExchange.InitCycle(Replicas, Replica_Cores, MD_Executable, ExchangeMethod, min_temp, max_temp, timesteps, Basename)
+    Exchange                = synchronousExchange.InitCycle(replicas, replica_cores, MD_Executable, exchange_method, min_temp, max_temp, timesteps, basename)
     
     appman.workflow = set([Exchange]) # Assign the workflow as a set of Pipelines to the Application Manager 
 
-    prof.prof('Run_Cycle_0', uid=uid1)
+    prof.prof('Run_cycle_0', uid=uid1)
 
     appman.run() # Run the Application Manager 
 
-    prof.prof('End_Cycle_0', uid=uid1)
+    prof.prof('End_cycle_0', uid=uid1)
  
     
-    for Cycle in range (Cycles):
+    for cycle in range (cycles):
 
-        prof.prof('Create_Workflow_{0}'.format(Cycle+1), uid=uid1)
+        prof.prof('Create_Workflow_{0}'.format(cycle+1), uid=uid1)
 
                           
-        Exchange_gen            = synchronousExchange.GeneralCycle(Replicas, Replica_Cores, Cycle, MD_Executable, ExchangeMethod)
+        Exchange_gen            = synchronousExchange.GeneralCycle(replicas, replica_cores, cycle, MD_Executable, exchange_method)
         
         appman.workflow = set([Exchange_gen]) # Assign the workflow as a set of Pipelines to the Application Manager       
 
-        prof.prof('Run_Cycle_{0}'.format(Cycle+1), uid=uid1)
+        prof.prof('Run_cycle_{0}'.format(cycle+1), uid=uid1)
 
                             
 
         appman.run() # Run the Application Manager
 
-        prof.prof('End_Cycle_{0}'.format(Cycle+1), uid=uid1)
+        prof.prof('End_cycle_{0}'.format(cycle+1), uid=uid1)
 
     appman.resource_terminate()
 

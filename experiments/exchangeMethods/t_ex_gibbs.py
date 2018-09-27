@@ -1,4 +1,4 @@
-#!~/numpy_env/bin/python
+#!/usr/bin/env python
 
 import platform
 
