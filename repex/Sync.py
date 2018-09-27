@@ -55,7 +55,7 @@ class AMBERTask(Task):
             'thread_type': None
         }
         #self._lfs_per_process = 4096
-        #self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
+        self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
         #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
 
 
@@ -182,7 +182,7 @@ class SynchronousExchange(object):
             md_tsk = AMBERTask(
                 cores=Replica_Cores, MD_Executable=MD_Executable)
             md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=r, cycle=0)
-            #md_tsk.pre_exec         = ['module load amber']
+            md_tsk.pre_exec         = ['module load amber']
             md_tsk.link_input_data += [
                 '%s/inpcrd' % tar_dict[0],
                 '%s/prmtop' % tar_dict[0],
@@ -232,8 +232,9 @@ class SynchronousExchange(object):
 
         ex_tsk = Task()
         ex_tsk.name = 'extsk0'
-        #ex_tsk.pre_exec             = ['module load python/2.7.10']
-        ex_tsk.executable = ['/usr/bin/python']
+        ex_tsk.pre_exec   = ['module load python/2.7.10']
+        #ex_tsk.executable = ['/usr/bin/python']
+        ex_tsk.executable = ['/opt/python/bin/python']       
         ex_tsk.upload_input_data = [ExchangeMethod]
         for r in range(Replicas):
             ex_tsk.link_input_data += ['%s/mdinfo_%s' % (md_dict[r], r)]
@@ -331,7 +332,9 @@ class SynchronousExchange(object):
         #Create Exchange Task
         ex_tsk = Task()
         ex_tsk.name = 'extsk{0}'.format(Cycle + 1)
-        ex_tsk.executable = ['/usr/bin/python']  #['/opt/python/bin/python']
+        #ex_tsk.executable = ['/usr/bin/python']  
+        ex_tsk.pre_exec   = ['module load python/2.7.10']
+        ex_tsk.executable = ['/opt/python/bin/python']
         ex_tsk.upload_input_data = [ExchangeMethod]
         for r in range(Replicas):
 
