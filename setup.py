@@ -3,7 +3,7 @@ import setuptools
 if __name__ == "__main__":
         setuptools.setup(
             name='repex',
-            version="3.0.1",
+            version="3.0.2",
             description='A scalable, flexible and extensible replica exchange package',
             author='Srinivas Mushnoori',
             url='https://github.com/SrinivasMushnoori/RepEx_3.0',
