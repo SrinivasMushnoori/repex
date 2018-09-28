@@ -41,65 +41,47 @@ class AMBERTask(Task):
 
     # AMBER specific MD task class.
 
-    def __init__(self, MD_Executable, cores):
+    def __init__(self, md_executable, cores, pre_exec):
 
         super(AMBERTask, self).__init__()
-        #self._executable = ['/usr/local/packages/amber/16/INTEL-140-MVAPICH2-2.0/bin/pmemd.MPI']
-        self._executable = [MD_Executable]
-        #self._cpu_reqs['processes']   = cores
-        #self._cpu_reqs['process_type'] = ''
+        self._executable = [md_executable]
         self._cpu_reqs = {
             'processes': cores,
             'process_type': '',
             'threads_per_process': 1,
             'thread_type': None
         }
-        #self._lfs_per_process = 4096
-        self._pre_exec   = ['module load amber'] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
+        self._pre_exec   = [pre_exec] #For BW make a pre-exec that points to $AMBERHOME correctly  ['export AMBERHOME=$HOME/amber/amber14/']
         #self._post_exec = [''] #Post exec is not useful here, but may be useful for something like a GROMACS class...
 
 
 class SynchronousExchange(object):
     """ 
-    Defines the Synchronous Replica Exchange Workflow. InitCycle() creates the workflow for the first cycle, i.e. 
-    the first MD phase and the subsequent exchange computation. GeneralCycle() then creates the workflows for all 
+    Defines the Synchronous Replica Exchange Workflow. init_cycle() creates the workflow for the first cycle, i.e. 
+    the first MD phase and the subsequent exchange computation. general_cycle() then creates the workflows for all 
     subsequent cycles. Each cycle (MD plus immediate exchange computation) must be specified as separate workflows.                                        
     """
 
     def __init__(self):
 
-        self.Book = [
-        ]  #Bookkeeping, maintains a record of all MD tasks carried out
+        self.book = [
+        ]  #bookkeeping, maintains a record of all MD tasks carried out
         self.md_task_list = []
         self.ex_task_list = []
-        #self.test = 1
+
 
         self._uid = ru.generate_id('radical.repex.syncex')
         self._logger = ru.get_logger('radical.repex.syncex')
         self._prof = ru.Profiler(name=self._uid)
         self._prof.prof('Initinit', uid=self._uid)
-
-    def Replica_Init(self, Replicas):
-
-        #Nothing actually happens to a replica object here, this is just bookkeeping
-        #potentially for a state/event model in the future
-
-        Replica_List = dict()
-
-        for r in range(Replicas):
-            Replica_List[r] = Replica
-            (Replica_List[r]).rstate = 'I'  #Initialize with idle state
-
-    def InitCycle(
-            self, Replicas, Replica_Cores, MD_Executable, ExchangeMethod,
-            min_temp, max_temp, timesteps, Basename
-    ):  # "Cycle" = 1 MD stage plus the subsequent exchange computation
+ 
+    def init_cycle(self, replicas, replica_cores, python_path, md_executable, exchange_method, min_temp, max_temp, timesteps, basename, pre_exec):  # "cycle" = 1 MD stage plus the subsequent exchange computation
         """ 
         Initial cycle consists of:
         1) Create tarball of MD input data 
         2) Transfer the tarball to pilot sandbox
         3) Untar the tarball
-        4) Run first Cycle
+        4) Run first cycle
         """
 
         #Initialize Pipeline
@@ -107,8 +89,8 @@ class SynchronousExchange(object):
         p = Pipeline()
         p.name = 'initpipeline'
 
-        md_dict = dict()  #Bookkeeping
-        tar_dict = dict()  #Bookkeeping
+        md_dict = dict()  #bookkeeping
+        tar_dict = dict()  #bookkeeping
 
         #Write the input files
 
@@ -117,27 +99,27 @@ class SynchronousExchange(object):
         writeInputs.writeInputs(
             max_temp=max_temp,
             min_temp=min_temp,
-            replicas=Replicas,
+            replicas=replicas,
             timesteps=timesteps,
-            basename=Basename)
+            basename=basename)
 
         self._prof.prof('EndWriteInputs', uid=self._uid)
 
         self._prof.prof('InitTar', uid=self._uid)
         #Create Tarball of input data
 
-        tar = tarfile.open("Input_Files.tar", "w")
+        tar = tarfile.open("input_files.tar", "w")
         for name in [
-                Basename + ".prmtop", Basename + ".inpcrd", Basename + ".mdin"
+                basename + ".prmtop", basename + ".inpcrd", basename + ".mdin"
         ]:
             tar.add(name)
-        for r in range(Replicas):
+        for r in range(replicas):
             tar.add('mdin_{0}'.format(r))
         tar.close()
 
         #delete all input files outside the tarball
 
-        for r in range(Replicas):
+        for r in range(replicas):
             os.remove('mdin_{0}'.format(r))
 
         self._prof.prof('EndTar', uid=self._uid)
@@ -158,9 +140,9 @@ class SynchronousExchange(object):
         untar_tsk.executable = ['python']
 
         untar_tsk.upload_input_data = [
-            str(aux_function_path)+'/repex/untar_input_files.py', 'Input_Files.tar'
+            str(aux_function_path)+'/repex/untar_input_files.py', 'input_files.tar'
         ]
-        untar_tsk.arguments = ['untar_input_files.py', 'Input_Files.tar']
+        untar_tsk.arguments = ['untar_input_files.py', 'input_files.tar']
         untar_tsk.cpu_reqs = 1
         #untar_tsk.post_exec         = ['']
         untar_stg.add_tasks(untar_tsk)
@@ -177,12 +159,10 @@ class SynchronousExchange(object):
 
         # MD tasks
 
-        for r in range(Replicas):
+        for r in range(replicas):
 
-            md_tsk = AMBERTask(
-                cores=Replica_Cores, MD_Executable=MD_Executable)
+            md_tsk = AMBERTask(cores=replica_cores, md_executable=md_executable, pre_exec=pre_exec)
             md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=r, cycle=0)
-            md_tsk.pre_exec         = ['module load amber']
             md_tsk.link_input_data += [
                 '%s/inpcrd' % tar_dict[0],
                 '%s/prmtop' % tar_dict[0],
@@ -224,22 +204,18 @@ class SynchronousExchange(object):
         ex_stg = Stage()
         ex_stg.name = 'exstg0'
         self._prof.prof('InitEx_0', uid=self._uid)
-        #with open('logfile.log', 'a') as logfile:
-        #   logfile.write( '%.5f' %time.time() + ',' + 'InitEx0' + '\n')
-        # Create Exchange Task. Exchange task performs a Metropolis Hastings thermodynamic balance condition
-        # check and spits out the exchangePairs.dat file that contains a sorted list of ordered pairs.
-        # Said pairs then exchange configurations by linking output configuration files appropriately.
+
+        # Create Exchange Task
 
         ex_tsk = Task()
         ex_tsk.name = 'extsk0'
-        ex_tsk.pre_exec   = ['module load python/2.7.10']
-        #ex_tsk.executable = ['/usr/bin/python']
-        ex_tsk.executable = ['/opt/python/bin/python']       
-        ex_tsk.upload_input_data = [ExchangeMethod]
-        for r in range(Replicas):
+        #ex_tsk.pre_exec             = ['module load python/2.7.10']
+        ex_tsk.executable = [python_path]
+        ex_tsk.upload_input_data = [exchange_method]
+        for r in range(replicas):
             ex_tsk.link_input_data += ['%s/mdinfo_%s' % (md_dict[r], r)]
-        ex_tsk.pre_exec = ['mv *.py exchangemethod.py']
-        ex_tsk.arguments = ['exchangemethod.py', '{0}'.format(Replicas), '0']
+        ex_tsk.pre_exec = ['mv *.py exchange_method.py']
+        ex_tsk.arguments = ['exchange_method.py', '{0}'.format(replicas), '0']
         ex_tsk.cores = 1
         ex_tsk.mpi = False
         ex_tsk.download_output_data = ['exchangePairs_0.dat']
@@ -248,28 +224,27 @@ class SynchronousExchange(object):
         p.add_stages(ex_stg)
         self.ex_task_list.append(ex_tsk)
         #self.ex_task_uids.append(ex_tsk.uid)
-        self.Book.append(md_dict)
+        self.book.append(md_dict)
         return p
-
-    def GeneralCycle(self, Replicas, Replica_Cores, Cycle, MD_Executable,
-                     ExchangeMethod):
+         #def general_cycle(replicas, replica_cores, cycle, python_path, md_executable, exchange_method, pre_exec): 
+    def general_cycle(self, replicas, replica_cores, cycle, python_path, md_executable, exchange_method, pre_exec):
         """
         All cycles after the initial cycle
         Pulls up exchange pairs file and generates the new workflow
         """
 
-        self._prof.prof('InitcreateMDwokflow_{0}'.format(Cycle), uid=self._uid)
-        with open('exchangePairs_{0}.dat'.format(Cycle),
+        self._prof.prof('InitcreateMDwokflow_{0}'.format(cycle), uid=self._uid)
+        with open('exchangePairs_{0}.dat'.format(cycle),
                   'r') as f:  # Read exchangePairs.dat
-            ExchangeArray = []
+            exchange_array = []
             for line in f:
-                ExchangeArray.append(int(line.split()[1]))
-                #ExchangeArray.append(line)
-                #print ExchangeArray
+                exchange_array.append(int(line.split()[1]))
+                #exchange_array.append(line)
+                #print exchange_array
 
         q = Pipeline()
-        q.name = 'genpipeline{0}'.format(Cycle)
-        #Bookkeeping
+        q.name = 'genpipeline{0}'.format(cycle)
+        #bookkeeping
         stage_uids = list()
         task_uids = list()  ## = dict()
         md_dict = dict()
@@ -277,26 +252,25 @@ class SynchronousExchange(object):
         #Create MD stage
 
         md_stg = Stage()
-        md_stg.name = 'mdstage{0}'.format(Cycle)
+        md_stg.name = 'mdstage{0}'.format(cycle)
 
-        self._prof.prof('InitMD_{0}'.format(Cycle), uid=self._uid)
+        self._prof.prof('InitMD_{0}'.format(cycle), uid=self._uid)
 
-        for r in range(Replicas):
-            md_tsk = AMBERTask(
-                cores=Replica_Cores, MD_Executable=MD_Executable)
+        for r in range(replicas):
+            md_tsk = AMBERTask(cores=replica_cores, md_executable=md_executable, pre_exec=pre_exec)
             md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(
-                replica=r, cycle=Cycle)
+                replica=r, cycle=cycle)
             md_tsk.link_input_data = [
                 '%s/restrt > inpcrd' %
-                (self.Book[Cycle - 1][ExchangeArray[r]]),
-                '%s/prmtop' % (self.Book[0][r]),
-                '%s/mdin_{0}'.format(r) % (self.Book[0][r])
+                (self.book[cycle - 1][exchange_array[r]]),
+                '%s/prmtop' % (self.book[0][r]),
+                '%s/mdin_{0}'.format(r) % (self.book[0][r])
             ]
 
             ### The Following softlinking scheme is to be used ONLY if node local file system is to be used: not fully supported yet.
-            #md_tsk.link_input_data = ['$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=ExchangeArray[r],cycle=Cycle-1) > '$NODE_LFS_PATH/inpcrd',
-            #                          #'%s/restrt > inpcrd'%(self.Book[Cycle-1][ExchangeArray[r]]),
-            #                          '%s/prmtop'%(self.Book[0][r]),
+            #md_tsk.link_input_data = ['$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=exchange_array[r],cycle=cycle-1) > '$NODE_LFS_PATH/inpcrd',
+            #                          #'%s/restrt > inpcrd'%(self.book[cycle-1][exchange_array[r]]),
+            #                          '%s/prmtop'%(self.book[0][r]),
             #                          '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
 
             md_tsk.arguments = [
@@ -307,14 +281,14 @@ class SynchronousExchange(object):
                 'prmtop',
                 '-c',
                 'inpcrd',
-                #'-c', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle-1),
+                #'-c', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=cycle-1),
                 '-o',
-                'out-{replica}-{cycle}'.format(replica=r, cycle=Cycle),
+                'out-{replica}-{cycle}'.format(replica=r, cycle=cycle),
                 '-r',
                 'restrt',
-                #'-r', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=Cycle),
+                #'-r', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=cycle),
                 '-x',
-                'mdcrd-{replica}-{cycle}'.format(replica=r, cycle=Cycle),
+                'mdcrd-{replica}-{cycle}'.format(replica=r, cycle=cycle),
                 '-inf',
                 'mdinfo_{0}'.format(r)
             ]
@@ -327,26 +301,24 @@ class SynchronousExchange(object):
         q.add_stages(md_stg)
 
         ex_stg = Stage()
-        ex_stg.name = 'exstg{0}'.format(Cycle + 1)
+        ex_stg.name = 'exstg{0}'.format(cycle + 1)
 
         #Create Exchange Task
         ex_tsk = Task()
-        ex_tsk.name = 'extsk{0}'.format(Cycle + 1)
-        #ex_tsk.executable = ['/usr/bin/python']  
-        ex_tsk.pre_exec   = ['module load python/2.7.10']
-        ex_tsk.executable = ['/opt/python/bin/python']
-        ex_tsk.upload_input_data = [ExchangeMethod]
-        for r in range(Replicas):
+        ex_tsk.name = 'extsk{0}'.format(cycle + 1)
+        ex_tsk.executable = [python_path]#['/usr/bin/python']  #['/opt/python/bin/python']
+        ex_tsk.upload_input_data = [exchange_method]
+        for r in range(replicas):
 
             ex_tsk.link_input_data += ['%s/mdinfo_%s' % (md_dict[r], r)]
-        ex_tsk.pre_exec = ['mv *.py exchangemethod.py']
+        ex_tsk.pre_exec = ['mv *.py exchange_method.py']
         ex_tsk.arguments = [
-            'exchangemethod.py', '{0}'.format(Replicas), '{0}'.format(Cycle + 1)
+            'exchange_method.py', '{0}'.format(replicas), '{0}'.format(cycle + 1)
         ]
         ex_tsk.cores = 1
         ex_tsk.mpi = False
         ex_tsk.download_output_data = [
-            'exchangePairs_{0}.dat'.format(Cycle + 1)
+            'exchangePairs_{0}.dat'.format(cycle + 1)
         ]  # Finds exchange partners, also  Generates exchange history trace
 
         ex_stg.add_tasks(ex_tsk)
@@ -358,16 +330,16 @@ class SynchronousExchange(object):
 
         #stage_uids.append(ex_stg.uid)
 
-        self.Book.append(md_dict)
-        #self._prof.prof('EndEx_{0}'.format(Cycle), uid=self._uid)
+        self.book.append(md_dict)
+        #self._prof.prof('EndEx_{0}'.format(cycle), uid=self._uid)
         #print d
-        #print self.Book
+        #print self.book
         return q
 
     @property
     def totalmdlist(self):
-        print 'Book is', self.Book
-        return self.Book
+        print 'book is', self.book
+        return self.book
 
     @property
     def mdtasklist(self):
