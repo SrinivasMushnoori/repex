@@ -28,10 +28,6 @@ def writeInputs(max_temp, min_temp, replicas, timesteps, basename):
     for i in range(len(Temps_List)):
 
         mdinFile = open(os.getcwd() + '/' + basename + '.mdin', 'r')
-
-        placeholder1 = '@temperature@'
-        placeholder2 = '@timesteps@'
-
         tbuffer = mdinFile.read()
         tbuffer = tbuffer.replace("@temperature@", str(Temps_List[i]))
         tbuffer = tbuffer.replace("@timesteps@", str(timesteps))

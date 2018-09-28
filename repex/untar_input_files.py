@@ -4,8 +4,8 @@ import os
 import glob
 
 
-def untar(Input_Files):
-    tar = tarfile.open(Input_Files)
+def untar(input_files):
+    tar = tarfile.open(input_files)
     tar.extractall()
     tar.close
     os.rename(glob.glob('*.mdin')[0], 'mdin')

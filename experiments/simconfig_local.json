@@ -1,9 +1,8 @@
 {
-	"replicas"       : 16,
+	"replicas"       : 4,
 	"replica_cores"  : 1,
 	"cycles"         : 5,
         "exchange_method": "exchangeMethods/t_ex_gibbs.py", 
-	"md_executable"  : "/home/scm177/mantel/AMBER/amber14/bin/sander", 
 	"timesteps"      : 2000,
 	"basename"       : "ace-ala",
         "min_temp"       : 300,

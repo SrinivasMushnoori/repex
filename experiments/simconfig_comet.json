@@ -1,0 +1,15 @@
+{
+	"replicas"       : 24,
+	"replica_cores"  : 1,
+	"cycles"         : 2,
+        "exchange_method": "exchangeMethods/null_ex.py", 
+	"md_executable"  : "/opt/amber/16/bin/sander", 
+	"timesteps"      : 100,
+	"basename"       : "ace-ala",
+        "min_temp"       : 300,
+        "max_temp"       : 340
+        
+    
+}
+
+
