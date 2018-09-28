@@ -1,11 +1,13 @@
 {
-	"replicas"       : 4,
+	"replicas"       : 8,
 	"replica_cores"  : 1,
-	"cycles"         : 2,
-        "exchange_method" : "exchangeMethods/TempEx.py", 
+	"cycles"         : 5,
+        "exchange_method": "exchangeMethods/t_ex_gibbs.py", 
 	"md_executable"  : "/home/scm177/mantel/AMBER/amber14/bin/sander", 
-	"timesteps"      : 100,
-	"basename"       : "ace-ala"
+	"timesteps"      : 2000,
+	"basename"       : "ace-ala",
+        "min_temp"       : 300,
+        "max_temp"       : 340
         
     
 }
