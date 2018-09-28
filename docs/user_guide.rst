@@ -5,18 +5,18 @@
 User Guide
 **********
 
-***1. Invoking RepEx***
+*1. Invoking RepEx*
 
 Once you have installed RepEx, you can run synchronous replica exchange workloads. To invoke repex, run::
 
     repex simconfig.json resconfig.json
 
-***2. Configuration Files***
+*2. Configuration Files*
 
 You will notice that this requires two ``.json`` files, one for simulation configuration ``simconfig.json`` and one for resource configuration ``resconfig.json``
 A simulation is completely described by these two files. 
 
-**2.1 The Simulation Configuration File**
+*2.1 The Simulation Configuration File*
 
 The Simulation configuration file looks like::
 
@@ -24,7 +24,6 @@ The Simulation configuration file looks like::
     "replica_cores"  : 1,
     "cycles"         : 0,
     "exchangemethod" : "path/to/your/exchange/method", 
-    "md_executable"  : "path/to/md/engine/executable", 
     "timesteps"      : 100,
     "basename"       : "chemical-system",
     "min_temp"       : 300,
@@ -52,21 +51,23 @@ RepEx needs a basename to locate the files which will be used as input parameter
 RepEx provides an interface that enables the user to write their own exchange methods. This method is defined by the user in an independent python file, and the abspath must be specified here. 
 
 
-**2.2 The Resource Configuration Files**
+*2.2 The Resource Configuration Files*
  
 The Resource configuration file specifies the target resource configuration::
 
-	"resource"      : "resource.name",
-	"walltime"      : 30,
-	"cpus"          : 64,
-	"gpus_per_node" : 0,
-	"access_schema" : "gsissh",
-	"queue"         : "debug",
-	"project"       : "allocation"
+
+    "resource"      : "local.localhost",
+    "md_executable" : "/home/scm177/mantel/AMBER/amber14/bin/sander",
+    "py_executable" : "/home/scm177/VirtualEnvs/Env_RepEx/bin/python",
+    "pre_exec"      : "export amber_md_eng=14", 
+    "walltime"      : 60,
+    "cpus"          : 4
+    
 
 
+There are three mandatory keys here: ``resource`` , ``walltime`` and ``cpus`` . Additionally, the locations of the MD Engine executable and python executable need to be specified. 
 
-***3. Defining the Exchange Method:***
+*3. Defining the Exchange Method:*
 
 Below is the ``Temperature Exchange`` method, as an illustration::
 
