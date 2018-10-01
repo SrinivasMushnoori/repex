@@ -49,16 +49,29 @@ pre_exec       = resdata["pre_exec"]
 
 if __name__ == '__main__':
     
-    
-    res_dict ={
-                "resource"      : str(resdata["resource"]),
-                "walltime"      : int(resdata["walltime"]),
-                "cpus" : pilot_cores,
-                #"gpus_per_node" : int(resdata["gpus_per_node"]),
-                #"access_schema" : str(resdata["access_schema"]),
-                #"queue"         : str(resdata["queue"]),
-                #"project"       : str(resdata["project"]),  #'TG-MCB090174',
-              }
+    #if resdata["resource"] is "local.localhost":
+
+
+    try:
+        res_dict ={
+                    "resource"      : str(resdata["resource"]),
+                    "walltime"      : int(resdata["walltime"]),
+                    "cpus"          : pilot_cores,
+                    "gpus_per_node" : int(resdata["gpus_per_node"]),
+                    "access_schema" : str(resdata["access_schema"]),
+                    "queue"         : str(resdata["queue"]),
+                    "project"       : str(resdata["project"]),  
+                  }
+
+    except:
+
+        print resdata["resource"]
+        res_dict ={
+                    "resource"      : str(resdata["resource"]),
+                    "walltime"      : int(resdata["walltime"]),
+                    "cpus"          : pilot_cores,
+ 
+                  }
 
     uid1 = ru.generate_id('radical.repex.run')
     logger = ru.get_logger('radical.repex.run')
