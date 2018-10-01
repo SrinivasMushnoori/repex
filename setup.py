@@ -10,6 +10,7 @@ if __name__ == "__main__":
             license='',
             packages=setuptools.find_packages(),
                 install_requires=['numpy',
+                                  'gitpython',   
                                   'radical.pilot',
                                   'radical.entk' ],
 
