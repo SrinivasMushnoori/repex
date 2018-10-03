@@ -77,9 +77,9 @@ If you are running RepEx on a remote HPC cluster (see `here <https://radicalpilo
     "walltime"      : 60,
     "cpus"          : 4,
     "gpus_per_node" : 0,
-	"access_schema" : "<access_schema_here>",
-	"queue"         : "<queue_name_here>",
-	"project"       : "<allocation_number_here>"
+    "access_schema" : "<access_schema_here>",
+    "queue"         : "<queue_name_here>",
+    "project"       : "<allocation_number_here>"
 
 See above link for more information on these additional entries.
 
