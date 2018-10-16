@@ -42,18 +42,18 @@ There are 3 data structures maintained here:
 
 
 
-replicas = 4
+replicas = 16
 replica_cores = 1
 min_temp = 100
 max_temp = 200
-timesteps = 1000
+timesteps = 500
 basename = 'ace-ala'
 cycle = 1
 md_executable = '/home/scm177/mantel/AMBER/amber14/bin/sander'
 SYNCHRONICITY = 0.5
 wait_ratio = 0
 waiting_replicas = []
-
+wait_count = 0
 
 
 def setup_replicas(replicas, min_temp, max_temp, timesteps, basename):
@@ -91,9 +91,8 @@ def setup_replicas(replicas, min_temp, max_temp, timesteps, basename):
     untar_tsk.post_exec = []
     untar_stg.add_tasks(untar_tsk)
     setup_p.add_stages(untar_stg)
-    global init_sandbox
-    init_sandbox='$Pipeline_%s_Stage_%s_Task_%s'%(setup_p.name, untar_stg.name, untar_tsk.name)
-    print init_sandbox
+    global replica_sandbox
+    replica_sandbox='$Pipeline_%s_Stage_%s_Task_%s'%(setup_p.name, untar_stg.name, untar_tsk.name)
     return setup_p
 
 ####_----------------------------------------------------------init replicas
@@ -105,20 +104,61 @@ class Replica(object):
         self.state_history = []
 
     def replica_pipeline(self, rid, cycle, replica_cores, md_executable, timesteps, init_sandbox):
-   
+
+        def synchronicity_function():
+            # synchronicity function should evaluate the following:
+            # 1) Is the replica threshold met? I.e. is the exchange list large enough?
+            # 2) Has the replica in THIS pipeline completed enough cycles?
+            # 3) If yes, is the replica is THIS pipeline the LOWEST rid in the list?
+            #
+            # If both return True, the Synchronicity Function returns a True. 
+            # If the first is true and second is false, the synchronicity function returns False
+            # 
+
+            global waiting_replicas
+            replica_state = 'WAITING'
+            self.state_history.append(replica_state) 
+            waiting_replicas.append(rid)
+            while len(waiting_replicas) < 8:
+                time.sleep(1)
+            return True
+       
+        def exchange_function():
+            ex_tsk = Task()
+            ex_stg = Stage()
+            ex_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=rid, cycle=cycle)
+            ex_tsk.link_input_data += ['%s/inpcrd'%init_sandbox, '%s/prmtop'%init_sandbox, '%s/mdin-{replica}-{cycle}'.format(replica=rid, cycle=0)%init_sandbox]
+            ex_tsk.arguments = [ 'mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle)] #This needs to be fixed
+            ex_tsk.executable = ['t_ex_gibbs.py']
+            ex_tsk.cpu_reqs = {
+                           'processes': 1,
+                           'process_type': '',
+                           'threads_per_process': 1,
+                           'thread_type': None
+                            }
+            ex_tsk.pre_exec   = ['export dummy_variable=19']
+             
+            ex_stg.add_tasks(ex_tsk)
+            p_replica.add_stages(ex_stg)
+            
+        def end_func():
+            print "DONE"
+
+
+        
         p_replica = Pipeline()
         md_tsk = Task()
         md_stg = Stage()
         md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=rid, cycle=cycle)
-        md_tsk.link_input_data += ['%s/inpcrd'%init_sandbox, '%s/prmtop'%init_sandbox, '%s/mdin-{replica}-{cycle}'.format(replica=rid, cycle=0)%init_sandbox]
+        md_tsk.link_input_data += ['%s/inpcrd' %init_sandbox, '%s/prmtop' %init_sandbox, '%s/mdin-{replica}-{cycle}'.format(replica=rid, cycle=0) %init_sandbox]
         md_tsk.arguments = ['-O', 
-                            '-i', 'mdin-{replica}'.format(replica=rid), 
+                            '-i', 'mdin-{replica}-{cycle}'.format(replica=rid, cycle=0), 
                             '-p', 'prmtop', 
                             '-c', 'inpcrd', 
                             '-o', 'out',
-                            '-r', 'restrt',
+                            '-r', '%s/restrt-{replica}-{cycle}'.format(replica=rid, cycle=cycle) %replica_sandbox,
                             '-x', 'mdcrd',
-                            '-inf', 'mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle)]
+                            '-inf', '%s/mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle) %replica_sandbox]
         md_tsk.executable = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
         md_tsk.cpu_reqs = {
                             'processes': replica_cores,
@@ -126,90 +166,22 @@ class Replica(object):
                             'threads_per_process': 1,
                             'thread_type': None
         }
-        md_tsk.pre_exec   = ['export dummy_variable=19']
+        md_tsk.pre_exec   = ['export dummy_variable=19', 'echo $SHARED']
          
         md_stg.add_tasks(md_tsk)
+        # md_stg.post_exec = {
+        #                     'condition': synchronicity_function,
+        #                     'on_true': exchange_function,
+        #                     'on_false': end_func
+        #                   } 
+        #while md_stg.state is not "DONE":
+            #time.sleep(1)
+            #wait_count += 1
+        p_replica.add_stages(md_stg)
 
-	    def synchronicity_function():
-            """
-            Function sets replica state to "waiting", moves on to searching for other replicas in the
-            same state. As long as the number of replicas is less than the threshold set by wait_ratio, it 
-            keeps stalling with a sleep(1). The number of replicas in Waiting state is maintained client 
-            side. Once the number is reached, the function returns True and moves on to the Ex step by triggering
-            the func_on_true function that generates an exchange stage. Any other replicas that transition to 
-            "waiting" state after this transition directly to MD. This is done by returning False if number of 
-            replicas waiting is equal to or greater than the threshold and triggering func_on_false, which sets 
-            up an MD stage.   
-
-            MAJOR issue: This is triggering the EX task in all pipelines that enter the EX phase. It should be triggered
-            in only the FIRST pipeline of the waiting list. The other pipelines need to stall until the EX task completes
-            in the first pipeline of the lot. 
-
-            """
-
-
-	        replica_state = 'WAITING'
-	        self.state_history.append(replica_state) 
-	        global wait_ratio
-	        
-	        while wait_ratio < 0.5:
-
-	            
-	    
-	    def exchange_function():
-	        ex_tsk = Task()
-            ex_stg = Stage()
-            ex_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=rid, cycle=cycle)
-            ex_tsk.link_input_data += ['%s/inpcrd'%init_sandbox, '%s/prmtop'%init_sandbox, '%s/mdin-{replica}-{cycle}'.format(replica=rid, cycle=0)%init_sandbox]
-            ex_tsk.arguments = [ 'mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle)] #This needs to be fixed
-            ex_tsk.executable = ['t_ex_gibbs.py']
-            ex_tsk.cpu_reqs = {
-                            'processes': 1,
-                            'process_type': '',
-                            'threads_per_process': 1,
-                            'thread_type': None
-                              }
-            ex_tsk.pre_exec   = ['export dummy_variable=19']
-         
-            ex_stg.add_tasks(ex_tsk)
-	    
-	    def md_function(): 
-	    
-            md_tsk = Task()
-            md_stg = Stage()
-            md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=rid, cycle=cycle)
-            md_tsk.link_input_data += ['%s/inpcrd'%init_sandbox, '%s/prmtop'%init_sandbox, '%s/mdin-{replica}-{cycle}'.format(replica=rid, cycle=0)%init_sandbox]
-            md_tsk.arguments = ['-O', 
-                            '-i', 'mdin-{replica}'.format(replica=rid), 
-                            '-p', 'prmtop', 
-                            '-c', 'inpcrd', 
-                            '-o', 'out',
-                            '-r', 'restrt',
-                            '-x', 'mdcrd',
-                            '-inf', 'mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle)]
-            md_tsk.executable = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
-            md_tsk.cpu_reqs = {
-                            'processes': replica_cores,
-                            'process_type': '',
-                            'threads_per_process': 1,
-                            'thread_type': None
-            }
-            md_tsk.pre_exec   = ['export dummy_variable=19']
-         
-            md_stg.add_tasks(md_tsk)
-
-	        md_stg.post_exec = {
-	                            'condition': synchronicity_function,
-	                            'on_true': exchange_function,
-	                            'on_false': md_function
-	                        }  
-        
-
-            p_replica.add_stages(md_stg)
-	    
         return p_replica  
 
-	    
+        
 
 
             
@@ -218,10 +190,10 @@ system = setup_replicas(replicas, min_temp, max_temp, timesteps, basename)
 replica=[]
 replica_pipelines = []
 for rid in range(replicas):
-	#print rid
+    print rid
     replica = Replica()
 
-    r_pipeline = replica.replica_pipeline(rid, cycle, replica_cores, md_executable, timesteps, init_sandbox)
+    r_pipeline = replica.replica_pipeline(rid, cycle, replica_cores, md_executable, timesteps, replica_sandbox)
     replica_pipelines.append(r_pipeline)
 
 os.environ['RADICAL_PILOT_DBURL'] = "mongodb://smush:key1209@ds147361.mlab.com:47361/db_repex_4"
