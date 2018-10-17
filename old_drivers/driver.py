@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import radical.utils as ru
-import radical.analytics as ra
+#import radical.analytics as ra
 import radical.entk as re
 from radical.entk import Pipeline, Stage, Task, AppManager
 import os
@@ -14,17 +14,12 @@ import git
 
 
 
-os.environ['RADICAL_SAGA_VERBOSE']         = 'INFO'
-os.environ['RP_ENABLE_OLD_DEFINES']        = 'True'
-os.environ['RADICAL_PROFILE']              = 'True'
-os.environ['RADICAL_ENTK_PROFILE']         = 'True'
+#os.environ['RADICAL_SAGA_VERBOSE']         = 'INFO'
 os.environ['RADICAL_ENTK_VERBOSE']         = 'INFO'
 os.environ['RP_ENABLE_OLD_DEFINES']        = 'True'
 os.environ['SAGA_PTY_SSH_TIMEOUT']         = '2000'
-os.environ['RADICAL_VERBOSE']              = 'INFO'
-os.environ['RADICAL_PILOT_PROFILE']        = 'True'
-os.environ['RADICAL_REPEX_SYNCEX_PROFILE'] = 'True'
-os.environ['RADICAL_REPEX_RUN_PROFILE']    = 'True'
+#os.environ['RADICAL_VERBOSE']              = 'INFO'
+
 
 """
 Every instance of the Replica object instantiates a pipeline for itself. Once the pipeline is created, an MD task is carried out.
@@ -52,10 +47,11 @@ cycle = 1
 md_executable = '/home/scm177/mantel/AMBER/amber14/bin/sander'
 SYNCHRONICITY = 0.5
 wait_ratio = 0
-wait_size = 3
+max_waiting_list = 2
 waiting_replicas = []
+min_completed_cycles = 3
 
-replica_cycles = []
+replica_cycles = [0]*replicas
 wait_count = 0
 
 
@@ -124,13 +120,23 @@ class Replica(object):
             """
             global replica_cycles
             global ex_pipeline
+            global max_waiting_list
+            global min_completed_cycles
+            print replica_cycles, rid
             replica_cycles[rid] += 1
+            print replica_cycles
 
-            while min(replica_cycles) < min_completed_cycles 
+            while min(replica_cycles) < min_completed_cycles: 
                 waiting_replicas.append(rid)
-                while len(waiting_replicas) < max_waiting_list
-                    time.sleep(1)
+                print waiting_replicas
+                while len(waiting_replicas) < max_waiting_list:
+                    
+                    time.sleep(0.01)  # There seems to be an issue here: instead of sleeping until the waiting list grows
+                                      # large enough, the master function goes to sleep making it so that the waiting list
+                                      # simply does not get populated beyond the first entry.  
+                    
                 ex_pipeline = min(waiting_replicas)
+                print "Synchronicity Function returns True"
                 return True
 
 
@@ -151,7 +157,7 @@ class Replica(object):
             the EX task.
             """
             
-            if rid = ex_pipeline: ### FIX THIS TO REFER TO THE CORRECT NAME OF THE EX PIPELINE
+            if rid is ex_pipeline: ### FIX THIS TO REFER TO THE CORRECT NAME OF THE EX PIPELINE
 
                 # This adds an Ex task. 
                 ex_tsk = Task()
@@ -210,7 +216,7 @@ class Replica(object):
 
 
             else:
-                while ex_stg.state is not "COMPLETED":
+                while ex_stg.state is not "COMPLETED":  ### FIX THIS TO REFER TO THE CORRECT NAME OF THE EX STAGE
                     time.sleep(1)
                 
                 md_tsk = Task()
@@ -244,6 +250,8 @@ class Replica(object):
                           } 
 
                 p_replica.add_stages(md_stg)
+
+                waiting_replicas = []  # EMPTY REPLICA WAITING LIST 
 
 
         def end_func():
