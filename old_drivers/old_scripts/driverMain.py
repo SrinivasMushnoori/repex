@@ -33,8 +33,8 @@ if __name__ == '__main__':
     task_uids = dict()
 
     Stages = 3
-    Replicas = 2
-    Replica_Cores = 32
+    Replicas = 24
+    Replica_Cores = 1
 
     Pilot_Cores = Replicas * Replica_Cores
 
