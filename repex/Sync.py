@@ -1,11 +1,7 @@
 import radical.utils as ru
 from radical.entk import Pipeline, Stage, Task
-import os
-import tarfile
+import os, tarfile, glob, time, git
 import writeInputs
-import time
-import git
-
 
 class Replica(object):
 
@@ -22,19 +18,19 @@ class GROMACSTask(Task):
 
     # GROMACS specific MD task class
 
-    def __init__(self, cores, mpi=True):
+    def __init__(self, md_executable, cores, pre_exec):
 
         super(GROMACSTask, self).__init__()
-        self._executable = ['']
+        self._executable = [md_executable]
         self._cpu_reqs = {
             'processes': cores,
             'process_type': '',
             'threads_per_process': 1,
             'thread_type': None
         }
-        self._pre_exec = ['module load gromacs']
-        self._post_exec = ['gmx energy < Energy.input']
-        self._mpi = mpi
+        #self._pre_exec = ['grompp'] ### Set at individual task level
+        #self._post_exec = ['gmx energy -f *.edr -o out.xvg -b 1000000 < inp.ener'] ### Set at individual task level
+        #self._mpi = mpi
 
 
 class AMBERTask(Task):
@@ -103,26 +99,19 @@ class SynchronousExchange(object):
             timesteps=timesteps,
             basename=basename)
 
-        self._prof.prof('EndWriteInputs', uid=self._uid)
-
-        self._prof.prof('InitTar', uid=self._uid)
-        #Create Tarball of input data
-
         tar = tarfile.open("input_files.tar", "w")
-        for name in [
-                basename + ".prmtop", basename + ".inpcrd", basename + ".mdin"
-        ]:
+        for name in glob.glob('*.itp')+glob.glob('*.gro')+glob.glob('*.top')+glob.glob('*.ener'): #this line has been edited for gromacs
             tar.add(name)
         for r in range(replicas):
-            tar.add('mdin_{0}'.format(r))
+            tar.add('replica_{0}.mdp'.format(r))
         tar.close()
 
         #delete all input files outside the tarball
 
         for r in range(replicas):
-            os.remove('mdin_{0}'.format(r))
+            os.remove('replica_{0}.mdp'.format(r))
 
-        self._prof.prof('EndTar', uid=self._uid)
+   
 
         #Create Untar Stage
 
@@ -139,17 +128,13 @@ class SynchronousExchange(object):
         untar_tsk.name = 'untartsk'
         untar_tsk.executable = ['python']
 
-        untar_tsk.upload_input_data = [
-            str(aux_function_path)+'/repex/untar_input_files.py', 'input_files.tar'
-        ]
+        untar_tsk.upload_input_data = [str(aux_function_path)+'/repex/untar_input_files.py', 'input_files.tar']
         untar_tsk.arguments = ['untar_input_files.py', 'input_files.tar']
         untar_tsk.cpu_reqs = 1
-        #untar_tsk.post_exec         = ['']
         untar_stg.add_tasks(untar_tsk)
         p.add_stages(untar_stg)
 
-        tar_dict[0] = '$Pipeline_%s_Stage_%s_Task_%s' % (
-            p.name, untar_stg.name, untar_tsk.name)
+        tar_dict[0] = '$Pipeline_%s_Stage_%s_Task_%s' % (p.name, untar_stg.name, untar_tsk.name)
 
         # First MD stage: needs to be defined separately since workflow is not built from a predetermined order, also equilibration needs to happen first. 
 
@@ -158,38 +143,43 @@ class SynchronousExchange(object):
         self._prof.prof('InitMD_0', uid=self._uid)
 
         # MD tasks
+        md_engine = "GROMACS"
 
         for r in range(replicas):
-
-            md_tsk = AMBERTask(cores=replica_cores, md_executable=md_executable, pre_exec=pre_exec)
+            
+            if md_engine is "AMBER":
+                md_tsk = AMBERTask(cores=replica_cores, md_executable=md_executable, pre_exec=pre_exec)
+            elif md_engine is "GROMACS":
+                md_tsk = GROMACSTask(cores=replica_cores, md_executable=md_executable, pre_exec=pre_exec)
             md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=r, cycle=0)
             md_tsk.link_input_data += [
-                '%s/inpcrd' % tar_dict[0],
-                '%s/prmtop' % tar_dict[0],
-                '%s/mdin_{0}'.format(r) %
-                tar_dict[0]  #Use for full temperature exchange
+                '%s/FF.gro' % tar_dict[0],
+                '%s/FF.top' % tar_dict[0],
+                '%s/FF.itp' % tar_dict[0],
+                '%s/martini_v2.2.itp' % tar_dict[0],
+                '%s/replica_{0}.mdp'.format(r) % tar_dict[0],  #Use for full temperature exchange
+                '%s/inp.ener' % tar_dict[0]
             ]
+            md_tsk.pre_exec = [md_executable + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
             md_tsk.arguments = [
-                '-O',
-                '-p',
-                'prmtop',
-                '-i',
-                'mdin_{0}'.format(r),
-                '-c',
-                'inpcrd',
-                '-o',
-                'out-{replica}-{cycle}'.format(replica=r, cycle=0),
-                '-r',
-                'restrt'.format(replica=r, cycle=0),
-                #'-r',  'rstrt-{replica}-{cycle}'.format(replica=r,cycle=0),
-                '-x',
-                'mdcrd-{replica}-{cycle}'.format(replica=r, cycle=0),
-                #'-o',  '$NODE_LFS_PATH/out-{replica}-{cycle}'.format(replica=r,cycle=0),
-                #'-r',  '$NODE_LFS_PATH/rstrt-{replica}-{cycle}'.format(replica=r,cycle=0),
-                #'-x',  '$NODE_LFS_PATH/mdcrd-{replica}-{cycle}'.format(replica=r,cycle=0),
-                '-inf',
-                'mdinfo_{0}'.format(r)
+                'mdrun', '-s', 'FF.tpr', '-deffnm', 'FF', '-c', 'FF-out.gro'
+                #'-p',
+                #'prmtop',
+                #'-i',
+                #'mdin_{0}'.format(r),
+                #'-c',
+                #'inpcrd',
+                #'-o',
+                #'out-{replica}-{cycle}'.format(replica=r, cycle=0),
+                #'-r',
+                #'restrt'.format(replica=r, cycle=0),
+                #'-x',
+                #'mdcrd-{replica}-{cycle}'.format(replica=r, cycle=0),
+                #'-inf',
+                #'mdinfo_{0}'.format(r)
             ]
+            #####In the next line I multiply the timesteps with size of 1 timestep. This should be user input. 
+            md_tsk.post_exec = [md_executable + ' energy -f *.edr -b {timesteps}'.format(timesteps=timesteps*0.025)+' < inp.ener > '+'mdinfo_{replica}'.format(replica=r)]
             md_dict[r] = '$Pipeline_%s_Stage_%s_Task_%s' % (
                 p.name, md_stg.name, md_tsk.name)
 
@@ -227,7 +217,7 @@ class SynchronousExchange(object):
         self.book.append(md_dict)
         return p
          #def general_cycle(replicas, replica_cores, cycle, python_path, md_executable, exchange_method, pre_exec): 
-    def general_cycle(self, replicas, replica_cores, cycle, python_path, md_executable, exchange_method, pre_exec):
+    def general_cycle(self, replicas, replica_cores, cycle, python_path, md_executable, exchange_method, timesteps, pre_exec):
         """
         All cycles after the initial cycle
         Pulls up exchange pairs file and generates the new workflow
@@ -250,21 +240,27 @@ class SynchronousExchange(object):
         md_dict = dict()
 
         #Create MD stage
-
+        md_engine = "GROMACS"
         md_stg = Stage()
         md_stg.name = 'mdstage{0}'.format(cycle)
 
         self._prof.prof('InitMD_{0}'.format(cycle), uid=self._uid)
 
         for r in range(replicas):
-            md_tsk = AMBERTask(cores=replica_cores, md_executable=md_executable, pre_exec=pre_exec)
+            if md_engine is "AMBER":
+                md_tsk = AMBERTask(cores=replica_cores, md_executable=md_executable, pre_exec=pre_exec)
+            elif md_engine is "GROMACS":
+                md_tsk = GROMACSTask(cores=replica_cores, md_executable=md_executable, pre_exec=pre_exec)
+            
             md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(
                 replica=r, cycle=cycle)
             md_tsk.link_input_data = [
-                '%s/restrt > inpcrd' %
-                (self.book[cycle - 1][exchange_array[r]]),
-                '%s/prmtop' % (self.book[0][r]),
-                '%s/mdin_{0}'.format(r) % (self.book[0][r])
+                '%s/FF-out.gro > FF.gro' % (self.book[cycle - 1][exchange_array[r]]),
+                '%s/FF.top' % (self.book[0][r]),
+                '%s/FF.itp' % (self.book[0][r]),
+                '%s/martini_v2.2.itp' % self.book[0][r],
+                '%s/replica_{0}.mdp'.format(r) % (self.book[0][r]),
+                '%s/inp.ener' % (self.book[0][r])
             ]
 
             ### The Following softlinking scheme is to be used ONLY if node local file system is to be used: not fully supported yet.
@@ -272,26 +268,28 @@ class SynchronousExchange(object):
             #                          #'%s/restrt > inpcrd'%(self.book[cycle-1][exchange_array[r]]),
             #                          '%s/prmtop'%(self.book[0][r]),
             #                          '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
-
-            md_tsk.arguments = [
-                '-O',
-                '-i',
-                'mdin_{0}'.format(r),
-                '-p',
-                'prmtop',
-                '-c',
-                'inpcrd',
-                #'-c', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=cycle-1),
-                '-o',
-                'out-{replica}-{cycle}'.format(replica=r, cycle=cycle),
-                '-r',
-                'restrt',
-                #'-r', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=cycle),
-                '-x',
-                'mdcrd-{replica}-{cycle}'.format(replica=r, cycle=cycle),
-                '-inf',
-                'mdinfo_{0}'.format(r)
+            md_tsk.pre_exec = [md_executable + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
+            md_tsk.arguments = [ 'mdrun', '-s', 'FF.tpr', '-deffnm', 'FF', '-c', 'FF-out.gro'
+                # '-O',
+                # '-i',
+                # 'mdin_{0}'.format(r),
+                # '-p',
+                # 'prmtop',
+                # '-c',
+                # 'inpcrd',
+                # #'-c', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=cycle-1),
+                # '-o',
+                # 'out-{replica}-{cycle}'.format(replica=r, cycle=cycle),
+                # '-r',
+                # 'restrt',
+                # #'-r', 'rstrt-{replica}-{cycle}'.format(replica=r,cycle=cycle),
+                # '-x',
+                # 'mdcrd-{replica}-{cycle}'.format(replica=r, cycle=cycle),
+                # '-inf',
+                # 'mdinfo_{0}'.format(r)
             ]
+            #####In the next line I multiply the timesteps with size of 1 timestep. This should be user input. 
+            md_tsk.post_exec = [md_executable + ' energy -f *.edr -b {timesteps}'.format(timesteps=timesteps*0.025)+' < inp.ener > '+'mdinfo_{replica}'.format(replica=r)]
             #md_tsk.tag              = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
             md_dict[r] = '$Pipeline_%s_Stage_%s_Task_%s' % (
                 q.name, md_stg.name, md_tsk.name)

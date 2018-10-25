@@ -101,7 +101,7 @@ if __name__ == '__main__':
         prof.prof('Create_Workflow_{0}'.format(cycle+1), uid=uid1)
 
                           
-        exchange_gen            = synchronous_exchange.general_cycle(replicas, replica_cores, cycle, python_path, md_executable, exchange_method, pre_exec)
+        exchange_gen            = synchronous_exchange.general_cycle(replicas, replica_cores, cycle, python_path, md_executable, exchange_method, timesteps, pre_exec)
         
         appman.workflow = set([exchange_gen]) # Assign the workflow as a set of Pipelines to the Application Manager       
 
