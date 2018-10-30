@@ -82,7 +82,7 @@ if __name__ == '__main__':
     synchronous_exchange=SynchronousExchange()
     
 
-    appman                  = AppManager(autoterminate=False, port=32769)  # Create Application Manager
+    appman                  = AppManager(autoterminate=False, port=32769, resubmit_failed=True)  # Create Application Manager
     appman.resource_desc = res_dict # Assign resource manager to the Application Manager      
    
     exchange                = synchronous_exchange.init_cycle(replicas, replica_cores, python_path, md_executable, exchange_method, min_temp, max_temp, timesteps, basename, pre_exec)

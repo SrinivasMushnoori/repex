@@ -1,12 +1,12 @@
 {
-	"replicas"       : 4,
-	"replica_cores"  : 1,
-	"cycles"         : 1,
+	"replicas"       : 28,
+	"replica_cores"  : 7,
+	"cycles"         : 500,
     "exchange_method": "exchangeMethods/t_ex_gibbs.py", 
-	"timesteps"      : 2000,
+	"timesteps"      : 1000,
 	"basename"       : "FF",
     "min_temp"       : 300,
-    "max_temp" : 310
+    "max_temp" : 370
         
     
 }

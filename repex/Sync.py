@@ -160,9 +160,10 @@ class SynchronousExchange(object):
                 '%s/replica_{0}.mdp'.format(r) % tar_dict[0],  #Use for full temperature exchange
                 '%s/inp.ener' % tar_dict[0]
             ]
+            #md_tsk.pre_exec = ['/opt/apps/intel17/impi17_0/gromacs/2016.3/bin/gmx' + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
             md_tsk.pre_exec = [md_executable + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
             md_tsk.arguments = [
-                'mdrun', '-s', 'FF.tpr', '-deffnm', 'FF', '-c', 'FF-out.gro'
+                'mdrun','-s', 'FF.tpr', '-deffnm', 'FF-{replica}-{cycle}'.format(replica=r, cycle=0), '-c', 'FF-out.gro'
                 #'-p',
                 #'prmtop',
                 #'-i',
@@ -199,12 +200,13 @@ class SynchronousExchange(object):
 
         ex_tsk = Task()
         ex_tsk.name = 'extsk0'
-        #ex_tsk.pre_exec             = ['module load python/2.7.10']
         ex_tsk.executable = [python_path]
         ex_tsk.upload_input_data = [exchange_method]
         for r in range(replicas):
             ex_tsk.link_input_data += ['%s/mdinfo_%s' % (md_dict[r], r)]
-        ex_tsk.pre_exec = ['mv *.py exchange_method.py']
+        ex_tsk.pre_exec = [
+                           'export LD_LIBRARY_PATH=/opt/intel/intelpython2/lib', 
+                           'mv *.py exchange_method.py']
         ex_tsk.arguments = ['exchange_method.py', '{0}'.format(replicas), '0']
         ex_tsk.cores = 1
         ex_tsk.mpi = False
@@ -269,7 +271,7 @@ class SynchronousExchange(object):
             #                          '%s/prmtop'%(self.book[0][r]),
             #                          '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
             md_tsk.pre_exec = [md_executable + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
-            md_tsk.arguments = [ 'mdrun', '-s', 'FF.tpr', '-deffnm', 'FF', '-c', 'FF-out.gro'
+            md_tsk.arguments = ['mdrun','-s', 'FF.tpr', '-deffnm', 'FF-{replica}-{cycle}'.format(replica=r, cycle=cycle), '-c', 'FF-out.gro'
                 # '-O',
                 # '-i',
                 # 'mdin_{0}'.format(r),
@@ -309,7 +311,9 @@ class SynchronousExchange(object):
         for r in range(replicas):
 
             ex_tsk.link_input_data += ['%s/mdinfo_%s' % (md_dict[r], r)]
-        ex_tsk.pre_exec = ['mv *.py exchange_method.py']
+        ex_tsk.pre_exec = [
+                           'export LD_LIBRARY_PATH=/opt/intel/intelpython2/lib',
+                           'mv *.py exchange_method.py']
         ex_tsk.arguments = [
             'exchange_method.py', '{0}'.format(replicas), '{0}'.format(cycle + 1)
         ]

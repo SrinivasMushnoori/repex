@@ -1,9 +1,13 @@
 {
-	"resource"      : "local.localhost",
-    "md_executable" : "/usr/local/gromacs/bin/gmx",
-    "py_executable" : "/home/scm177/VirtualEnvs/Env_RepEx/bin/python",
-    "pre_exec"      : "export amber_md=amber_14", 
-	"walltime"      : 60,
-    "cpus" : 4
+	"resource"      : "xsede.bridges",
+    "md_executable" : "/opt/packages/gromacs-CPU-2018/bin/gmx_mpi",
+    "py_executable" : "/opt/intel/intelpython2/bin/python2.7",
+    "pre_exec"      : "export GROMACS=gmx_2016.6", 
+	"walltime"      : 1800,
+    "cpus"          : 196,
+    "gpus_per_node" : 0,
+	"access_schema" : "gsissh",
+	"queue"         : "RM",
+    "project" : "mr560ip"
              
 }
