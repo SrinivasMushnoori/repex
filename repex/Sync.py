@@ -163,7 +163,7 @@ class SynchronousExchange(object):
             #md_tsk.pre_exec = ['/opt/apps/intel17/impi17_0/gromacs/2016.3/bin/gmx' + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
             md_tsk.pre_exec = [md_executable + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
             md_tsk.arguments = [
-                'mdrun','-s', 'FF.tpr', '-deffnm', 'FF-{replica}-{cycle}'.format(replica=r, cycle=0), '-c', 'FF-out.gro'
+                'mdrun','-s', 'FF.tpr', '-deffnm', '%s/FF-{replica}-{cycle}'.format(replica=r, cycle=0)%tar_dict[0], '-c', 'FF-out.gro', '-e', 'ener.edr'
                 #'-p',
                 #'prmtop',
                 #'-i',
@@ -180,6 +180,7 @@ class SynchronousExchange(object):
                 #'mdinfo_{0}'.format(r)
             ]
             #####In the next line I multiply the timesteps with size of 1 timestep. This should be user input. 
+            #md_tsk.download_output_data = ['FF-out.gro']
             md_tsk.post_exec = [md_executable + ' energy -f *.edr -b {timesteps}'.format(timesteps=timesteps*0.025)+' < inp.ener > '+'mdinfo_{replica}'.format(replica=r)]
             md_dict[r] = '$Pipeline_%s_Stage_%s_Task_%s' % (
                 p.name, md_stg.name, md_tsk.name)
@@ -271,7 +272,7 @@ class SynchronousExchange(object):
             #                          '%s/prmtop'%(self.book[0][r]),
             #                          '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
             md_tsk.pre_exec = [md_executable + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
-            md_tsk.arguments = ['mdrun','-s', 'FF.tpr', '-deffnm', 'FF-{replica}-{cycle}'.format(replica=r, cycle=cycle), '-c', 'FF-out.gro'
+            md_tsk.arguments = ['mdrun','-s', 'FF.tpr', '-deffnm',  '%s/FF-{replica}-{cycle}'.format(replica=r, cycle=cycle)%tar_dict[0], '-c', 'FF-out.gro', '-e', 'ener.edr'
                 # '-O',
                 # '-i',
                 # 'mdin_{0}'.format(r),
@@ -291,6 +292,7 @@ class SynchronousExchange(object):
                 # 'mdinfo_{0}'.format(r)
             ]
             #####In the next line I multiply the timesteps with size of 1 timestep. This should be user input. 
+            #md_tsk.download_output_data = ['FF-out.gro']
             md_tsk.post_exec = [md_executable + ' energy -f *.edr -b {timesteps}'.format(timesteps=timesteps*0.025)+' < inp.ener > '+'mdinfo_{replica}'.format(replica=r)]
             #md_tsk.tag              = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
             md_dict[r] = '$Pipeline_%s_Stage_%s_Task_%s' % (
