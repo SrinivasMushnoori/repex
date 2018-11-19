@@ -64,13 +64,13 @@ class SynchronousExchange(object):
         ]  #bookkeeping, maintains a record of all MD tasks carried out
         self.md_task_list = []
         self.ex_task_list = []
-
+        self._tar_dict = dict()
 
         self._uid = ru.generate_id('radical.repex.syncex')
         self._logger = ru.get_logger('radical.repex.syncex')
         self._prof = ru.Profiler(name=self._uid)
         self._prof.prof('Initinit', uid=self._uid)
- 
+
     def init_cycle(self, replicas, replica_cores, python_path, md_executable, exchange_method, min_temp, max_temp, timesteps, basename, pre_exec):  # "cycle" = 1 MD stage plus the subsequent exchange computation
         """ 
         Initial cycle consists of:
@@ -86,6 +86,7 @@ class SynchronousExchange(object):
         p.name = 'initpipeline'
 
         md_dict = dict()  #bookkeeping
+        
         tar_dict = dict()  #bookkeeping
 
         #Write the input files
@@ -133,9 +134,12 @@ class SynchronousExchange(object):
         untar_tsk.cpu_reqs = 1
         untar_stg.add_tasks(untar_tsk)
         p.add_stages(untar_stg)
-
+        #replica_sandbox ='$Pipeline_%s_Stage_%s_Task_%s'%(setup_p.name, untar_stg.name, untar_tsk.name)
+        global tar_dict
+        tar_dict = dict()  #bookkeeping
         tar_dict[0] = '$Pipeline_%s_Stage_%s_Task_%s' % (p.name, untar_stg.name, untar_tsk.name)
-
+        #global replica_sandbox
+        #replica_sandbox='$Pipeline_%s_Stage_%s_Task_%s'%(setup_p.name, untar_stg.name, untar_tsk.name)
         # First MD stage: needs to be defined separately since workflow is not built from a predetermined order, also equilibration needs to happen first. 
 
         md_stg = Stage()
@@ -160,10 +164,11 @@ class SynchronousExchange(object):
                 '%s/replica_{0}.mdp'.format(r) % tar_dict[0],  #Use for full temperature exchange
                 '%s/inp.ener' % tar_dict[0]
             ]
-            #md_tsk.pre_exec = ['/opt/apps/intel17/impi17_0/gromacs/2016.3/bin/gmx' + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
-            md_tsk.pre_exec = [md_executable + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
+            md_tsk.pre_exec = ['module load gromacs','export GMX_MAXBACKUP=-1', '/opt/apps/intel17/impi17_0/gromacs/2016.4/bin/gmx' + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
+            #md_tsk.pre_exec = ['export GMX_MAXBACKUP=-1', md_executable + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
             md_tsk.arguments = [
-                'mdrun','-s', 'FF.tpr', '-deffnm', '%s/FF-{replica}-{cycle}'.format(replica=r, cycle=0)%tar_dict[0], '-c', 'FF-out.gro', '-e', 'ener.edr'
+                'mdrun','-s', 'FF.tpr', '-ntmpi','2','-deffnm', 'FF-{replica}-{cycle}'.format(replica=r, cycle=0), '-c', 'FF-out.gro', '-e', 'ener.edr',
+                '-x', '%s/FF-{replica}-{cycle}.xtc'.format(replica=r, cycle=0)%tar_dict[0]
                 #'-p',
                 #'prmtop',
                 #'-i',
@@ -181,7 +186,7 @@ class SynchronousExchange(object):
             ]
             #####In the next line I multiply the timesteps with size of 1 timestep. This should be user input. 
             #md_tsk.download_output_data = ['FF-out.gro']
-            md_tsk.post_exec = [md_executable + ' energy -f *.edr -b {timesteps}'.format(timesteps=timesteps*0.025)+' < inp.ener > '+'mdinfo_{replica}'.format(replica=r)]
+            md_tsk.post_exec = ['/opt/apps/intel17/impi17_0/gromacs/2016.4/bin/gmx' + ' energy -f *.edr -b {timesteps}'.format(timesteps=timesteps*0.025)+' < inp.ener > '+'mdinfo_{replica}'.format(replica=r)]
             md_dict[r] = '$Pipeline_%s_Stage_%s_Task_%s' % (
                 p.name, md_stg.name, md_tsk.name)
 
@@ -206,7 +211,7 @@ class SynchronousExchange(object):
         for r in range(replicas):
             ex_tsk.link_input_data += ['%s/mdinfo_%s' % (md_dict[r], r)]
         ex_tsk.pre_exec = [
-                           'export LD_LIBRARY_PATH=/opt/intel/intelpython2/lib', 
+                           #'export LD_LIBRARY_PATH=/opt/intel/intelpython2/lib', 
                            'mv *.py exchange_method.py']
         ex_tsk.arguments = ['exchange_method.py', '{0}'.format(replicas), '0']
         ex_tsk.cores = 1
@@ -271,8 +276,10 @@ class SynchronousExchange(object):
             #                          #'%s/restrt > inpcrd'%(self.book[cycle-1][exchange_array[r]]),
             #                          '%s/prmtop'%(self.book[0][r]),
             #                          '%s/mdin_{0}'.format(r)%(self.Book[0][r])]
-            md_tsk.pre_exec = [md_executable + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
-            md_tsk.arguments = ['mdrun','-s', 'FF.tpr', '-deffnm',  '%s/FF-{replica}-{cycle}'.format(replica=r, cycle=cycle)%tar_dict[0], '-c', 'FF-out.gro', '-e', 'ener.edr'
+            #md_tsk.pre_exec = ['export GMX_MAXBACKUP=-1', md_executable + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
+            md_tsk.pre_exec = ['module load gromacs','export GMX_MAXBACKUP=-1', '/opt/apps/intel17/impi17_0/gromacs/2016.4/bin/gmx' + ' grompp -f *.mdp -c FF.gro -o FF.tpr -p FF.top']
+            md_tsk.arguments = ['mdrun','-s', 'FF.tpr', '-ntmpi','2','-deffnm',  'FF-{replica}-{cycle}'.format(replica=r, cycle=cycle), '-c', 'FF-out.gro', '-e', 'ener.edr',
+                                '-x', '%s/FF-{replica}-{cycle}.xtc'.format(replica=r, cycle=cycle)%tar_dict[0] 
                 # '-O',
                 # '-i',
                 # 'mdin_{0}'.format(r),
@@ -293,7 +300,7 @@ class SynchronousExchange(object):
             ]
             #####In the next line I multiply the timesteps with size of 1 timestep. This should be user input. 
             #md_tsk.download_output_data = ['FF-out.gro']
-            md_tsk.post_exec = [md_executable + ' energy -f *.edr -b {timesteps}'.format(timesteps=timesteps*0.025)+' < inp.ener > '+'mdinfo_{replica}'.format(replica=r)]
+            md_tsk.post_exec = ['/opt/apps/intel17/impi17_0/gromacs/2016.3/bin/gmx' + ' energy -f *.edr -b {timesteps}'.format(timesteps=timesteps*0.025)+' < inp.ener > '+'mdinfo_{replica}'.format(replica=r)]
             #md_tsk.tag              = 'mdtsk-{replica}-{cycle}'.format(replica=r,cycle=0)
             md_dict[r] = '$Pipeline_%s_Stage_%s_Task_%s' % (
                 q.name, md_stg.name, md_tsk.name)
@@ -314,7 +321,7 @@ class SynchronousExchange(object):
 
             ex_tsk.link_input_data += ['%s/mdinfo_%s' % (md_dict[r], r)]
         ex_tsk.pre_exec = [
-                           'export LD_LIBRARY_PATH=/opt/intel/intelpython2/lib',
+                           #'export LD_LIBRARY_PATH=/opt/intel/intelpython2/lib',
                            'mv *.py exchange_method.py']
         ex_tsk.arguments = [
             'exchange_method.py', '{0}'.format(replicas), '{0}'.format(cycle + 1)
