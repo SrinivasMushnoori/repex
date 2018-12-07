@@ -37,7 +37,7 @@ There are 3 data structures maintained here:
 
 
 
-replicas = 8
+replicas = 4
 replica_cores = 1
 min_temp = 100
 max_temp = 200
@@ -104,6 +104,64 @@ class Replica(object):
 
     def replica_pipeline(self, rid, cycle, replica_cores, md_executable, timesteps, replica_sandbox):
 
+        def add_ex_stg(rid, cycle):
+            #ex stg here
+            ex_tsk = Task()
+            ex_stg = Stage()
+            ex_tsk.name = 'extsk-{replica}-{cycle}'.format(replica=rid, cycle=cycle)
+            for rid in range(len(waiting_replicas)):
+                ex_tsk.link_input_data += ['%s/mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle)%replica_sandbox]
+               
+            ex_tsk.arguments = ['t_ex_gibbs_async.py', len(waiting_replicas)] #This needs to be fixed
+            ex_tsk.executable = ['python']
+            ex_tsk.cpu_reqs = {
+                           'processes': 1,
+                           'process_type': '',
+                           'threads_per_process': 1,
+                           'thread_type': None
+                            }
+            ex_tsk.pre_exec   = ['export dummy_variable=19']
+             
+            ex_stg.add_tasks(ex_tsk)
+            return ex_stg
+            
+
+        def add_md_stg(rid,cycle):
+            #md stg h
+            md_tsk = Task()
+            md_stg = Stage()
+            md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=rid, cycle=cycle)
+            md_tsk.link_input_data += ['%s/inpcrd' %replica_sandbox, 
+                                   '%s/prmtop' %replica_sandbox, 
+                                   '%s/mdin-{replica}-{cycle}'.format(replica=rid, cycle=0) %replica_sandbox]
+            md_tsk.arguments = ['-O', 
+                            '-i',   'mdin-{replica}-{cycle}'.format(replica=rid, cycle=0), 
+                            '-p',   'prmtop', 
+                            '-c',   'inpcrd', 
+                            '-o',   'out',
+                            '-r',   '%s/restrt-{replica}-{cycle}'.format(replica=rid, cycle=cycle) %replica_sandbox,
+                            '-x',   'mdcrd',
+                            '-inf', '%s/mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle) %replica_sandbox]
+            md_tsk.executable = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
+            md_tsk.cpu_reqs = {
+                            'processes': replica_cores,
+                            'process_type': '',
+                            'threads_per_process': 1,
+                            'thread_type': None
+                               }
+            md_tsk.pre_exec   = ['export dummy_variable=19', 'echo $SHARED']
+         
+            md_stg.add_tasks(md_tsk)
+            md_stg.post_exec = {
+                            'condition': synchronicity_function,
+                            'on_true': propagate_cycle,
+                            'on_false': end_func
+                          } 
+
+            return md_stg
+
+
+
         def synchronicity_function():
             """
             synchronicity function should evaluate the following:
@@ -126,15 +184,15 @@ class Replica(object):
             replica_cycles[rid] += 1
             print replica_cycles
 
-            while min(replica_cycles) < min_completed_cycles: 
+            if min(replica_cycles) < min_completed_cycles: 
                 waiting_replicas.append(rid)
-                print waiting_replicas
-                while len(waiting_replicas) < max_waiting_list:
-                    
-                    time.sleep(0.01)  # There seems to be an issue here: instead of sleeping until the waiting list grows
-                                      # large enough, the master function goes to sleep making it so that the waiting list
-                                      # simply does not get populated beyond the first entry.  
-                    
+                
+                if len(waiting_replicas) < max_waiting_list:
+                    p_replica.suspend()
+                #p_replica.resume()  # There seems to be an issue here. We potentially need the "resume" function to be triggered
+                                     # by a different pipeline.
+
+
                 ex_pipeline = min(waiting_replicas)
                 print "Synchronicity Function returns True"
                 return True
@@ -160,95 +218,19 @@ class Replica(object):
             if rid is ex_pipeline: ### FIX THIS TO REFER TO THE CORRECT NAME OF THE EX PIPELINE
 
                 # This adds an Ex task. 
-                ex_tsk = Task()
-                ex_stg = Stage()
-                ex_tsk.name = 'extsk-{replica}-{cycle}'.format(replica=rid, cycle=cycle)
-                for rid in range(len(waiting_replicas)):
-                    ex_tsk.link_input_data += ['%s/mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle)%replica_sandbox]
-                
-                ex_tsk.arguments = ['t_ex_gibbs_async.py', len(waiting_replicas)] #This needs to be fixed
-                ex_tsk.executable = ['python']
-                ex_tsk.cpu_reqs = {
-                           'processes': 1,
-                           'process_type': '',
-                           'threads_per_process': 1,
-                           'thread_type': None
-                            }
-                ex_tsk.pre_exec   = ['export dummy_variable=19']
-             
-                ex_stg.add_tasks(ex_tsk)
+                ex_stg = add_ex_stg(rid, cycle) 
                 p_replica.add_stages(ex_stg)
-                
 
                 # And the next MD stage
-
-                md_tsk = Task()
-                md_stg = Stage()
-                md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=rid, cycle=cycle)
-                md_tsk.link_input_data += ['%s/inpcrd' %replica_sandbox, 
-                                   '%s/prmtop' %replica_sandbox, 
-                                   '%s/mdin-{replica}-{cycle}'.format(replica=rid, cycle=0) %replica_sandbox]
-                md_tsk.arguments = ['-O', 
-                            '-i',   'mdin-{replica}-{cycle}'.format(replica=rid, cycle=0), 
-                            '-p',   'prmtop', 
-                            '-c',   'inpcrd', 
-                            '-o',   'out',
-                            '-r',   '%s/restrt-{replica}-{cycle}'.format(replica=rid, cycle=cycle) %replica_sandbox,
-                            '-x',   'mdcrd',
-                            '-inf', '%s/mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle) %replica_sandbox]
-                md_tsk.executable = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
-                md_tsk.cpu_reqs = {
-                            'processes': replica_cores,
-                            'process_type': '',
-                            'threads_per_process': 1,
-                            'thread_type': None
-        }
-                md_tsk.pre_exec   = ['export dummy_variable=19', 'echo $SHARED']
-         
-                md_stg.add_tasks(md_tsk)
-                md_stg.post_exec = {
-                            'condition': synchronicity_function,
-                            'on_true': propagate_cycle,
-                            'on_false': end_func
-                          } 
-
+                md_stg = add_md_stg(rid, cycle)
                 p_replica.add_stages(md_stg)
 
 
             else:
                 while ex_stg.state is not "COMPLETED":  ### FIX THIS TO REFER TO THE CORRECT NAME OF THE EX STAGE
-                    time.sleep(1)
-                
-                md_tsk = Task()
-                md_stg = Stage()
-                md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=rid, cycle=cycle)
-                md_tsk.link_input_data += ['%s/inpcrd' %replica_sandbox, 
-                                   '%s/prmtop' %replica_sandbox, 
-                                   '%s/mdin-{replica}-{cycle}'.format(replica=rid, cycle=0) %replica_sandbox]
-                md_tsk.arguments = ['-O', 
-                            '-i',   'mdin-{replica}-{cycle}'.format(replica=rid, cycle=0), 
-                            '-p',   'prmtop', 
-                            '-c',   'inpcrd', 
-                            '-o',   'out',
-                            '-r',   '%s/restrt-{replica}-{cycle}'.format(replica=rid, cycle=cycle) %replica_sandbox,
-                            '-x',   'mdcrd',
-                            '-inf', '%s/mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle) %replica_sandbox]
-                md_tsk.executable = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
-                md_tsk.cpu_reqs = {
-                            'processes': replica_cores,
-                            'process_type': '',
-                            'threads_per_process': 1,
-                            'thread_type': None
-        }
-                md_tsk.pre_exec   = ['export dummy_variable=19', 'echo $SHARED']
-         
-                md_stg.add_tasks(md_tsk)
-                md_stg.post_exec = {
-                            'condition': synchronicity_function,
-                            'on_true': propagate_cycle,
-                            'on_false': end_func
-                          } 
-
+                    #time.sleep(1)
+                    pass
+                md_stg = add_md_stg(rid, cycle)
                 p_replica.add_stages(md_stg)
 
                 waiting_replicas = []  # EMPTY REPLICA WAITING LIST 
@@ -261,38 +243,7 @@ class Replica(object):
         
         p_replica = Pipeline()
         p_replica.name = 'p_{rid}'.format(rid=rid)
-        md_tsk = Task()
-        md_stg = Stage()
-        md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=rid, cycle=cycle)
-        md_tsk.link_input_data += ['%s/inpcrd' %replica_sandbox, 
-                                   '%s/prmtop' %replica_sandbox, 
-                                   '%s/mdin-{replica}-{cycle}'.format(replica=rid, cycle=0) %replica_sandbox]
-        md_tsk.arguments = ['-O', 
-                            '-i',   'mdin-{replica}-{cycle}'.format(replica=rid, cycle=0), 
-                            '-p',   'prmtop', 
-                            '-c',   'inpcrd', 
-                            '-o',   'out',
-                            '-r',   '%s/restrt-{replica}-{cycle}'.format(replica=rid, cycle=cycle) %replica_sandbox,
-                            '-x',   'mdcrd',
-                            '-inf', '%s/mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=cycle) %replica_sandbox]
-        md_tsk.executable = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
-        md_tsk.cpu_reqs = {
-                            'processes': replica_cores,
-                            'process_type': '',
-                            'threads_per_process': 1,
-                            'thread_type': None
-        }
-        md_tsk.pre_exec   = ['export dummy_variable=19', 'echo $SHARED']
-         
-        md_stg.add_tasks(md_tsk)
-        md_stg.post_exec = {
-                            'condition': synchronicity_function,
-                            'on_true': propagate_cycle,
-                            'on_false': end_func
-                          } 
-        #while md_stg.state is not "DONE":
-            #time.sleep(1)
-            #wait_count += 1
+        md_stg = add_md_stg(rid, cycle)
         p_replica.add_stages(md_stg)
 
         return p_replica  
