@@ -200,14 +200,7 @@ class Replica(object):
 
             return False
 
-            # global waiting_replicas
-            # replica_state = 'WAITING'
-            # self.state_history.append(replica_state) 
-            # waiting_replicas.append(rid)
-            # while len(waiting_replicas) < 8:
-            #     time.sleep(1)
-            # return True
-       
+      
         def propagate_cycle():
             """
             This function adds two stages to the pipeline: an exchange stage and an MD stage. 
