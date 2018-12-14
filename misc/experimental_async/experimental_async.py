@@ -26,7 +26,7 @@ min_temp = 100
 max_temp = 200
 timesteps = 1000
 basename = 'ace-ala'
-cycle = 1
+cycle = 0
 md_executable = '/home/scm177/mantel/AMBER/amber14/bin/sander'
 SYNCHRONICITY = 0.5
 wait_ratio = 0
@@ -97,19 +97,18 @@ class Replica(object):
             md_tsk.name = 'mdtsk-{replica}-{cycle}'.format(replica=rid, cycle=self.cycle)
             
            
-            md_tsk.link_input_data += ['%s/inpcrd' %replica_sandbox > 'inpcrd-{replica}-{cycle}'.format(replica=rid, cycle=self.cycle), 
+            md_tsk.link_input_data += ['%s/inpcrd > inpcrd-{replica}-{cycle}'.format(replica=rid, cycle=self.cycle) %replica_sandbox, 
                                        '%s/prmtop' %replica_sandbox, 
-                                       '%s/mdin-{replica}-{cycle}'.format(replica=rid, cycle=self.cycle) %replica_sandbox > 'mdin']
+                                       '%s/mdin-{replica}-{cycle} > mdin'.format(replica=rid, cycle=self.cycle) %replica_sandbox ]
 
             md_tsk.arguments = ['-O', 
                                 '-i',   'mdin', 
                                 '-p',   'prmtop', 
-                                '-c',   'inpcrd', 
+                                '-c',   'inpcrd-{replica}-{cycle}'.format(replica=rid, cycle=self.cycle), 
                                 '-o',   'out',
                                 '-x',   'mdcrd',
                                 '-r',   '%s/inpcrd-{replica}-{cycle}'.format(replica=rid, cycle=self.cycle+1) %replica_sandbox,
                                 '-inf', '%s/mdinfo-{replica}-{cycle}'.format(replica=rid, cycle=self.cycle) %replica_sandbox]
-            md_tsk.executable = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
             md_tsk.cpu_reqs = {
                             'processes': replica_cores,
                             'process_type': '',
