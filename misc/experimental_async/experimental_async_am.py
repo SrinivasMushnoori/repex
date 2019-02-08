@@ -14,6 +14,8 @@ os.environ['RADICAL_PILOT_DBURL'] = \
 
 RMQ_PORT = int(os.environ.get('RMQ_PORT', 32769))
 SANDER   = '/home/scm177/mantel/AMBER/amber14/bin/sander'
+SANDER   = 'sleep 3; echo'
+
 
 # ------------------------------------------------------------------------------
 #
@@ -62,7 +64,7 @@ class Exchange(re.AppManager):
         for i in range(self._size):
 
             replica = Replica(check_ex  = self._check_exchange,
-                              check_res = self._check_resume,
+                            # check_res = self._after_exchange,
                               rid       = i,
                               sbox      = self._sbox,
                               cores     = self._cores, 
@@ -75,7 +77,7 @@ class Exchange(re.AppManager):
     #
     def setup(self):
 
-        self._log.debug('exc setup')
+        self._log.debug('=== data staging')
 
         # prepare input for all replicas
         writeInputs.writeInputs(max_temp=self._max_temp,
@@ -157,66 +159,61 @@ class Exchange(re.AppManager):
         # mark this replica for the next exchange
         self._waitlist.append(replica)
 
-        self._log.debug('=== %s check exchange (%d >= %d?)',
+        self._log.debug('=== EX %s check exchange (%d >= %d?)',
                         replica.rid, len(self._waitlist), self._max_wait)
 
 
         if len(self._waitlist) < self._max_wait:
 
             # just suspend this replica and wait for the next
-            self._log.debug('=== %s suspend', replica.rid)
+            self._log.debug('=== EX %s suspend', replica.rid)
             replica.suspend()
 
         else:
             # we are in for a wile ride!
-            self._log.debug('=== %s exchange')
+            self._log.debug('=== EX %s exchange', replica.rid)
 
             task = re.Task()
             task.name       = 'extsk'
-            task.executable = 'python'
+         ## task.executable = 'python'
+            task.executable = 'echo'
             task.arguments  = ['t_ex_gibbs.py', len(self._waitlist)]
 
-            for replica in self._waitlist:
-                rid   = replica.rid
-                cycle = replica.cycle
-                task.link_input_data.append('%s/mdinfo-%s-%s' 
-                                           % (self._sbox, rid, cycle))
+      ##    for replica in self._waitlist:
+      ##        rid   = replica.rid
+      ##        cycle = replica.cycle
+      ##        task.link_input_data.append('%s/mdinfo-%s-%s' 
+      ##                                   % (self._sbox, rid, cycle))
             stage = re.Stage()
             stage.add_tasks(task)
-            stage.post_exec = {'condition': replica.after_ex,
-                               'on_true'  : void,
-                               'on_false' : void} 
+            stage.post_exec = self._after_exchange
 
             replica.add_stages(stage)
 
 
     # --------------------------------------------------------------------------
     #
-    def _check_resume(self, replica):
+    def _after_exchange(self):
         '''
         This is triggered after the exchange stage from above.  Resume all
         suspended replicas, and also add a new MD stage for those which did not
         reach end of cycles.
         '''
 
-        self._log.debug('=== %s check resume', replica.rid)
+        self._log.debug('=== EX after exchange')
 
 
         for _replica in self._waitlist:
 
             if _replica.cycle <= self._min_cycles:
-                # more work to d o for this replica
+                # more work to do for this replica
                 _replica.add_md_stage()
 
-            # make sure we don't resume the current replica
-            if replica.rid != _replica.rid:
-                self._log.debug('=== %s resume', _replica.rid)
+                self._log.debug('=== EX %s resume', _replica.rid)
                 try:
                     _replica.resume()
                 except:
-                    self._log.exception('=== %s resume failed', _replica.rid)
-                    time.sleep(10)
-                    raise
+                    self._log.debug('=== EX %s resume error ignored', _replica.rid)
 
         # reset waitlist, increase exchange counter
         self._waitlist = list()
@@ -235,10 +232,10 @@ class Replica(re.Pipeline):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self, check_ex, check_res, rid, sbox, cores, exe):
+    def __init__(self, check_ex, rid, sbox, cores, exe):
 
         self._check_ex  = check_ex   # is called when checking for exchange
-        self._check_res = check_res  # is called when exchange is done
+      # self._check_res = check_res  # is called when exchange is done
         self._rid       = rid
         self._sbox      = sbox
         self._cores     = cores
@@ -277,9 +274,9 @@ class Replica(re.Pipeline):
 
         task = re.Task()
         task.name            = 'mdtsk-%s-%s'               % (      rid, cycle)
-        task.link_input_data = ['%s/inpcrd > inpcrd-%s-%s' % (sbox, rid, cycle),
-                                 '%s/prmtop'               % (sbox),
-                                 '%s/mdin-%s-%s > mdin'    % (sbox, rid, cycle)]
+     ## task.link_input_data = ['%s/inpcrd > inpcrd-%s-%s' % (sbox, rid, cycle),
+     ##                          '%s/prmtop'               % (sbox),
+     ##                          '%s/mdin-%s-%s > mdin'    % (sbox, rid, cycle)]
         task.arguments       = ['-O', 
                                 '-i',   'mdin', 
                                 '-p',   'prmtop', 
@@ -294,9 +291,7 @@ class Replica(re.Pipeline):
 
         stage = re.Stage()
         stage.add_tasks(task)
-        stage.post_exec = {'condition': self.after_md,
-                           'on_true'  : void,
-                           'on_false' : void} 
+        stage.post_exec = self.after_md
 
         self.add_stages(stage)
 
@@ -308,17 +303,20 @@ class Replica(re.Pipeline):
         after an md cycle, record its completion and check for exchange
         '''
 
+        self._log.debug('=== %s after md', self.rid)
+
         self._cycle += 1
         self._check_ex(self)
 
 
-    # --------------------------------------------------------------------------
-    #
-    def after_ex(self):
-        '''
-        after an ex cycle, trigger replica resumption
-        '''
-        self._check_res(self)
+  # # --------------------------------------------------------------------------
+  # #
+  # def after_ex(self):
+  #     '''
+  #     after an ex cycle, trigger replica resumption
+  #     '''
+  #     self._log.debug('=== %s after ex', self.rid)
+  #     self._check_res(self)
 
 
 # ------------------------------------------------------------------------------
