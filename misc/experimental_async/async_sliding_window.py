@@ -226,9 +226,8 @@ class Exchange(re.AppManager):
         the number of replicas needed for an exchange. It then generated sublists 
         the sorted waitlist to perform exchanges with.
         '''
-        ranges           = list()   #Leaving this here since it MAY be necessary in the future
-        new_replica_list = list()   # new replica list to return
-        last_window      = None     # avoid rechecking replicas
+        exchange_list = list()   # new replica list to return
+        last_window   = None     # avoid rechecking replicas
 
 
         for replica in sorted_waitlist:
