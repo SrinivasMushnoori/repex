@@ -8,6 +8,7 @@ import writeInputs
 import radical.entk  as re
 import radical.utils as ru
 
+os.environ['RADICAL_VERBOSE'] = 'REPORT'
 
 os.environ['RADICAL_PILOT_DBURL'] = \
            'mongodb://smush:key1209@ds147361.mlab.com:47361/db_repex_4'
@@ -183,7 +184,7 @@ class Exchange(re.AppManager):
 
 
 
-        self._exchange_list = sliding_window(self._sorted_waitlist, self._exchange_size, self._window_size)
+        self._exchange_list = self._sliding_window(self._sorted_waitlist, self._exchange_size, self._window_size)
 
         # Now check if the proposed exchange list is big enough (it should be, this seems slightly redundant)
         
@@ -210,9 +211,8 @@ class Exchange(re.AppManager):
                                            % (self._sbox, rid, cycle))
             stage = re.Stage()
             stage.add_tasks(task)
-            stage.post_exec = {'condition': replica.after_ex,
-                               'on_true'  : void,
-                               'on_false' : void} 
+            stage.post_exec = self._after_ex
+                         
 
             replica.add_stages(stage)
 
@@ -220,7 +220,7 @@ class Exchange(re.AppManager):
     # --------------------------------------------------------------------------
     #
     
-    def _sliding_window(sorted_waitlist, exchange_size, window_size):
+    def _sliding_window(self, sorted_waitlist, exchange_size, window_size):
         '''
         This is an auxiliary function that accepts as input the sorted waitlist and 
         the number of replicas needed for an exchange. It then generated sublists 
@@ -228,7 +228,7 @@ class Exchange(re.AppManager):
         '''
         exchange_list = list()   # new replica list to return
         last_window   = None     # avoid rechecking replicas
-
+        last_range = None
 
         for replica in sorted_waitlist:
 
@@ -243,12 +243,12 @@ class Exchange(re.AppManager):
             rid_list =  [rid for rid in sorted_waitlist
                     if (rid[1] >= rid_start and rid[1] <= rid_end)]
 
-            if len(rid_list) < min_replicas:
+            if len(rid_list) < exchange_size:
                 exchange_list.append(replica[0])
 
             # create a list of replicia IDs to check 
             # against to avoid duplication
-                last_range = [r[0] for r in temp_list]
+                last_range = [r[0] for r in rid_list]
 
         return exchange_list
 
@@ -355,9 +355,8 @@ class Replica(re.Pipeline):
 
         stage = re.Stage()
         stage.add_tasks(task)
-        stage.post_exec = {'condition': self.after_md,
-                           'on_true'  : void,
-                           'on_false' : void} 
+        stage.post_exec = self.after_md
+                          
 
         self.add_stages(stage)
 
@@ -387,7 +386,7 @@ class Replica(re.Pipeline):
 if __name__ == '__main__':
 
 
-    exchange = Exchange(size          = 2,
+    exchange = Exchange(size          = 4,
                         exchange_size = 2,   # Exchange size is how big the exchange list needs to be to move to the exchange phase
                         window_size   = 2,   # Window size is the width of the sliding window
                         min_cycles    = 3, 
@@ -403,4 +402,5 @@ if __name__ == '__main__':
 
 
 # ------------------------------------------------------------------------------
+
 
