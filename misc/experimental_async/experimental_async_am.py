@@ -8,6 +8,17 @@ import writeInputs
 import radical.entk  as re
 import radical.utils as ru
 
+os.environ['RADICAL_SAGA_VERBOSE']         = 'INFO'
+os.environ['RP_ENABLE_OLD_DEFINES']        = 'True'
+os.environ['RADICAL_PROFILE']              = 'True'
+os.environ['RADICAL_ENTK_PROFILE']         = 'True'
+os.environ['RADICAL_ENTK_VERBOSE']         = 'INFO'
+os.environ['RP_ENABLE_OLD_DEFINES']        = 'True'
+os.environ['SAGA_PTY_SSH_TIMEOUT']         = '2000'
+os.environ['RADICAL_VERBOSE']              = 'INFO'
+os.environ['RADICAL_PILOT_PROFILE']        = 'True'
+os.environ['RADICAL_REPEX_SYNCEX_PROFILE'] = 'True'
+os.environ['RADICAL_REPEX_RUN_PROFILE']    = 'True'
 
 os.environ['RADICAL_PILOT_DBURL'] = \
            'mongodb://smush:key1209@ds147361.mlab.com:47361/db_repex_4'

@@ -225,7 +225,7 @@ class Exchange(re.AppManager):
             # Here we remove the replicas participating in the triggered exchange from the waitlist. 
 
             for replica in self._exchange_list:
-                self._sorted_waitlist.remove(replica)
+                self._sorted_waitlist.remove([replica,replica.rid]) #Sorted_Waitlist is a list of tuples
 
 
     # --------------------------------------------------------------------------
