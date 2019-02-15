@@ -217,8 +217,10 @@ class Exchange(re.AppManager):
                                            % (self._sbox, rid, cycle))
             stage = re.Stage()
             stage.add_tasks(task)
-            stage.post_exec = self._after_ex
-                         
+            #stage.post_exec = self._after_ex
+            stage.post_exec = {'condition': self.after_ex,
+                                'on_true': void,
+                                'on_false': void}             
 
             replica.add_stages(stage)
 
@@ -360,14 +362,16 @@ class Replica(re.Pipeline):
                                 '-x',   'mdcrd',
                                 '-r',   '%s/inpcrd-%s-%s'  % (sbox, rid, cycle),
                                 '-inf', '%s/mdinfo-%s-%s'  % (sbox, rid, cycle)]
-        task.executable      = exe
+        task.executable      = SANDER #[exe]
         task.cpu_reqs        = {'processes' : cores}
-        task.pre_exec        = ['echo $SHARED']
+        task.pre_exec        = ['echo $SHARED'] #This will obviously be different, the MD task should fail here but not the workflow itself
 
         stage = re.Stage()
         stage.add_tasks(task)
-        stage.post_exec = self.after_md
-                          
+        #stage.post_exec = self.after_md
+        stage.post_exec = {'condition': self.after_md,
+                                'on_true': void,
+                                'on_false': void}                  
 
         self.add_stages(stage)
 
