@@ -14,7 +14,7 @@ os.environ['RADICAL_PILOT_DBURL'] = \
            'mongodb://smush:key1209@ds147361.mlab.com:47361/db_repex_4'
 
 RMQ_PORT = int(os.environ.get('RMQ_PORT', 32769))
-SANDER   = '/home/scm177/mantel/AMBER/amber14/bin/sander'
+SANDER   = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
 
 # This is the Async Implementation that uses the "sliding window" approach. 
 # Two immediate actions needed: 
