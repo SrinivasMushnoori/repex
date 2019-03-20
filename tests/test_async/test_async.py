@@ -24,7 +24,7 @@ def test_Exchange():
 
 	list_for_exchange = exchange._sliding_window(exchange._waitlist, 4, 8)
 	assert type(list_for_exchange) == type(list())
-	assert len(list_for_exchange) == 1  # This will, for now, return 1. This is because
+	assert len(list_for_exchange) == 4  # This will, for now, return 1. This is because
 	                                    # of a known issue that treats the exchange list
 	                                    # as a local private list, where it should be 
 	                                    # global.
