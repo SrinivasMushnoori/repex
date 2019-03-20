@@ -227,10 +227,10 @@ class Exchange(re.AppManager):
                                            % (self._sbox, rid, cycle))
             stage = re.Stage()
             stage.add_tasks(task)
-            #stage.post_exec = self._after_ex
-            stage.post_exec = {'condition': self.after_ex,
-                                'on_true': void,
-                                'on_false': void}             
+            stage.post_exec = self._after_ex
+            #stage.post_exec = {'condition': self.after_ex,
+            #                    'on_true': void,
+            #                    'on_false': void}             
 
             replica.add_stages(stage)
 
@@ -386,10 +386,10 @@ class Replica(re.Pipeline):
 
         stage = re.Stage()
         stage.add_tasks(task)
-        #stage.post_exec = self.after_md
-        stage.post_exec = {'condition': self.after_md,
-                                'on_true': void,
-                                'on_false': void}                  
+        stage.post_exec = self.after_md
+        #stage.post_exec = {'condition': self.after_md,
+        #                        'on_true': void,
+        #                        'on_false': void}                  
 
         self.add_stages(stage)
 
