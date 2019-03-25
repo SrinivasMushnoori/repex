@@ -65,7 +65,6 @@ class Exchange(re.AppManager):
         self._cnt           = 0  # count exchanges
         self._replicas      = list()
         self._waitlist      = list()
-        self._exchange_list = list()  # Sublist of self._waitlist that performs an exchange
 
         # create the required number of replicas
         for i in range(self._size):
@@ -197,13 +196,17 @@ class Exchange(re.AppManager):
 
 
 
-        self._exchange_list = self._sliding_window(self._sorted_waitlist, self._exchange_size, self._window_size)
+        exchange_list = self._sliding_window(self._sorted_waitlist,
+                                             self._exchange_size,
+                                             self._window_size)
 
-        # Now check if the proposed exchange list is big enough (it should be, this seems slightly redundant)
-        
-        print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
+        # Now check if the proposed exchange list is big enough (it should be,
+        # this seems slightly redundant)
 
-        if len(self._exchange_list) < self._exchange_size:
+        print "exchange size is ", self._exchange_size, \
+              " and exchange list length is ", len(exchange_list)
+
+        if len(exchange_list) < self._exchange_size:
 
             # just suspend this replica and wait for the next
             self._log.debug('=== %s suspend', replica.rid)
@@ -236,54 +239,48 @@ class Exchange(re.AppManager):
 
             replica.add_stages(stage)
 
-            # Here we remove the replicas participating in the triggered exchange from the waitlist. 
+            # Here we remove the replicas participating in the triggered
+            # exchange from the waitlist. 
 
-            for replica in self._exchange_list:
-                self._sorted_waitlist.remove([replica,replica.rid]) #Sorted_Waitlist is a list of tuples
+            for replica in exchange_list:
+                # Sorted_Waitlist is a list of tuples
+                self._sorted_waitlist.remove([replica,replica.rid])  
 
 
     # --------------------------------------------------------------------------
     #
-    
     def _sliding_window(self, sorted_waitlist, exchange_size, window_size):
         '''
-        This is an auxiliary function that accepts as input the sorted waitlist and 
-        the number of replicas needed for an exchange. It then generated sublists 
-        the sorted waitlist to perform exchanges with.
+        This is an auxiliary function that accepts as input the sorted waitlist
+        and the number of replicas needed for an exchange. It then generated
+        sublists the sorted waitlist to perform exchanges with.
         '''
 
-
-        ##---------------FIX THIS-------##
-        ## This will, for now, return 1. This is because
-         # of a known issue that treats the exchange_list
-         # as a local private list, where it should be 
-         # global.
-        #exchange_list = list()   # new replica list to return <----THIS NEEDS TO BE A GLOBAL LIST. 
-        last_window   = None     # avoid rechecking replicas
-        last_range = None
+        exchange_list = list()
+        last_range    = None
 
         for replica in sorted_waitlist:
 
             # ignore this replica if it was part of the last range
-            if last_range and replica.rid in last_range: #replica[0]
+            if last_range and replica.rid in last_range:  # replica[0]
                 continue
 
-            rid_start = replica.rid - window_size/2 #[1]
+            rid_start = replica.rid - window_size / 2  # replica[1]
             rid_end   = rid_start + window_size
 
             # find replicas in list within that window
             rid_list =  [replica for replica in sorted_waitlist
-                    if (replica.rid >= rid_start and replica.rid <= rid_end)]
+                                 if (replica.rid >= rid_start and
+                                     replica.rid <= rid_end)]
 
             if len(rid_list) < exchange_size:
-                self._exchange_list.append(replica.rid)
+                exchange_list.append(replica.rid)
 
-            # create a list of replica IDs to check 
-            # against to avoid duplication
+                # create a list of replica IDs to check 
+                # against to avoid duplication
                 last_range = [r.rid for r in rid_list]
-            print self._exchange_list
 
-        return self._exchange_list
+        return exchange_list
 
 
 
@@ -296,8 +293,11 @@ class Exchange(re.AppManager):
 
         self._log.debug('=== %s check resume', replica.rid)
 
+        exchange_list = self._sliding_window(self._sorted_waitlist,
+                                             self._exchange_size,
+                                             self._window_size)
 
-        for _replica in self._exchange_list:
+        for _replica in exchange_list:
 
             if _replica.cycle <= self._min_cycles:
                 # more work to d o for this replica
@@ -314,7 +314,6 @@ class Exchange(re.AppManager):
                     raise
 
         # reset exchange_list, increase exchange counter
-        self._exchange_list = list()
         self._cnt += 1
 
 
