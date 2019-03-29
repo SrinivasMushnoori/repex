@@ -227,10 +227,13 @@ class Exchange(re.AppManager):
                                            % (self._sbox, rid, cycle))
             stage = re.Stage()
             stage.add_tasks(task)
-            #stage.post_exec = self._after_ex
-            stage.post_exec = {'condition': self.after_ex,
-                                'on_true': void,
-                                'on_false': void}             
+            try:
+                stage.post_exec = {'function': self._after_ex,
+                                    'args'   : [replica, self.exchange_list]}
+            except:
+                stage.post_exec = {'condition': self.after_ex,
+                                   'on_true': void,
+                                   'on_false': void}             
 
             replica.add_stages(stage)
 
@@ -256,7 +259,7 @@ class Exchange(re.AppManager):
          # of a known issue that treats the exchange_list
          # as a local private list, where it should be 
          # global.
-        exchange_list = list()   # new replica list to return <----THIS NEEDS TO BE A GLOBAL LIST. 
+        #exchange_list = list()   # new replica list to return <----THIS NEEDS TO BE A GLOBAL LIST. 
         last_window   = None     # avoid rechecking replicas
         last_range = None
 
@@ -274,13 +277,14 @@ class Exchange(re.AppManager):
                     if (replica.rid >= rid_start and replica.rid <= rid_end)]
 
             if len(rid_list) < exchange_size:
-                exchange_list.append(replica.rid)
+                self._exchange_list.append(replica.rid)
 
             # create a list of replica IDs to check 
             # against to avoid duplication
                 last_range = [r.rid for r in rid_list]
+            print self._exchange_list
 
-        return exchange_list
+        return self._exchange_list
 
 
 
@@ -386,8 +390,12 @@ class Replica(re.Pipeline):
 
         stage = re.Stage()
         stage.add_tasks(task)
-        #stage.post_exec = self.after_md
-        stage.post_exec = {'condition': self.after_md,
+        try:
+            stage.post_exec = {'function' : self.after_md,
+                                'args'    : [replica]}
+        
+        except:
+            stage.post_exec = {'condition': self.after_md,
                                 'on_true': void,
                                 'on_false': void}                  
 
