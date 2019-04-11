@@ -14,7 +14,7 @@ os.environ['RADICAL_PILOT_DBURL'] = \
            'mongodb://smush:key1209@ds147361.mlab.com:47361/db_repex_4'
 
 RMQ_PORT = int(os.environ.get('RMQ_PORT', 32769))
-SANDER   = '/home/scm177/mantel/AMBER/amber14/bin/sander'
+SANDER   = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
 
 # This is the Async Implementation that uses the "sliding window" approach. 
 # Two immediate actions needed: 
@@ -109,7 +109,7 @@ class Exchange(re.AppManager):
         # create a single pipeline with one stage to transfer the tarball
         task = re.Task()
         task.name              = 'untarTsk'
-        task.executable        = 'python'
+        task.executable        = ['python']
         task.upload_input_data = ['untar_input_files.py', 'input_files.tar']
         task.arguments         = ['untar_input_files.py', 'input_files.tar']
         task.cpu_reqs          = 1
@@ -173,8 +173,12 @@ class Exchange(re.AppManager):
         
         self._log.debug('=== %s check exchange (%d >= %d?)',
                         replica.rid, len(self._waitlist), self._exchange_size)
-
         
+        print "waitlist is: "
+        for i in (self._waitlist):
+            print i.rid
+
+
         # Sort the waitlist as soon as a new replica is added.
             
         self._sorted_waitlist = list()
@@ -183,7 +187,10 @@ class Exchange(re.AppManager):
                                                                  # Temperature (or whatever paramater is of interest to us)
         
         self._sorted_waitlist = sorted(self._sorted_waitlist, key=lambda x: x[1]) #Taken from Andre's example
-
+        
+        print "sorted waitlist is: "
+        for i in (self._sorted_waitlist):
+            print i[0].rid
         
         # Now we generate a sublist called exchange_list, within which an exchange is performed. This is done with
         # the sliding_window function
@@ -194,12 +201,15 @@ class Exchange(re.AppManager):
 
         # Now check if the proposed exchange list is big enough (it should be, this seems slightly redundant)
         
+        print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
 
         if len(self._exchange_list) < self._exchange_size:
 
             # just suspend this replica and wait for the next
             self._log.debug('=== %s suspend', replica.rid)
+            print "replica ", replica.rid, " should suspend now"
             replica.suspend()
+            print "BUT IT ISN'T AAAAAARGH"
 
         else:
             # we are in for a wild ride!
@@ -207,7 +217,7 @@ class Exchange(re.AppManager):
 
             task = re.Task()
             task.name       = 'extsk'
-            task.executable = 'python'
+            task.executable = ['python']
             task.arguments  = ['t_ex_gibbs.py', len(self._waitlist)]
 
             for replica in self._waitlist:
@@ -217,15 +227,19 @@ class Exchange(re.AppManager):
                                            % (self._sbox, rid, cycle))
             stage = re.Stage()
             stage.add_tasks(task)
-            stage.post_exec = self._after_ex
-                         
+            try:
+                stage.post_exec = self._after_ex
+            except:
+                stage.post_exec = {'condition': self.after_ex,
+                                   'on_true': void,
+                                   'on_false': void}             
 
             replica.add_stages(stage)
 
             # Here we remove the replicas participating in the triggered exchange from the waitlist. 
 
             for replica in self._exchange_list:
-                self._sorted_waitlist.remove(replica)
+                self._sorted_waitlist.remove([replica,replica.rid]) #Sorted_Waitlist is a list of tuples
 
 
     # --------------------------------------------------------------------------
@@ -237,31 +251,40 @@ class Exchange(re.AppManager):
         the number of replicas needed for an exchange. It then generated sublists 
         the sorted waitlist to perform exchanges with.
         '''
-        exchange_list = list()   # new replica list to return
+
+
+        ##---------------FIX THIS-------##
+        ## This will, for now, return 1. This is because
+         # of a known issue that treats the exchange_list
+         # as a local private list, where it should be 
+         # global.
+        #exchange_list = list()   # new replica list to return <----THIS NEEDS TO BE A GLOBAL LIST. 
         last_window   = None     # avoid rechecking replicas
         last_range = None
 
         for replica in sorted_waitlist:
 
             # ignore this replica if it was part of the last range
-            if last_range and replica[0] in last_range:
+            if last_range and replica.rid in last_range: #replica[0]
                 continue
 
-            rid_start = replica[1]
+            rid_start = replica.rid - window_size/2 #[1]
             rid_end   = rid_start + window_size
 
             # find replicas in list within that window
-            rid_list =  [rid for rid in sorted_waitlist
-                    if (rid[1] >= rid_start and rid[1] <= rid_end)]
+            rid_list =  [replica for replica in sorted_waitlist
+                    if (replica.rid >= rid_start and replica.rid <= rid_end)]
 
             if len(rid_list) < exchange_size:
-                exchange_list.append(replica[0])
+                self._exchange_list.append(replica.rid)
 
-            # create a list of replicia IDs to check 
+            # create a list of replica IDs to check 
             # against to avoid duplication
-                last_range = [r[0] for r in rid_list]
+                last_range = [r.rid for r in rid_list]
+            print self._exchange_list
 
-        return exchange_list
+        return self._exchange_list
+
 
 
     def _check_resume(self, replica):
@@ -360,14 +383,19 @@ class Replica(re.Pipeline):
                                 '-x',   'mdcrd',
                                 '-r',   '%s/inpcrd-%s-%s'  % (sbox, rid, cycle),
                                 '-inf', '%s/mdinfo-%s-%s'  % (sbox, rid, cycle)]
-        task.executable      = exe
+        task.executable      = SANDER #[exe]
         task.cpu_reqs        = {'processes' : cores}
-        task.pre_exec        = ['echo $SHARED']
+        task.pre_exec        = ['echo $SHARED'] #This will be different for different MD engines.
 
         stage = re.Stage()
         stage.add_tasks(task)
-        stage.post_exec = self.after_md
-                          
+        try:
+            stage.post_exec = self.after_md
+        
+        except:
+            stage.post_exec = {'condition': self.after_md,
+                                'on_true': void,
+                                'on_false': void}                  
 
         self.add_stages(stage)
 
@@ -398,11 +426,11 @@ if __name__ == '__main__':
 
 
     exchange = Exchange(size          = 4,
-                        exchange_size = 2,   # Exchange size is how big the exchange list needs to be to move to the exchange phase
+                        exchange_size = 4,   # Exchange size is how big the exchange list needs to be to move to the exchange phase
                         window_size   = 4,   # Window size is the width of the sliding window
                         min_cycles    = 3, 
-                        min_temp      = 100,
-                        max_temp      = 200,
+                        min_temp      = 300,
+                        max_temp      = 320,
                         timesteps     = 500,
                         basename      = 'ace-ala', 
                         executable    = SANDER, 
