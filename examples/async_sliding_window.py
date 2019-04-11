@@ -8,7 +8,8 @@ import writeInputs
 import radical.entk  as re
 import radical.utils as ru
 
-os.environ['RADICAL_VERBOSE'] = 'REPORT'
+os.environ['RADICAL_VERBOSE'] = 'INFO'
+os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
 
 os.environ['RADICAL_PILOT_DBURL'] = \
            'mongodb://smush:key1209@ds147361.mlab.com:47361/db_repex_4'
@@ -227,13 +228,13 @@ class Exchange(re.AppManager):
                                            % (self._sbox, rid, cycle))
             stage = re.Stage()
             stage.add_tasks(task)
-            try:
-                stage.post_exec = {'function': self._after_ex,
-                                    'args'   : [replica, self.exchange_list]}
-            except:
-                stage.post_exec = {'condition': self.after_ex,
-                                   'on_true': void,
-                                   'on_false': void}             
+            #try:
+            stage.post_exec = {'function': self._after_ex,
+                                    'args'   : [replica, self._exchange_list]}
+            #except:
+            #    stage.post_exec = {'condition': self.after_ex,
+            #                       'on_true': void,
+            #                       'on_false': void}             
 
             replica.add_stages(stage)
 
@@ -269,7 +270,7 @@ class Exchange(re.AppManager):
             if last_range and replica.rid in last_range: #replica[0]
                 continue
 
-            rid_start = replica.rid - window_size/2 #[1]
+            rid_start = replica.rid - window_size/2 # "replica" here is for some reason being seen as a list type object. 
             rid_end   = rid_start + window_size
 
             # find replicas in list within that window
@@ -390,21 +391,21 @@ class Replica(re.Pipeline):
 
         stage = re.Stage()
         stage.add_tasks(task)
-        try:
-            stage.post_exec = {'function' : self.after_md,
-                                'args'    : [replica]}
+        #try:
+        stage.post_exec = {'function' : self._after_md,
+                               'args'    : []}
         
-        except:
-            stage.post_exec = {'condition': self.after_md,
-                                'on_true': void,
-                                'on_false': void}                  
+        #except:
+        #    stage.post_exec = {'condition': self._after_md,
+        #                        'on_true': void,
+        #                        'on_false': void}                  
 
         self.add_stages(stage)
 
 
     # --------------------------------------------------------------------------
     #
-    def after_md(self):
+    def _after_md(self):
         '''
         after an md cycle, record its completion and check for exchange
         '''
@@ -415,7 +416,7 @@ class Replica(re.Pipeline):
 
     # --------------------------------------------------------------------------
     #
-    def after_ex(self):
+    def _after_ex(self):
         '''
         after an ex cycle, trigger replica resumption
         '''
