@@ -229,8 +229,8 @@ class Exchange(re.AppManager):
             stage = re.Stage()
             stage.add_tasks(task)
             #try:
-            stage.post_exec = {'function': self._after_ex,
-                                    'args'   : [replica, self._exchange_list]}
+            stage.post_exec = {'function': replica._after_ex ,#self._after_ex,
+                                'args'   : [replica, self._exchange_list]}
             #except:
             #    stage.post_exec = {'condition': self.after_ex,
             #                       'on_true': void,
@@ -241,7 +241,7 @@ class Exchange(re.AppManager):
             # Here we remove the replicas participating in the triggered exchange from the waitlist. 
 
             for replica in self._exchange_list:
-                self._sorted_waitlist.remove([replica,replica.rid]) #Sorted_Waitlist is a list of tuples
+                self._sorted_waitlist.remove([replica,replica.rid]) #Syntax is wrong here
 
 
     # --------------------------------------------------------------------------
@@ -267,22 +267,24 @@ class Exchange(re.AppManager):
         for replica in sorted_waitlist:
 
             # ignore this replica if it was part of the last range
-            if last_range and replica.rid in last_range: #replica[0]
+            if last_range and replica[1] in last_range: #replica[rid]
+            #if last_range and sorted_waitlist[1] in last_range: #replica[0]
                 continue
 
-            rid_start = replica.rid - window_size/2 # "replica" here is for some reason being seen as a list type object. 
+            rid_start = replica[1]- window_size/2       #replica.rid - window_size/2 # "replica" here is for some reason being seen as a list type object. 
             rid_end   = rid_start + window_size
 
             # find replicas in list within that window
             rid_list =  [replica for replica in sorted_waitlist
-                    if (replica.rid >= rid_start and replica.rid <= rid_end)]
+                    #if (replica.rid >= rid_start and replica.rid <= rid_end)]
+                    if (replica[1] >= rid_start and replica[1] <= rid_end)]
 
             if len(rid_list) < exchange_size:
-                self._exchange_list.append(replica.rid)
+                self._exchange_list.append(replica[1])  #.rid)
 
             # create a list of replica IDs to check 
             # against to avoid duplication
-                last_range = [r.rid for r in rid_list]
+                last_range = [r[1] for r in rid_list]   #r[1] used to be r.rid
             print self._exchange_list
 
         return self._exchange_list
@@ -434,7 +436,7 @@ if __name__ == '__main__':
                         min_cycles    = 3, 
                         min_temp      = 300,
                         max_temp      = 320,
-                        timesteps     = 500,
+                        timesteps     = 100,
                         basename      = 'ace-ala', 
                         executable    = SANDER, 
                         cores         = 1)
