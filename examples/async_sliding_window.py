@@ -22,6 +22,8 @@ SANDER   = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
 # 1) Remove exchanged replicas from waiting list, (Implemented, needs testing) 
 # 2) The Exchange method needs ways to accept replica RID's as inputs 
 # as well as the mechanism to rename appropriate files. 
+# 3) Line 224 is where it all seems to have gone wrong: the iterator in the loop has overridden the replica object. 
+
 
 # ------------------------------------------------------------------------------
 #
@@ -221,7 +223,7 @@ class Exchange(re.AppManager):
             task.executable = ['python']
             task.arguments  = ['t_ex_gibbs.py', len(self._waitlist)]
 
-            for replica in self._waitlist:
+            for replica in self._waitlist:   # THIS is where it seems to have all gone wrong
                 rid   = replica.rid
                 cycle = replica.cycle
                 task.link_input_data.append('%s/mdinfo-%s-%s' 
