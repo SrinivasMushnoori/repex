@@ -55,6 +55,7 @@ class Exchange(re.AppManager):
         self._executable    = executable
         self._cores         = cores
 
+
         self._log = ru.Logger('radical.repex.exc')
 
         # inintialize the entk app manager
@@ -104,9 +105,9 @@ class Exchange(re.AppManager):
             tar.add(name)
 
         for replica in self._replicas:
-            tar.add  ('mdin-%s-0' % replica.rid)
+            tar.add  ('mdin-%s-0' % replica.rid) #how does this work
             os.remove('mdin-%s-0' % replica.rid)
-
+            
         tar.close()
 
         # create a single pipeline with one stage to transfer the tarball
@@ -173,35 +174,38 @@ class Exchange(re.AppManager):
 
         # mark this replica for the next exchange
         self._waitlist.append(replica)
-        
-        self._log.debug('=== %s check exchange (%d >= %d?)',
-                        replica.rid, len(self._waitlist), self._exchange_size)
-        
+        self._log.debug('=== %s check exchange (%d >= %d?)', replica.rid, len(self._waitlist), self._exchange_size)
         print "waitlist is: "
         for i in (self._waitlist):
             print i.rid
+        print "end of waitlist"    
 
 
         # Sort the waitlist as soon as a new replica is added.
-            
-        self._sorted_waitlist = list()
-        for replica in self._waitlist:
-            self._sorted_waitlist.append([replica, replica.rid]) # We're sorting by RID here since RID's are assigned in sorted order with
+           
+        #self._sorted_waitlist = list()
+        #for replica in self._waitlist:
+            #print replica, replica.rid
+            #self._sorted_waitlist.append(replica) # We're sorting by RID here since RID's are assigned in sorted order with
                                                                  # Temperature (or whatever paramater is of interest to us)
         
-        self._sorted_waitlist = sorted(self._sorted_waitlist, key=lambda x: x[1]) #Taken from Andre's example
+        self._sorted_waitlist = sorted(self._waitlist, key=lambda x: x.rid) 
         
         print "sorted waitlist is: "
         for i in (self._sorted_waitlist):
-            print i[0].rid
-        
+            print i.rid
+        print "end of sorted waitlist"
+
         # Now we generate a sublist called exchange_list, within which an exchange is performed. This is done with
         # the sliding_window function
 
 
 
         self._exchange_list = self._sliding_window(self._sorted_waitlist, self._exchange_size, self._window_size)
-
+        print "exchange list is: "
+        for replica in self._exchange_list:
+            print replica.rid 
+        print "end of exchange list"
         # Now check if the proposed exchange list is big enough (it should be, this seems slightly redundant)
         
         print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
@@ -224,8 +228,8 @@ class Exchange(re.AppManager):
             task.arguments  = ['t_ex_gibbs.py', len(self._waitlist)]
 
             for replica in self._waitlist:   # THIS is where it seems to have all gone wrong
-                rid   = replica.rid
-                cycle = replica.cycle
+                rid   = replica.rid #self._waitlist[r].rid
+                cycle = replica.cycle #self._waitlist[r].cycle
                 task.link_input_data.append('%s/mdinfo-%s-%s' 
                                            % (self._sbox, rid, cycle))
             stage = re.Stage()
@@ -242,8 +246,9 @@ class Exchange(re.AppManager):
 
             # Here we remove the replicas participating in the triggered exchange from the waitlist. 
 
-            for replica in self._exchange_list:
-                self._sorted_waitlist.remove([replica,replica.rid]) #Syntax is wrong here
+            ### Commenting out the two lines here. Running only first MD for testing. Uncomment these after #32 is fixed.
+            #for replica in self._exchange_list:
+            #    self._sorted_waitlist.remove(replica) #Syntax is wrong here
 
 
     # --------------------------------------------------------------------------
@@ -266,28 +271,28 @@ class Exchange(re.AppManager):
         last_window   = None     # avoid rechecking replicas
         last_range = None
 
-        for replica in sorted_waitlist:
-
+        for replica in sorted_waitlist:  
+            
             # ignore this replica if it was part of the last range
-            if last_range and replica[1] in last_range: #replica[rid]
-            #if last_range and sorted_waitlist[1] in last_range: #replica[0]
+            if last_range and replica in last_range: 
                 continue
 
-            rid_start = replica[1]- window_size/2       #replica.rid - window_size/2 # "replica" here is for some reason being seen as a list type object. 
+            rid_start = replica.rid- window_size/2       
             rid_end   = rid_start + window_size
 
             # find replicas in list within that window
-            rid_list =  [replica for replica in sorted_waitlist
-                    #if (replica.rid >= rid_start and replica.rid <= rid_end)]
-                    if (replica[1] >= rid_start and replica[1] <= rid_end)]
+            rid_list =  [replica for replica in sorted_waitlist 
+                    if (replica.rid >= rid_start and replica.rid <= rid_end)]
+            print "rid_list in sliding window is: ", [replica.rid for replica in rid_list]
 
             if len(rid_list) < exchange_size:
-                self._exchange_list.append(replica[1])  #.rid)
+                self._exchange_list.append(replica) 
+            print "Exchange list generated by sliding window is: ", [replica.rid for replica in self._exchange_list] 
 
             # create a list of replica IDs to check 
             # against to avoid duplication
-                last_range = [r[1] for r in rid_list]   #r[1] used to be r.rid
-            print self._exchange_list
+            last_range = [r for r in rid_list]  
+            
 
         return self._exchange_list
 
@@ -303,7 +308,7 @@ class Exchange(re.AppManager):
         self._log.debug('=== %s check resume', replica.rid)
 
 
-        for _replica in self._exchange_list:
+        for _replica in self._exchange_list:  #REPLICA SHOULD NOT BE USED AS AN ITERATOR
 
             if _replica.cycle <= self._min_cycles:
                 # more work to d o for this replica
@@ -435,10 +440,10 @@ if __name__ == '__main__':
     exchange = Exchange(size          = 4,
                         exchange_size = 4,   # Exchange size is how big the exchange list needs to be to move to the exchange phase
                         window_size   = 4,   # Window size is the width of the sliding window
-                        min_cycles    = 3, 
+                        min_cycles    = 0, 
                         min_temp      = 300,
                         max_temp      = 320,
-                        timesteps     = 100,
+                        timesteps     = 500,
                         basename      = 'ace-ala', 
                         executable    = SANDER, 
                         cores         = 1)
