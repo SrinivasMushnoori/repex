@@ -205,14 +205,8 @@ class Exchange(re.AppManager):
             # just suspend this replica and wait for the next
             self._log.debug('=== %s suspend', replica.rid)
             print "replica ", replica.rid, " should suspend now"
-            
-            try:
-                replica.suspend()
-            except:
-                #print(Exception) 
-                print "Hit Ctrl+C in 10 seconds to terminate"
-                time.sleep(10)
-            #print "BUT IT ISN'T AAAAAARGH"
+            replica.suspend()
+
 
         else:
             # we are in for a wild ride!
@@ -224,29 +218,33 @@ class Exchange(re.AppManager):
             task.upload_input_data = ['t_ex_gibbs.py']
             task.arguments  = ['t_ex_gibbs.py', len(self._waitlist)]
 
-            for replica in self._waitlist:   # THIS is where it seems to have all gone wrong
-                rid   = replica.rid #self._waitlist[r].rid
-                cycle = replica.cycle #self._waitlist[r].cycle
+            for replica in self._waitlist:  
+                rid   = replica.rid 
+                cycle = replica.cycle 
                 task.link_input_data.append('%s/mdinfo-%s-%s' 
                                            % (self._sbox, rid, cycle))
             stage = re.Stage()
             stage.add_tasks(task)
-            #try:
-            stage.post_exec = {'function': replica._after_ex ,#self._after_ex,
-                                'args'   : [replica, self._exchange_list]}
-            #except:
-            #    stage.post_exec = {'condition': self.after_ex,
-            #                       'on_true': void,
-            #                       'on_false': void}             
+            
+            stage.post_exec = replica._after_ex 
 
             replica.add_stages(stage)
 
             # Here we remove the replicas participating in the triggered exchange from the waitlist. 
 
             ### Commenting out the two lines here. Running only first MD for testing. Uncomment these after #32 is fixed.
-            #for replica in self._exchange_list:
-            #    self._sorted_waitlist.remove(replica) #Syntax is wrong here
+            for replica in self._exchange_list:
+                try:
+                    self._sorted_waitlist.remove(replica)
+                except:
+                    print "replica ", replica.rid, " isn't here."
+            #self._waitlist = self._sorted_waitlist
 
+            print "Replicas that have been pushed to exchange and removed from exchange list: ", [replica.rid for replica in self._exchange_list]
+            print "Replicas that are still in the sorted waitlist: ", [replica.rid for replica in self._sorted_waitlist]
+            
+            self._waitlist = self._sorted_waitlist
+            print "Replicas that are still in the global waitlist: ", [replica.rid for replica in self._waitlist]
 
     # --------------------------------------------------------------------------
     #
@@ -260,9 +258,11 @@ class Exchange(re.AppManager):
         '''
 
 
-        ##---------------FIX THIS-------##
-        ## POTENTIALLY INCORRECT: This operates with only one exchange list. Create new exchange list out of global waitlist
-        ##         if the new replica is not within window_size. This will work just fine when operated synchronously, but not otherwise.
+        ##---------------FIX THIS-------------##
+        ## POTENTIALLY INCORRECT: This operates with only one exchange list. Create 
+        ## new exchange list out of global waitlist if the new replica is not within 
+        ## window_size. This will work just fine when operated synchronously, but not 
+        ## otherwise.
   
         last_window   = None     # avoid rechecking replicas
         last_range = None
@@ -407,9 +407,9 @@ class Replica(re.Pipeline):
         stage = re.Stage()
         stage.add_tasks(task)
         #try:
-        stage.post_exec = {'function' : self._after_md,
-                               'args'    : []}
-        
+        #stage.post_exec = {'function' : self._after_md,
+        #                       'args'    : []}
+        stage.post_exec = self._after_md
         #except:
         #    stage.post_exec = {'condition': self._after_md,
         #                        'on_true': void,
@@ -444,7 +444,7 @@ if __name__ == '__main__':
 
 
     exchange = Exchange(size          = 6,
-                        exchange_size = 6,   # Exchange size is how big the exchange list needs to be to move to the exchange phase
+                        exchange_size = 3,   # Exchange size is how big the exchange list needs to be to move to the exchange phase
                         window_size   = 6,   # Window size is the width of the sliding window
                         min_cycles    = 0, 
                         min_temp      = 300,
