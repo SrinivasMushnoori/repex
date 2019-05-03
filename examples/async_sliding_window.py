@@ -4,6 +4,7 @@ import os
 import time
 import tarfile
 import writeInputs
+import threading as mt
 
 import radical.entk  as re
 import radical.utils as ru
@@ -55,7 +56,7 @@ class Exchange(re.AppManager):
         self._basename      = basename
         self._executable    = executable
         self._cores         = cores
-
+        self._lock          = mt.Lock()
 
         self._log = ru.Logger('radical.repex.exc')
 
@@ -171,19 +172,30 @@ class Exchange(re.AppManager):
         from the waitlist of replicas. We select this sublist based on parameter
         (T in this case) proximity. Width of the sliding window is user defined. 
         This is just exchange_size. 
+
+        Here's how it's supposed to work:
+
+        1) Sliding window operates on global waitlist every time a new replica is added
+        2) If no compatible replicas are found, Sliding window returns nothing.
+        3) If a set of compatible replicas is found, an exchange list is returned and pushed immediately to the replica hosting the exchange task. 
+        4) Replica should have a "get property" function to retrieve the exchange list from the exchange object.
+        5) Exchange object should have a "@property" that returns the exchange list.
         '''
-
-        # mark this replica for the next exchange
-        self._waitlist.append(replica)
-        self._log.debug('=== %s check exchange (%d >= %d?)', replica.rid, len(self._waitlist), self._exchange_size)
-        print "waitlist is: ",[replica.rid for replica in self._waitlist]
-
-        # Sort the waitlist as soon as a new replica is added.
         
-        self._sorted_waitlist = sorted(self._waitlist, key=lambda x: x.rid) # We're sorting by RID here since RID's are assigned in sorted order with
+        # mark this replica for the next exchange
+        # multiple replicas can trigger this, there fore lock needed
+        with self._lock:
+
+            self._waitlist.append(replica)
+            self._log.debug('=== %s check exchange (%d >= %d?)', replica.rid, len(self._waitlist), self._exchange_size)
+            print "waitlist is: ",[replica.rid for replica in self._waitlist]
+
+            # Sort the waitlist as soon as a new replica is added.
+        
+            self._sorted_waitlist = sorted(self._waitlist, key=lambda x: x.rid) # We're sorting by RID here since RID's are assigned in sorted order with
                                                                  # Temperature (or whatever paramater is of interest to us)
         
-        print "sorted waitlist is: ", [replica.rid for replica in self._sorted_waitlist]
+            print "sorted waitlist is: ", [replica.rid for replica in self._sorted_waitlist]
 
 
         # Now we generate a sublist called exchange_list, within which an exchange is performed. This is done with
@@ -191,60 +203,60 @@ class Exchange(re.AppManager):
 
 
 
-        self._exchange_list = self._sliding_window(self._sorted_waitlist, self._exchange_size, self._window_size)
+            self._exchange_list = self._sliding_window(self._sorted_waitlist, self._exchange_size, self._window_size)
         
-        print "exchange list returned by sliding window is: ", [replica.rid for replica in self._exchange_list]
+            print "exchange list returned by sliding window is: ", [replica.rid for replica in self._exchange_list]
 
         # Now check if the proposed exchange list is big enough (it should be, this seems slightly redundant)
         
-        print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
+            print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
         
 
-        if len(self._exchange_list) < self._exchange_size:
+            if len(self._exchange_list) < self._exchange_size:
 
             # just suspend this replica and wait for the next
-            self._log.debug('=== %s suspend', replica.rid)
-            print "replica ", replica.rid, " should suspend now"
-            replica.suspend()
+                self._log.debug('=== %s suspend', replica.rid)
+                print "replica ", replica.rid, " should suspend now"
+                replica.suspend()
 
 
-        else:
+            else:
             # we are in for a wild ride!
-            self._log.debug('=== %s exchange')
+                self._log.debug('=== %s exchange')
 
-            task = re.Task()
-            task.name       = 'extsk'
-            task.executable = ['python']
-            task.upload_input_data = ['t_ex_gibbs.py']
-            task.arguments  = ['t_ex_gibbs.py', len(self._waitlist)]
+                task = re.Task()
+                task.name       = 'extsk'
+                task.executable = ['python']
+                task.upload_input_data = ['t_ex_gibbs.py']
+                task.arguments  = ['t_ex_gibbs.py', len(self._waitlist)]
 
-            for replica in self._waitlist:  
-                rid   = replica.rid 
-                cycle = replica.cycle 
-                task.link_input_data.append('%s/mdinfo-%s-%s' 
+                for replica in self._waitlist:  
+                    rid   = replica.rid 
+                    cycle = replica.cycle 
+                    task.link_input_data.append('%s/mdinfo-%s-%s' 
                                            % (self._sbox, rid, cycle))
-            stage = re.Stage()
-            stage.add_tasks(task)
+                stage = re.Stage()
+                stage.add_tasks(task)
             
-            stage.post_exec = replica._after_ex 
+                stage.post_exec = replica._after_ex 
 
-            replica.add_stages(stage)
+                replica.add_stages(stage)
 
             # Here we remove the replicas participating in the triggered exchange from the waitlist. 
 
             ### Commenting out the two lines here. Running only first MD for testing. Uncomment these after #32 is fixed.
-            for replica in self._exchange_list:
-                try:
-                    self._sorted_waitlist.remove(replica)
-                except:
-                    print "replica ", replica.rid, " isn't here."
-            #self._waitlist = self._sorted_waitlist
-
-            print "Replicas that have been pushed to exchange and removed from exchange list: ", [replica.rid for replica in self._exchange_list]
-            print "Replicas that are still in the sorted waitlist: ", [replica.rid for replica in self._sorted_waitlist]
+                for replica in self._exchange_list:
+                    try:
+                        self._sorted_waitlist.remove(replica)
+                    except:
+                        print "replica ", replica.rid, " isn't here."
+                #self._waitlist = self._sorted_waitlist
+    
+                print "Replicas that have been pushed to exchange and removed from exchange list: ", [replica.rid for replica in self._exchange_list]
+                print "Replicas that are still in the sorted waitlist: ", [replica.rid for replica in self._sorted_waitlist]
             
-            self._waitlist = self._sorted_waitlist
-            print "Replicas that are still in the global waitlist: ", [replica.rid for replica in self._waitlist]
+                self._waitlist = self._sorted_waitlist
+                print "Replicas that are still in the global waitlist: ", [replica.rid for replica in self._waitlist]
 
     # --------------------------------------------------------------------------
     #
@@ -298,9 +310,13 @@ class Exchange(re.AppManager):
             # create a list of replica IDs to check 
             # against to avoid duplication
             last_range = [r for r in rid_list]  
-            
+        
+        # Check size of list returned by sliding window 
 
-        return self._exchange_list
+        if len(self._exchange_list) < exchange_size:            
+            return
+        else:
+            return self._exchange_list
 
 
 
