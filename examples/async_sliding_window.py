@@ -209,44 +209,16 @@ class Exchange(re.AppManager):
             
             if not self._exchange_list:
 
-        # Now check if the proposed exchange list is big enough (it should be, this seems slightly redundant)
-        
             #print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
-        
-
-            #if len(self._exchange_list) < self._exchange_size:
-
             # just suspend this replica and wait for the next
                 self._log.debug('=== %s suspend', replica.rid)
                 print "replica ", replica.rid, " should suspend now"
                 replica.suspend()
-
-
             else:
-            # we are in for a wild ride!
-                self._log.debug('=== %s exchange')
+                exchange_list = self._exchange_list #Unclear if this is necessary
+                replica.add_ex_stage(exchange_list)
 
-                task = re.Task()
-                task.name       = 'extsk'
-                task.executable = ['python']
-                task.upload_input_data = ['t_ex_gibbs.py']
-                task.arguments  = ['t_ex_gibbs.py', len(self._waitlist)]
 
-                for replica in self._waitlist:  
-                    rid   = replica.rid 
-                    cycle = replica.cycle 
-                    task.link_input_data.append('%s/mdinfo-%s-%s' 
-                                           % (self._sbox, rid, cycle))
-                stage = re.Stage()
-                stage.add_tasks(task)
-            
-                stage.post_exec = replica._after_ex 
-
-                replica.add_stages(stage)
-
-            # Here we remove the replicas participating in the triggered exchange from the waitlist. 
-
-            ### Commenting out the two lines here. Running only first MD for testing. Uncomment these after #32 is fixed.
                 for replica in self._exchange_list:
                     try:
                         self._sorted_waitlist.remove(replica)
@@ -437,8 +409,29 @@ class Replica(re.Pipeline):
 
     
 
-    def _add_exchange_stage(self,exchange_list):
-        
+    def _add_ex_stage(self,exchange_list):
+        self._log.debug('=== %s exchange')
+
+        task = re.Task()
+        task.name       = 'extsk'
+        task.executable = ['python']
+        task.upload_input_data = ['t_ex_gibbs.py']
+        task.arguments  = ['t_ex_gibbs.py', len(self._waitlist)]
+
+        for replica in exchange_list:  
+            rid   = replica.rid 
+            cycle = replica.cycle 
+            task.link_input_data.append('%s/mdinfo-%s-%s' 
+                                          % (self._sbox, rid, cycle))
+            stage = re.Stage()
+            stage.add_tasks(task)
+            
+            stage.post_exec = replica._after_ex 
+
+            replica.add_stages(stage)
+
+            # Here we remove the replicas participating in the triggered exchange from the waitlist. 
+
     # --------------------------------------------------------------------------
     #
     def _after_md(self):
@@ -480,5 +473,3 @@ if __name__ == '__main__':
 
 
 # ------------------------------------------------------------------------------
-
-
