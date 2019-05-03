@@ -206,13 +206,15 @@ class Exchange(re.AppManager):
             self._exchange_list = self._sliding_window(self._sorted_waitlist, self._exchange_size, self._window_size)
         
             print "exchange list returned by sliding window is: ", [replica.rid for replica in self._exchange_list]
+            
+            if not self._exchange_list:
 
         # Now check if the proposed exchange list is big enough (it should be, this seems slightly redundant)
         
-            print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
+            #print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
         
 
-            if len(self._exchange_list) < self._exchange_size:
+            #if len(self._exchange_list) < self._exchange_size:
 
             # just suspend this replica and wait for the next
                 self._log.debug('=== %s suspend', replica.rid)
@@ -433,7 +435,10 @@ class Replica(re.Pipeline):
 
         self.add_stages(stage)
 
+    
 
+    def _add_exchange_stage(self,exchange_list):
+        
     # --------------------------------------------------------------------------
     #
     def _after_md(self):
