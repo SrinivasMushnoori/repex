@@ -85,6 +85,8 @@ class Exchange(re.AppManager):
 
             self._replicas.append(replica)
 
+        @property
+        def ex_list(self):   return self._exchange_list
 
     # --------------------------------------------------------------------------
     #
@@ -213,10 +215,13 @@ class Exchange(re.AppManager):
             # just suspend this replica and wait for the next
                 self._log.debug('=== %s suspend', replica.rid)
                 print "replica ", replica.rid, " should suspend now"
-                replica.suspend()
+                try:
+                    replica.suspend()
+                except:
+                    print "replica ", replica.rid, " is already suspended, moving on"
             else:
                 exchange_list = self._exchange_list #Unclear if this is necessary
-                replica.add_ex_stage(exchange_list)
+                replica._add_ex_stage(exchange_list)
 
 
                 for replica in self._exchange_list:
@@ -263,11 +268,11 @@ class Exchange(re.AppManager):
             rid_end   = rid_start + window_size
 
             # find replicas in list within that window
-            rid_list =  [replica for replica in sorted_waitlist 
+            rid_list =  [replica for r in sorted_waitlist 
                     if (replica.rid >= rid_start and replica.rid <= rid_end)]
             print "rid_list in sliding window is: ", [replica.rid for replica in rid_list]
 
-            #new_replica = list(set(rid_list) - set(self._exchange_list))  ### This line may no llonger be needed
+            new_replica = list(set(rid_list) - set(self._exchange_list))  ### This line may no llonger be needed
 
             
             try:
@@ -286,9 +291,9 @@ class Exchange(re.AppManager):
             last_range = [r for r in rid_list]  
         
         # Check size of list returned by sliding window 
-
+        empty_list = []    
         if len(self._exchange_list) < exchange_size:     #### "exchange list" appears to not exist.       
-            return
+            return empty_list
         else:
             return self._exchange_list
 
@@ -311,12 +316,12 @@ class Exchange(re.AppManager):
                 _r.add_md_stage()
 
             # make sure we don't resume the current replica
-            if replica.rid != _replica.rid:
-                self._log.debug('=== %s resume', _replica.rid)
+            if replica.rid != _r.rid:
+                self._log.debug('=== %s resume', _r.rid)
                 try:
-                    _replica.resume()
+                    _r.resume()
                 except:
-                    self._log.exception('=== %s resume failed', _replica.rid)
+                    self._log.exception('=== %s resume failed', _r.rid)
                     time.sleep(10)
                     raise
 
@@ -409,14 +414,14 @@ class Replica(re.Pipeline):
 
     
 
-    def _add_ex_stage(self,exchange_list):
+    def _add_ex_stage(self):
         self._log.debug('=== %s exchange')
-
+        exchange_list = self._get_ex_list()
         task = re.Task()
         task.name       = 'extsk'
         task.executable = ['python']
         task.upload_input_data = ['t_ex_gibbs.py']
-        task.arguments  = ['t_ex_gibbs.py', len(self._waitlist)]
+        task.arguments  = ['t_ex_gibbs.py', len(exchange_list)]
 
         for replica in exchange_list:  
             rid   = replica.rid 
@@ -451,6 +456,13 @@ class Replica(re.Pipeline):
         '''
         self._check_res(self)
 
+    def _get_ex_list(self):
+        '''
+        Get the replica exchange list from the exchange object
+
+        '''
+
+        self._ex_list=exchange.ex_list
 
 # ------------------------------------------------------------------------------
 #
