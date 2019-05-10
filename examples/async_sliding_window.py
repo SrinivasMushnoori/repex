@@ -287,7 +287,7 @@ class Exchange(re.AppManager):
         
         # Check size of list returned by sliding window 
 
-        if len(self._exchange_list) < exchange_size:     #### "exchange list" appears to not even exist.       
+        if len(self._exchange_list) < exchange_size:     #### "exchange list" appears to not exist.       
             return
         else:
             return self._exchange_list
@@ -304,11 +304,11 @@ class Exchange(re.AppManager):
         self._log.debug('=== %s check resume', replica.rid)
 
 
-        for _replica in self._exchange_list:  #REPLICA SHOULD NOT BE USED AS AN ITERATOR
+        for _r in self._exchange_list:  #REPLICA SHOULD NOT BE USED AS AN ITERATOR
 
-            if _replica.cycle <= self._min_cycles:
+            if _r.cycle <= self._min_cycles:
                 # more work to d o for this replica
-                _replica.add_md_stage()
+                _r.add_md_stage()
 
             # make sure we don't resume the current replica
             if replica.rid != _replica.rid:
