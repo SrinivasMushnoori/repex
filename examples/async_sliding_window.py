@@ -24,7 +24,7 @@ SANDER   = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
 # 1) Remove exchanged replicas from waiting list, (Implemented, needs testing) 
 # 2) The Exchange method needs ways to accept replica RID's as inputs 
 # as well as the mechanism to rename appropriate files. 
-# 3) Line 224 is where it all seems to have gone wrong: the iterator in the loop has overridden the replica object. 
+
 
 
 # ------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ class Exchange(re.AppManager):
         self._cnt           = 0  # count exchanges
         self._replicas      = list()
         self._waitlist      = list()
-        self._exchange_list = list()  # Sublist of self._waitlist that performs an exchange
+        #self._exchange_list = list()  # Sublist of self._waitlist that performs an exchange
 
         # create the required number of replicas
         for i in range(self._size):
@@ -85,8 +85,8 @@ class Exchange(re.AppManager):
 
             self._replicas.append(replica)
 
-        @property
-        def ex_list(self):   return self._exchange_list
+        #@property  ### This should be a replica property
+        #def ex_list(self):   return self._exchange_list
 
     # --------------------------------------------------------------------------
     #
@@ -185,7 +185,7 @@ class Exchange(re.AppManager):
         '''
         
         # mark this replica for the next exchange
-        # multiple replicas can trigger this, there fore lock needed
+        # multiple replicas can trigger this, therefore lock needed
         with self._lock:
 
             self._waitlist.append(replica)
@@ -205,11 +205,11 @@ class Exchange(re.AppManager):
 
 
 
-            self._exchange_list = self._sliding_window(self._sorted_waitlist, self._exchange_size, self._window_size)
+            exchange_list = self._sliding_window(self._sorted_waitlist, self._exchange_size, self._window_size)
         
             #print "exchange list returned by sliding window is: ", [replica.rid for replica in self._exchange_list]
             
-            if not self._exchange_list:
+            if not exchange_list:
 
             #print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
             # just suspend this replica and wait for the next
@@ -220,18 +220,18 @@ class Exchange(re.AppManager):
                 except:
                     print "replica ", replica.rid, " is already suspended, moving on"
             else:
-                exchange_list = self._exchange_list #Unclear if this is necessary
+                
                 replica._add_ex_stage(exchange_list)
 
 
-                for replica in self._exchange_list:
+                for replica in exchange_list:
                     try:
                         self._sorted_waitlist.remove(replica)
                     except:
                         print "replica ", replica.rid, " isn't here."
-                #self._waitlist = self._sorted_waitlist
+             
     
-                print "Replicas that have been pushed to exchange and removed from exchange list: ", [replica.rid for replica in self._exchange_list]
+                print "Replicas that have been pushed to exchange and removed from exchange list: ", [replica.rid for replica in exchange_list]
                 print "Replicas that are still in the sorted waitlist: ", [replica.rid for replica in self._sorted_waitlist]
             
                 self._waitlist = self._sorted_waitlist
@@ -266,25 +266,32 @@ class Exchange(re.AppManager):
 
             rid_start = replica.rid  #- window_size/2       
             rid_end   = rid_start + window_size
-
+            exchange_list = list()
             # find replicas in list within that window
-            rid_list =  [replica for r in sorted_waitlist 
-                    if (replica.rid >= rid_start and replica.rid <= rid_end)]
+            #rid_list =  [replica #for r in sorted_waitlist 
+            #rid_list =  [replica if (replica.rid >= rid_start and replica.rid < rid_end)]
+            rid_list = list()
+            if (replica.rid >= rid_start and replica.rid < rid_end):
+                rid_list.append(replica)
+
+ 
+
+
             print "rid_list in sliding window is: ", [replica.rid for replica in rid_list]
 
-            new_replica = list(set(rid_list) - set(self._exchange_list))  ### This line may no llonger be needed
+            new_replica = list(set(rid_list) - set(exchange_list))  ### This line may no llonger be needed
 
             
             try:
                 print "The new replica is ", new_replica[0].rid
-                #if len(rid_list) < exchange_size:
-                if len(self._exchange_list) < exchange_size:
-                    self._exchange_list.append(new_replica[0]) 
+                if len(rid_list) < exchange_size:
+                #if len(exchange_list) < exchange_size:
+                    exchange_list.append(new_replica[0]) 
             except:
                 print "new_replica seems to not exist or something"
                 print "Hit Ctrl+C in 10 seconds to terminate"
                 time.sleep(10)
-            #print "Exchange list generated by sliding window is: ", [replica.rid for replica in self._exchange_list] 
+            print "Exchange list generated by sliding window is: ", [replica.rid for replica in exchange_list] 
 
             # create a list of replica IDs to check 
             # against to avoid duplication
@@ -292,10 +299,10 @@ class Exchange(re.AppManager):
         
         # Check size of list returned by sliding window 
         empty_list = []    
-        if len(self._exchange_list) < exchange_size:     #### "exchange list" appears to not exist.       
-            return empty_list
+        if len(exchange_list) < exchange_size:     #### "exchange list" appears to not exist.       
+            return #empty_list
         else:
-            return self._exchange_list
+            return exchange_list
 
 
 
@@ -308,11 +315,10 @@ class Exchange(re.AppManager):
 
         self._log.debug('=== %s check resume', replica.rid)
 
-
-        for _r in self._exchange_list:  #REPLICA SHOULD NOT BE USED AS AN ITERATOR
+        resumed = list() # replicas that have been resumed
+        for _r in replica.exchange_list:  #REPLICA SHOULD NOT BE USED AS AN ITERATOR
 
             if _r.cycle <= self._min_cycles:
-                # more work to d o for this replica
                 _r.add_md_stage()
 
             # make sure we don't resume the current replica
@@ -320,13 +326,15 @@ class Exchange(re.AppManager):
                 self._log.debug('=== %s resume', _r.rid)
                 try:
                     _r.resume()
+                    resumed.append(_r.rid)
                 except:
                     self._log.exception('=== %s resume failed', _r.rid)
                     time.sleep(10)
                     raise
 
         # reset exchange_list, increase exchange counter
-        self._exchange_list = list()
+        #self._exchange_list = list()
+        return resumed
         self._cnt += 1
 
 
@@ -367,6 +375,11 @@ class Replica(re.Pipeline):
 
     @property
     def cycle(self): return self._cycle
+
+    @property
+    def exchange_list(self):
+        return self._ex_list
+    
 
 
     # --------------------------------------------------------------------------
@@ -414,7 +427,7 @@ class Replica(re.Pipeline):
 
     
 
-    def _add_ex_stage(self):
+    def _add_ex_stage(self,exchange_list):
         self._log.debug('=== %s exchange')
         exchange_list = self._get_ex_list()
         task = re.Task()
@@ -456,13 +469,13 @@ class Replica(re.Pipeline):
         '''
         self._check_res(self)
 
-    def _get_ex_list(self):
-        '''
-        Get the replica exchange list from the exchange object
+    # def _get_ex_list(self):
+    #     '''
+    #     Get the replica exchange list from the exchange object
 
-        '''
+    #     '''
 
-        self._ex_list=exchange.ex_list
+    #     self._ex_list=exchange.ex_list
 
 # ------------------------------------------------------------------------------
 #
