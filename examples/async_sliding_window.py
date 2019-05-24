@@ -197,7 +197,7 @@ class Exchange(re.AppManager):
             # Sort the waitlist as soon as a new replica is added.
         
             self._sorted_waitlist = sorted(self._waitlist, key=lambda x: x.rid) # We're sorting by RID here since RID's are assigned in sorted order with
-                                                                 # Temperature (or whatever paramater is of interest to us)
+                                                                                # Temperature (or whatever paramater is of interest to us)
         
             print "sorted waitlist is: ", [replica.rid for replica in self._sorted_waitlist]
 
@@ -312,8 +312,8 @@ class Exchange(re.AppManager):
         self._log.debug('=== %s check resume', replica.rid)
 
         resumed = list() # replicas that have been resumed
-        
-        for _r in exchange_list:  #REPLICA SHOULD NOT BE USED AS AN ITERATOR
+
+        for _r in replica.exchange_list:  #REPLICA SHOULD NOT BE USED AS AN ITERATOR
 
             if _r.cycle <= self._min_cycles:
                 _r.add_md_stage()
@@ -356,6 +356,7 @@ class Replica(re.Pipeline):
         self._cores     = cores
         self._exe       = exe
         self._cycle     = 0  # initial cycle
+        self._ex_list   = None 
 
         self._log = ru.Logger('radical.repex.rep')
 
@@ -374,7 +375,7 @@ class Replica(re.Pipeline):
     def cycle(self): return self._cycle
 
     @property
-    def ex_list(self):
+    def exchange_list(self):
         return self._ex_list 
     
 
@@ -434,7 +435,7 @@ class Replica(re.Pipeline):
     def _add_ex_stage(self,exchange_list):
         self._log.debug('=== %s exchange')
         
-        self._ex_list = exchange_list
+        self._ex_list = exchange_list  #This should update line 359, but does not.
 
         task = re.Task()
         task.name       = 'extsk'
@@ -445,7 +446,7 @@ class Replica(re.Pipeline):
         for replica in exchange_list:  
             rid   = replica.rid 
             cycle = replica.cycle 
-            task.link_input_data.append('%s/mdinfo-%s-%s' % (self._sbox, rid, cycle))  # % (self._sbox, rid, cycle))
+            task.link_input_data.append('%s/mdinfo-%s-%s' % (self._sbox, rid, cycle-1))  # % (self._sbox, rid, cycle))
             stage = re.Stage()
             stage.add_tasks(task)
             
