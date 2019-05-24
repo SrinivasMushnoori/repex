@@ -312,7 +312,8 @@ class Exchange(re.AppManager):
         self._log.debug('=== %s check resume', replica.rid)
 
         resumed = list() # replicas that have been resumed
-        for _r in replica.exchange_list:  #REPLICA SHOULD NOT BE USED AS AN ITERATOR
+        
+        for _r in exchange_list:  #REPLICA SHOULD NOT BE USED AS AN ITERATOR
 
             if _r.cycle <= self._min_cycles:
                 _r.add_md_stage()
@@ -374,13 +375,18 @@ class Replica(re.Pipeline):
 
     @property
     def ex_list(self):
-        return self._get_ex_list
+        return self._ex_list 
     
 
 
     # --------------------------------------------------------------------------
     #
     def add_md_stage(self):
+
+        """
+        Problem: add_md_stage only adds md tasks that initiate from "inpcrd" i.e. cycle 0. 
+        Needs to accept input from previous MD stage. 
+        """
 
 
         rid   = self._rid
@@ -390,18 +396,28 @@ class Replica(re.Pipeline):
         exe   = self._exe
 
         self._log.debug('=== %s add md (cycle %s)', rid, cycle)
+       
+
 
         task = re.Task()
         task.name            = 'mdtsk-%s-%s'               % (      rid, cycle)
-        task.link_input_data = ['%s/inpcrd > inpcrd-%s-%s' % (sbox, rid, cycle),
-                                 '%s/prmtop'               % (sbox),
-                                 '%s/mdin-%s-%s > mdin'    % (sbox, rid, cycle)]
+        if cycle == 0:
+            task.link_input_data = ['%s/inpcrd > inpcrd-%s-%s' % (sbox, rid, cycle),
+                                    '%s/prmtop'                % (sbox),
+                                    '%s/mdin-%s-%s > mdin'     % (sbox, rid, cycle)]
+        else:            
+            task.link_input_data =  ['%s/inpcrd-%s-%s'         % (sbox, rid, cycle),
+                                     '%s/prmtop'               % (sbox),
+                                     '%s/mdin-%s-%s > mdin'    % (sbox, rid, cycle)]
+                                      #['%s/mdcrd-out-%s-%s > inpcrd-%s-%s' % (sbox, rid, cycle, rid, cycle),
+                                    
+
         task.arguments       = ['-O', 
                                 '-i',   'mdin', 
                                 '-p',   'prmtop', 
                                 '-c',   'inpcrd-%s-%s'     % (      rid, cycle), 
                                 '-o',   'out',
-                                '-x',   'mdcrd',
+                                '-x',   '%s/mdcrd-%s-%s'   % (sbox, rid, cycle),
                                 '-r',   '%s/inpcrd-%s-%s'  % (sbox, rid, cycle),
                                 '-inf', '%s/mdinfo-%s-%s'  % (sbox, rid, cycle)]
         task.executable      = SANDER #[exe]
@@ -410,41 +426,32 @@ class Replica(re.Pipeline):
 
         stage = re.Stage()
         stage.add_tasks(task)
-        #try:
-        #stage.post_exec = {'function' : self._after_md,
-        #                       'args'    : []}
         stage.post_exec = self._after_md
-        #except:
-        #    stage.post_exec = {'condition': self._after_md,
-        #                        'on_true': void,
-        #                        'on_false': void}                  
-
         self.add_stages(stage)
 
     
 
     def _add_ex_stage(self,exchange_list):
         self._log.debug('=== %s exchange')
-        #exchange_list = self._get_ex_list()
+        
+        self._ex_list = exchange_list
+
         task = re.Task()
         task.name       = 'extsk'
         task.executable = ['/home/scm177/VirtualEnvs/Env_RepEx/bin/python']
         task.upload_input_data = ['t_ex_gibbs.py']
-        task.arguments  = ['t_ex_gibbs.py', len(exchange_list)]
+        task.arguments  = ['t_ex_gibbs.py', self._sbox]
 
         for replica in exchange_list:  
             rid   = replica.rid 
             cycle = replica.cycle 
-            task.link_input_data.append('%s/mdinfo-%s-%s' 
-                                          % (self._sbox, rid, cycle))
+            task.link_input_data.append('%s/mdinfo-%s-%s' % (self._sbox, rid, cycle))  # % (self._sbox, rid, cycle))
             stage = re.Stage()
             stage.add_tasks(task)
             
             stage.post_exec = replica._after_ex 
 
             replica.add_stages(stage)
-
-            # Here we remove the replicas participating in the triggered exchange from the waitlist. 
 
     # --------------------------------------------------------------------------
     #
@@ -464,15 +471,6 @@ class Replica(re.Pipeline):
         after an ex cycle, trigger replica resumption
         '''
         self._check_res(self)
-
-    # def _get_ex_list(self):
-    #     '''
-    #     Get the replica exchange list from the exchange object
-
-    #     '''
-
-    #     self._ex_list=exchange.ex_list 
-    #     return self._ex_list
 
 # ------------------------------------------------------------------------------
 #
