@@ -434,8 +434,10 @@ class Replica(re.Pipeline):
 
     def _add_ex_stage(self,exchange_list):
         self._log.debug('=== %s exchange')
-        
+        print "exchange_list is ", [x.rid for x in exchange_list]
+        print "after assignment, self._ex_list is ", [x.rid for x in self._ex_list]
         self._ex_list = exchange_list  #This should update line 359, but does not.
+        print "after assignment, self._ex_list is ", [x.rid for x in self._ex_list]
 
         task = re.Task()
         task.name       = 'extsk'
