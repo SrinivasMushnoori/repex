@@ -209,17 +209,20 @@ class Exchange(re.AppManager):
 
             exchange_list = self._sliding_window(self._sorted_waitlist, self._exchange_size, self._window_size)
         
-            #print "exchange list returned by sliding window is: ", [replica.rid for replica in self._exchange_list]
+            #print "exchange list returned by sliding window is: ", [rep.rid for rep in exchange_list]
+            #rep = None
             
             if not exchange_list:
 
             #print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
             # just suspend this replica and wait for the next
                 self._log.debug('=== %s suspend', replica.rid)
-                print "replica ", replica.rid, " should suspend now"  # If this is triggered by the replica that has just added itself, it should 
+                #print "replica ", replica.rid, " should suspend now"  # If this is triggered by the replica that has just added itself, it should 
                                                                       # not repeatedly try to suspend the same replica
                 try:
+                    print "latest replica is " , self._latest_replica.rid
                     self._latest_replica.suspend()
+                    #print "replica ", self._latest_replica.rid, " should suspend now" 
                 except:
                     print "replica ", replica.rid, " is already suspended, moving on"
             else:
@@ -275,9 +278,9 @@ class Exchange(re.AppManager):
         last_window   = None     # avoid rechecking replicas
         last_range    = None
         exchange_list = list()
-        
+        #print "trying to iterate over sorted_waitlist"
         for replica in sorted_waitlist:  
-            
+            #print "loop entered successfully"
             if last_range and replica in last_range: 
                 continue
 
