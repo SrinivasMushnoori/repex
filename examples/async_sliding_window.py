@@ -220,13 +220,16 @@ class Exchange(re.AppManager):
                 #print "replica ", replica.rid, " should suspend now"  # If this is triggered by the replica that has just added itself, it should 
                                                                       # not repeatedly try to suspend the same replica
                 try:
-                    print "latest replica is " , self._latest_replica.rid
+                    print "latest replica is " , self._latest_replica.rid, " and should suspend now."
                     self._latest_replica.suspend()
                     #print "replica ", self._latest_replica.rid, " should suspend now" 
                 except:
                     print "replica ", replica.rid, " is already suspended, moving on"
             else:
-                
+                print "exchange_list is ", [x.rid for x in exchange_list]
+
+                time.sleep(10)
+
                 replica._add_ex_stage(exchange_list)
 
 
@@ -275,7 +278,7 @@ class Exchange(re.AppManager):
         '''
 
  
-        last_window   = None     # avoid rechecking replicas
+        
         last_range    = None
         exchange_list = list()
         #print "trying to iterate over sorted_waitlist"
@@ -316,7 +319,17 @@ class Exchange(re.AppManager):
 
         resumed = list() # replicas that have been resumed
 
-        for _r in replica.exchange_list:  #REPLICA SHOULD NOT BE USED AS AN ITERATOR
+        #print "about to print the replica's exchange list"
+
+        #time.sleep(10)
+
+        try:
+            print "exchange_list in this replica's possession is ", [x.rid for x in replica.resume_list]
+        except: 
+            print "oops, exchange_list doesnt seem to exist, has type ", type(replica.resume_list)
+
+        for _r in replica.resume_list: 
+        #for _r in resume_list:
 
             if _r.cycle <= self._min_cycles:
                 _r.add_md_stage()
@@ -359,7 +372,7 @@ class Replica(re.Pipeline):
         self._cores     = cores
         self._exe       = exe
         self._cycle     = 0  # initial cycle
-        self._ex_list   = None 
+        self._ex_list   = None   #This is a problem. As of 5/28/2019.  
 
         self._log = ru.Logger('radical.repex.rep')
 
@@ -381,6 +394,9 @@ class Replica(re.Pipeline):
     def exchange_list(self):
         return self._ex_list 
     
+    @property
+    def resume_list(self):
+        return self._res_list
 
 
     # --------------------------------------------------------------------------
@@ -437,10 +453,8 @@ class Replica(re.Pipeline):
 
     def _add_ex_stage(self,exchange_list):
         self._log.debug('=== %s exchange')
-        print "exchange_list is ", [x.rid for x in exchange_list]
-        print "after assignment, self._ex_list is ", [x.rid for x in self._ex_list]
-        self._ex_list = exchange_list  #This should update line 359, but does not.
-        print "after assignment, self._ex_list is ", [x.rid for x in self._ex_list]
+        self._ex_list = exchange_list  
+        self._res_list = exchange_list
 
         task = re.Task()
         task.name       = 'extsk'
@@ -455,10 +469,12 @@ class Replica(re.Pipeline):
             stage = re.Stage()
             stage.add_tasks(task)
             
-            stage.post_exec = replica._after_ex 
+            stage.post_exec = replica._after_ex
 
             replica.add_stages(stage)
 
+
+        
     # --------------------------------------------------------------------------
     #
     def _after_md(self):
@@ -476,6 +492,7 @@ class Replica(re.Pipeline):
         '''
         after an ex cycle, trigger replica resumption
         '''
+
         self._check_res(self)
 
 # ------------------------------------------------------------------------------
@@ -485,8 +502,8 @@ if __name__ == '__main__':
 
     exchange = Exchange(size          = 6,
                         exchange_size = 2,   # Exchange size is how big the exchange list needs to be to move to the exchange phase
-                        window_size   = 3,   # Window size is the width of the sliding window
-                        min_cycles    = 0, 
+                        window_size   = 6,   # Window size is the width of the sliding window
+                        min_cycles    = 2, 
                         min_temp      = 300,
                         max_temp      = 320,
                         timesteps     = 100,
