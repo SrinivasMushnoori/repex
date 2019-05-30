@@ -12,8 +12,9 @@ import radical.utils as ru
 #os.environ['RADICAL_VERBOSE'] = 'INFO'
 os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
 
-os.environ['RADICAL_PILOT_DBURL'] = \
-           'mongodb://smush:key1209@ds141786.mlab.com:41786/repex_db_1'
+os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://smush:key1209@ds263816.mlab.com:63816/repex_db_2'
+          #'mongodb://smush:key1209@ds141786.mlab.com:41786/repex_db_1'
+           
 
 
 RMQ_PORT = int(os.environ.get('RMQ_PORT', 32769))
@@ -226,12 +227,9 @@ class Exchange(re.AppManager):
                 except:
                     print "replica ", replica.rid, " is already suspended, moving on"
             else:
-                print "exchange_list is ", [x.rid for x in exchange_list]
-
-                time.sleep(10)
+                print "adding exchange stage for replicas ", [x.rid for x in exchange_list]
 
                 replica._add_ex_stage(exchange_list)
-
 
                 for replica in exchange_list:
                     try:
@@ -319,19 +317,12 @@ class Exchange(re.AppManager):
 
         resumed = list() # replicas that have been resumed
 
-        #print "about to print the replica's exchange list"
-
-        #time.sleep(10)
-
-        try:
-            print "exchange_list in this replica's possession is ", [x.rid for x in replica.resume_list]
-        except: 
-            print "oops, exchange_list doesnt seem to exist, has type ", type(replica.resume_list)
+        ### This section has an issue
 
         for _r in replica.resume_list: 
-        #for _r in resume_list:
-
+        
             if _r.cycle <= self._min_cycles:
+                print "adding MD stage for replica ", _r.rid
                 _r.add_md_stage()
 
             # make sure we don't resume the current replica
@@ -339,6 +330,7 @@ class Exchange(re.AppManager):
                 self._log.debug('=== %s resume', _r.rid)
                 try:
                     _r.resume()
+                    print "added MD stage, resuming replica ", _r.rid
                     resumed.append(_r.rid)
                 except:
                     self._log.exception('=== %s resume failed', _r.rid)
@@ -425,10 +417,11 @@ class Replica(re.Pipeline):
             task.link_input_data = ['%s/inpcrd > inpcrd-%s-%s' % (sbox, rid, cycle),
                                     '%s/prmtop'                % (sbox),
                                     '%s/mdin-%s-%s > mdin'     % (sbox, rid, cycle)]
-        else:            
+        else:
+            cycle_0 = '0'            
             task.link_input_data =  ['%s/inpcrd-%s-%s'         % (sbox, rid, cycle),
                                      '%s/prmtop'               % (sbox),
-                                     '%s/mdin-%s-%s > mdin'    % (sbox, rid, cycle)]
+                                     '%s/mdin-%s-%s > mdin'    % (sbox, rid, cycle_0)]
                                       #['%s/mdcrd-out-%s-%s > inpcrd-%s-%s' % (sbox, rid, cycle, rid, cycle),
                                     
 
@@ -437,8 +430,8 @@ class Replica(re.Pipeline):
                                 '-p',   'prmtop', 
                                 '-c',   'inpcrd-%s-%s'     % (      rid, cycle), 
                                 '-o',   'out',
-                                '-x',   '%s/mdcrd-%s-%s'   % (sbox, rid, cycle),
-                                '-r',   '%s/inpcrd-%s-%s'  % (sbox, rid, cycle),
+                                '-x',   '%s/mdcrd-%s-%s'   % (sbox, rid, cycle+1),
+                                '-r',   '%s/inpcrd-%s-%s'  % (sbox, rid, cycle+1),
                                 '-inf', '%s/mdinfo-%s-%s'  % (sbox, rid, cycle)]
         task.executable      = SANDER #[exe]
         task.cpu_reqs        = {'processes' : cores}
@@ -455,6 +448,7 @@ class Replica(re.Pipeline):
         self._log.debug('=== %s exchange')
         self._ex_list = exchange_list  
         self._res_list = exchange_list
+        
 
         task = re.Task()
         task.name       = 'extsk'
@@ -466,12 +460,13 @@ class Replica(re.Pipeline):
             rid   = replica.rid 
             cycle = replica.cycle 
             task.link_input_data.append('%s/mdinfo-%s-%s' % (self._sbox, rid, cycle-1))  # % (self._sbox, rid, cycle))
-            stage = re.Stage()
-            stage.add_tasks(task)
+        stage = re.Stage()
+        stage.add_tasks(task)
             
-            stage.post_exec = replica._after_ex
+        stage.post_exec = self._after_ex
 
-            replica.add_stages(stage)
+        self.add_stages(stage)
+        print "replica.add_stages has been executed"
 
 
         
@@ -500,10 +495,10 @@ class Replica(re.Pipeline):
 if __name__ == '__main__':
 
 
-    exchange = Exchange(size          = 6,
+    exchange = Exchange(size          = 2,
                         exchange_size = 2,   # Exchange size is how big the exchange list needs to be to move to the exchange phase
-                        window_size   = 6,   # Window size is the width of the sliding window
-                        min_cycles    = 2, 
+                        window_size   = 2,   # Window size is the width of the sliding window
+                        min_cycles    = 10, 
                         min_temp      = 300,
                         max_temp      = 320,
                         timesteps     = 100,
