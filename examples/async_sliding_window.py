@@ -331,6 +331,7 @@ class Exchange(re.AppManager):
                 try:
                     _r.resume()
                     print "added MD stage, resuming replica ", _r.rid
+                    print "Replica ", _r.rid, " with pipeline ID ",_r.name," has state history ", _r.state_history
                     resumed.append(_r.rid)
                 except:
                     self._log.exception('=== %s resume failed', _r.rid)
