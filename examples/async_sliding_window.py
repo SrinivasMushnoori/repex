@@ -324,6 +324,7 @@ class Exchange(re.AppManager):
             if _r.cycle <= self._min_cycles:
                 print "adding MD stage for replica ", _r.rid
                 _r.add_md_stage()
+                print "Replica ", _r.rid, " with pipeline ID ",_r.name," has stages ", [plnstg.luid for plnstg in _r.stages]
 
             # make sure we don't resume the current replica
             if replica.rid != _r.rid:
@@ -332,6 +333,7 @@ class Exchange(re.AppManager):
                     _r.resume()
                     print "added MD stage, resuming replica ", _r.rid
                     print "Replica ", _r.rid, " with pipeline ID ",_r.name," has state history ", _r.state_history
+                    #print "Replica ", _r.rid, " with pipeline ID ",_r.name," has stages ", [plnstg.name for plnstg in _r.stages]
                     resumed.append(_r.rid)
                 except:
                     self._log.exception('=== %s resume failed', _r.rid)
@@ -442,7 +444,9 @@ class Replica(re.Pipeline):
         stage.add_tasks(task)
         stage.post_exec = self._after_md
         self.add_stages(stage)
-
+        #print "stages in this pipeline are ", [plnstg.luid for plnstg in self.stages] 
+        #for plstg in self.stages()print "stages in this pipeline are ", plstg.name   
+        #stg_list = [sorted_waitlist[index] for index in range(starting_index,len(sorted_waitlist)) if sorted_waitlist[index].rid < rid_end]
     
 
     def _add_ex_stage(self,exchange_list):
