@@ -423,7 +423,7 @@ if __name__ == '__main__':
     exchange = ReplicaExchange(ensemble_size = 32, 
                                exchange_size = 4, 
                                window_size   = 32,
-                               md_cycles     = 10, 
+                               md_cycles     = 5, 
                                min_temp      = 300,
                                max_temp      = 320,
                                timesteps     = 100,
