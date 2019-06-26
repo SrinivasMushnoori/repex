@@ -161,6 +161,7 @@ class ReplicaExchange(re.AppManager):
         #     self._waitlist.remove(rep)
         # return exchange_list
 
+        # FIXME: AM: you pass `exchange_size`, but use `self._ex_size`
         if len(self._waitlist) < self._ex_size:
 
             # not enough replicas to attempt exchange
@@ -178,7 +179,15 @@ class ReplicaExchange(re.AppManager):
               
             last_range = [r for r in exchange_list]
             if len(exchange_list) == exchange_size and current_replica in exchange_list:
-                break   
+                break
+
+        # FIXME AM: you also return an incomplete list.  Say you have a total of
+        #       100 replicas, and 10 are waiting - but they are not in the
+        #       correct window.
+        #       the loop above will fill the exchange list, but the list never
+        #       gets long enough to see the `break` above.  But after the loop
+        #       is done, it will be returned anyway - even if the list does not
+        #       contain the active replica.
 
         for replica in exchange_list:
             self._waitlist.remove(replica)
