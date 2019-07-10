@@ -61,7 +61,22 @@ class ReplicaExchange(re.AppManager):
         re.AppManager.__init__(self, autoterminate=False, port=5672) 
         self.resource_desc = {"resource" : 'local.localhost',
                               "walltime" : 30,
-                              "cpus"     : 32}                                
+                              "cpus"     : 8}               
+#         self.resource_desc = {"resource"      : "xsede.bridges",
+#                               "md_executable" : "/opt/packages/gromacs-CPU-2018/bin/gmx_mpi",
+#                               "py_executable" : "/opt/intel/intelpython2/bin/python2.7",
+#                               "pre_exec"      : "export GROMACS=gmx_2016.6", 
+#                               "walltime"      : 60,
+#                               "cpus"          : 56,
+#                               "gpus_per_node" : 0,
+#                               "access_schema" : "gsissh",
+#                               "queue"         : "RM",
+#                               "project" : "mr560ip"
+             
+#                               }
+
+
+
         
         self._sbox          = '$Pipeline_untarPipe_Stage_untarStg_Task_untarTsk'
         self._cnt           = 0  # count exchanges
@@ -188,8 +203,10 @@ class ReplicaExchange(re.AppManager):
                       replica.rid, len(self._waitlist), self._ex_size)
 
             self._waitlist.append(replica)
+            msg = " > %s: %s" % (replica.rid, [r.rid for r in self._waitlist])
+            self._dump(msg=msg, special=self._waitlist, glyph='v')
 
-            exchange_list = self._find_exchange_list(self._ex_size, self._window_size)
+            exchange_list = self._find_exchange_list(self._ex_size, self._window_size , current_replica=replica)
 
             if not exchange_list:
                 # nothing to do, Suspend this replica and wait until we get more
@@ -211,34 +228,41 @@ class ReplicaExchange(re.AppManager):
 
     # --------------------------------------------------------------------------
     #
-    def _find_exchange_list(self, exchange_size, window_size):
+    def _find_exchange_list(self, exchange_size, window_size, current_replica):
         '''
         This is a function that accepts as input the sorted waitlist and 
         the number of replicas needed for an exchange. It then generates sublists from 
         the sorted waitlist. These sublists contain "compatible" replicas 
         that can proceed to perform exchanges amongst themselves.
         '''
-        if len(self._waitlist) < self._ex_size:
+        waitlist = self._waitlist
+        if len(waitlist) < exchange_size:
+            return
 
-            # not enough replicas to attempt exchange
-            return 
-        last_range    = None
         exchange_list = list()
-        self._sorted_waitlist = sorted(self._waitlist, key=lambda x: x.rid)       
-        for replica in self._sorted_waitlist:  
+        sorted_waitlist = sorted(waitlist, key = lambda x: x.rid)
 
-            if last_range and replica in last_range: 
-                continue
-            rid_end   = replica.rid + window_size
-            starting_index=self._sorted_waitlist.index(replica)
-            exchange_list = [self._sorted_waitlist[index] for index in range(starting_index,len(self._sorted_waitlist)) if self._sorted_waitlist[index].rid < rid_end] 
+        for rep in sorted_waitlist:  
 
-            last_range = [r for r in exchange_list]  
+            start_index=sorted_waitlist.index(rep)
+            end_index = start_index + exchange_size -1
+            try:
+                delta = sorted_waitlist[end_index].rid - sorted_waitlist[start_index].rid
+                exchange_list = sorted_waitlist[start_index:end_index+1]
 
-        for replica in exchange_list:
-            self._waitlist.remove(replica)
+                if len(exchange_list) == exchange_size and current_replica in exchange_list and delta < window_size:
 
-        return exchange_list
+            
+                    for rep in exchange_list:
+                        waitlist.remove(rep)
+                    return exchange_list
+
+                else:
+                    continue
+
+            except:
+
+                return
 
 
     # --------------------------------------------------------------------------
@@ -420,15 +444,15 @@ class Replica(re.Pipeline):
 #
 if __name__ == '__main__':
 
-    exchange = ReplicaExchange(ensemble_size = 32, 
-                               exchange_size = 4, 
-                               window_size   = 32,
-                               md_cycles     = 5, 
-                               min_temp      = 300,
-                               max_temp      = 320,
+    exchange = ReplicaExchange(ensemble_size = 28, 
+                               exchange_size = 28, 
+                               window_size   = 28,
+                               md_cycles     = 10, 
+                               min_temp      = 280,
+                               max_temp      = 400,
                                timesteps     = 100,
                                basename      = 'ace-ala', 
                                executable    = SANDER, 
                                cores         = 1)
-exchange.execute()
-exchange.terminate()
+    exchange.execute()
+    exchange.terminate()

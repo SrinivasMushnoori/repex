@@ -43,12 +43,35 @@ class ReplicaExchange(re.AppManager):
         self._dout = open('dump.log', 'a')
 
         re.AppManager.__init__(self, autoterminate=False, port=5672) 
+        # self.resource_desc =        self.resource_desc = {"resource"      : "xsede.bridges",
+        #                       "walltime"      : 60,
+        #                       "cpus"          : 56,
+        #                       "gpus_per_node" : 0,
+        #                       "access_schema" : "gsissh",
+        #                       "queue"         : "RM",
+        #                       "project" : "mr560ip"
+             
+        #                       }
+
+
+
+        #{"resource"      : "xsede.comet_ssh",
+    #"walltime"      : 30,
+    #"cpus"          : 24,
+    #"gpus_per_node" : 0,
+    #access_schema" : "gsissh",
+    #queue"         : "debug",
+    #"project" : "rut129" }
+
+
+
         self.resource_desc = {"resource" : 'local.localhost',
                               "walltime" : 30,
                               "cpus"     : 64}                                
 
         self._replicas = list()
         self._waitlist = list()
+
 
         # create the required number of replicas
         for i in range(self._en_size):
@@ -60,6 +83,7 @@ class ReplicaExchange(re.AppManager):
             self._replicas.append(replica)
 
         self._dump(msg='startup')
+        #self._global_cycles = [r.cycle for r in self._replicas]
 
         
     def execute(self):
@@ -138,61 +162,43 @@ class ReplicaExchange(re.AppManager):
         the sorted waitlist. These sublists contain "compatible" replicas 
         that can proceed to perform exchanges amongst themselves.
         '''
-        # if len(self._waitlist) < self._ex_size:
 
-        #     # not enough replicas to attempt exchange
-        #     return 
-        # last_range    = None
-        # exchange_list = list()
-        # self._sorted_waitlist = sorted(self._waitlist, key=lambda x: x.rid)       
-        # for rep in self._sorted_waitlist:  
+        waitlist = self._waitlist
 
-        #     if last_range and rep in last_range: 
-        #         continue
-        #     rid_end   = rep.rid + window_size
-        #     starting_index=self._sorted_waitlist.index(rep)
-        #     exchange_list = [self._sorted_waitlist[index] for index in range(starting_index,len(self._sorted_waitlist)) if self._sorted_waitlist[index].rid < rid_end] 
+ 
+        if len(waitlist) < exchange_size:
 
-        #     last_range = [r for r in exchange_list]  
-        # if len(exchange_list) < self._ex_size or replica not in exchange_list:
-        #     return
-        
-        # for rep in exchange_list:
-        #     self._waitlist.remove(rep)
-        # return exchange_list
+            return
 
-        # FIXME: AM: you pass `exchange_size`, but use `self._ex_size`
-        if len(self._waitlist) < self._ex_size:
-
-            # not enough replicas to attempt exchange
-            return 
-        last_range    = None
+        last_range = None
         exchange_list = list()
-        self._sorted_waitlist = sorted(self._waitlist, key=lambda x: x.rid)       
-        for replica in self._sorted_waitlist:  
+        sorted_waitlist = sorted(waitlist, key = lambda x: x.rid)
 
-            if last_range and replica in last_range: 
-                continue
-            rid_end   = replica.rid + window_size
-            starting_index=self._sorted_waitlist.index(replica)
-            exchange_list = [self._sorted_waitlist[index] for index in range(starting_index,len(self._sorted_waitlist)) if self._sorted_waitlist[index].rid < rid_end] 
-              
-            last_range = [r for r in exchange_list]
-            if len(exchange_list) == exchange_size and current_replica in exchange_list:
-                break
+        for rep in sorted_waitlist:  
 
-        # FIXME AM: you also return an incomplete list.  Say you have a total of
-        #       100 replicas, and 10 are waiting - but they are not in the
-        #       correct window.
-        #       the loop above will fill the exchange list, but the list never
-        #       gets long enough to see the `break` above.  But after the loop
-        #       is done, it will be returned anyway - even if the list does not
-        #       contain the active replica.
+            start_index=sorted_waitlist.index(rep)
 
-        for replica in exchange_list:
-            self._waitlist.remove(replica)
 
-        return exchange_list
+            end_index = start_index + exchange_size -1
+
+            try:
+                delta = sorted_waitlist[end_index].rid - sorted_waitlist[start_index].rid
+                exchange_list = sorted_waitlist[start_index:end_index+1]
+
+                if len(exchange_list) == exchange_size and current_replica in exchange_list and delta < window_size:
+
+            
+                    for rep in exchange_list:
+                        waitlist.remove(rep)
+                    return exchange_list
+
+                else:
+                    continue
+
+            except:
+
+                return
+
 
     # --------------------------------------------------------------------------
     #
@@ -200,6 +206,8 @@ class ReplicaExchange(re.AppManager):
 
         self._dump()
         self._log.debug('=== %s check resume', replica.rid)
+        self._global_cycles = [r.cycle for r in self._replicas]
+        
 
         resumed = list()  # list of resumed replica IDs
 
@@ -211,7 +219,8 @@ class ReplicaExchange(re.AppManager):
         # stage, all others we let die and add a new md stage for them.
         for _replica in replica.exchange_list:
 
-            if _replica.cycle <= self._cycles:
+            if _replica.cycle <= self._cycles: # and min(self._global_cycles)>=self._cycles:  ###### ISSUE: This must no only be _replica.cycles, but if ANY replica has fewer cycles, resume anyway. 
+            #if self._cycles > self._global_cycles[0]:
                 _replica.add_md_stage()
 
             # Make sure we don't resume the current replica
@@ -240,6 +249,7 @@ class Replica(re.Pipeline):
         self._check_ex  = check_ex
         self._check_res = check_res
         self._rid       = rid
+
 
         self._cycle     = 0     # initial cycle
         self._ex_list   = None  # list of replicas used in exchange step
@@ -329,7 +339,7 @@ class Replica(re.Pipeline):
 #
 if __name__ == '__main__':
 
-    exchange = ReplicaExchange(ensemble_size=64, exchange_size=8, window_size=8, md_cycles=16)
+    exchange = ReplicaExchange(ensemble_size=64, exchange_size=2, window_size=16, md_cycles=20)
     exchange.execute()
     exchange.terminate()
 
