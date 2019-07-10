@@ -140,6 +140,15 @@ def test_ReplicaExchange():
 
     assert((ex_list) is None)
 
+  # assign 8 replicas to waitlist
+
+    set_waitlist(exchange, [0, 1, 2, 3, 4, 6, 7, 8, 9])
+
+    ex_list = exchange._find_exchange_list(4, 4, exchange._replicas[4])
+    ex_list_ids = [rep.rid for rep in ex_list]
+
+    assert((ex_list_ids) == [1,2,3,4])
+
 
 # ------------------------------------------------------------------------------
 #
