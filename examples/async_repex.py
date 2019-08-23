@@ -7,17 +7,18 @@ import threading as mt
 import tarfile
 import radical.entk  as re
 import radical.utils as ru
+import radical.analytics as ra
 
 #os.environ['RADICAL_VERBOSE'] = 'INFO'
 os.environ['RADICAL_ENTK_VERBOSE'] = 'INFO'
 
-os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://smush:key1209@ds263816.mlab.com:63816/repex_db_2'
-          #'mongodb://smush:key1209@ds141786.mlab.com:41786/repex_db_1'
+os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://smush:key1209@ds111336.mlab.com:11336/repex_2'
            
 
 
 RMQ_PORT = int(os.environ.get('RMQ_PORT', 32769))
-SANDER   = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
+#SANDER   = ['/home/scm177/mantel/AMBER/amber14/bin/sander']
+SANDER = ['/pylon5/mr560ip/mushnoor/AMBER/amber14/AmberTools/bin/sander']
 
 t_0 = time.time()
 
@@ -58,22 +59,20 @@ class ReplicaExchange(re.AppManager):
         self._log  = ru.Logger('radical.repex.exc')
         self._dout = open('dump.log', 'a')
 
-        re.AppManager.__init__(self, autoterminate=False, port=5672) 
-        self.resource_desc = {"resource" : 'local.localhost',
-                              "walltime" : 30,
-                              "cpus"     : 8}               
-#         self.resource_desc = {"resource"      : "xsede.bridges",
-#                               "md_executable" : "/opt/packages/gromacs-CPU-2018/bin/gmx_mpi",
-#                               "py_executable" : "/opt/intel/intelpython2/bin/python2.7",
-#                               "pre_exec"      : "export GROMACS=gmx_2016.6", 
-#                               "walltime"      : 60,
-#                               "cpus"          : 56,
-#                               "gpus_per_node" : 0,
-#                               "access_schema" : "gsissh",
-#                               "queue"         : "RM",
-#                               "project" : "mr560ip"
+        re.AppManager.__init__(self, autoterminate=False, port=32769) 
+        # self.resource_desc = {"resource" : 'local.localhost',
+        #                       "walltime" : 30,
+        #                       "cpus"     : 8}               
+        self.resource_desc = {"resource"      : "xsede.bridges",
+ 
+                              "walltime"      : 60,
+                              "cpus"          : 24,
+                              "gpus_per_node" : 0,
+                              "access_schema" : "gsissh",
+                              "queue"         : "RM",
+                              "project"       : "mr560ip"
              
-#                               }
+                              }
 
 
 
@@ -132,7 +131,10 @@ class ReplicaExchange(re.AppManager):
         task.executable        = ['python']
         task.upload_input_data = ['untar_input_files.py', 'input_files.tar']
         task.arguments         = ['untar_input_files.py', 'input_files.tar']
-        task.cpu_reqs          = 1
+        task.cpu_reqs          = {'processes' : 1,
+                                'thread_type' : None, 
+                                'threads_per_process': 1, 
+                                'process_type': None}
         task.post_exec         = []
 
         stage = re.Stage()
@@ -381,8 +383,11 @@ class Replica(re.Pipeline):
                                 '-r',   '%s/inpcrd-%s-%s'  % (sbox, rid, cycle+1),
                                 '-inf', '%s/mdinfo-%s-%s'  % (sbox, rid, cycle)]
         task.executable      = SANDER #[exe]
-        task.cpu_reqs        = {'processes' : cores}
-        task.pre_exec        = ['echo $SHARED'] #This will be different for different MD engines.
+        task.cpu_reqs        = {'processes' : cores,
+                                'thread_type' : None, 
+                                'threads_per_process': 1, 
+                                'process_type': None}
+        task.pre_exec        = ['module load intel/19.3', 'module load python3/intel_3.6.3'] #This will be different for different MD engines.
 
         stage = re.Stage()
         stage.add_tasks(task)
@@ -414,7 +419,8 @@ class Replica(re.Pipeline):
 
         task = re.Task()
         task.name       = 'extsk'
-        task.executable = ['/home/scm177/VirtualEnvs/Env_RepEx/bin/python']
+        task.executable = ['/opt/packages/python/2_7_11_gcc/bin/python2.7']#['/home/scm177/VirtualEnvs/Env_RepEx/bin/python']
+        task.pre_exec   = ['module unload python3/intel_3.6.3','module load python/2.7.11_gcc', 'module load intel/19.3']
         task.upload_input_data = ['t_ex_gibbs.py']
         task.arguments  = ['t_ex_gibbs.py', self._sbox]
 
@@ -444,15 +450,25 @@ class Replica(re.Pipeline):
 #
 if __name__ == '__main__':
 
-    exchange = ReplicaExchange(ensemble_size = 28, 
-                               exchange_size = 28, 
-                               window_size   = 28,
+    exchange = ReplicaExchange(ensemble_size = 64, 
+                               exchange_size = 64, 
+                               window_size   = 64,
                                md_cycles     = 10, 
-                               min_temp      = 280,
+                               min_temp      = 300,
                                max_temp      = 400,
-                               timesteps     = 100,
+                               timesteps     = 1000,  # Timestep is 2fs. If a cycle is 2500 steps, EAF is 1/5 ps^-1  
                                basename      = 'ace-ala', 
                                executable    = SANDER, 
                                cores         = 1)
     exchange.execute()
     exchange.terminate()
+
+    #pwd = os.getcwd()
+    #sessionname = ReplicaExchange.sid
+    #print sessionname
+    #session = ra.Session(sid   = sessionname,
+                         #stype = 'radical.entk',
+                         #src = pwd)
+    #total                   = session.filter(etype='task', inplace=False)
+    #total_durations = total.duration([re.states.SCHEDULED, re.states.DONE])
+    #print "total duration is " , total_durations

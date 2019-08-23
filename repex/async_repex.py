@@ -189,7 +189,7 @@ class ReplicaExchange(re.AppManager):
 
             self._waitlist.append(replica)
 
-            exchange_list = self._find_exchange_list(self._ex_size, self._window_size)
+            exchange_list = self._find_exchange_list(self._ex_size, self._window_size,current_replica=replica)
 
             if not exchange_list:
                 # nothing to do, Suspend this replica and wait until we get more
@@ -211,7 +211,7 @@ class ReplicaExchange(re.AppManager):
 
     # --------------------------------------------------------------------------
     #
-    def _find_exchange_list(self, exchange_size, window_size):
+    def _find_exchange_list(self, exchange_size, window_size,current_replica):
         '''
         This is a function that accepts as input the sorted waitlist and 
         the number of replicas needed for an exchange. It then generates sublists from 
@@ -232,8 +232,10 @@ class ReplicaExchange(re.AppManager):
             rid_end   = replica.rid + window_size
             starting_index=self._sorted_waitlist.index(replica)
             exchange_list = [self._sorted_waitlist[index] for index in range(starting_index,len(self._sorted_waitlist)) if self._sorted_waitlist[index].rid < rid_end] 
-
-            last_range = [r for r in exchange_list]  
+              
+            last_range = [r for r in exchange_list]
+            if len(exchange_list) == exchange_size and current_replica in exchange_list:
+                break   
 
         for replica in exchange_list:
             self._waitlist.remove(replica)
@@ -430,5 +432,5 @@ if __name__ == '__main__':
                                basename      = 'ace-ala', 
                                executable    = SANDER, 
                                cores         = 1)
-exchange.execute()
-exchange.terminate()
+    exchange.execute()
+    exchange.terminate()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import time
+import time, os
 import random
 
 import threading as mt
@@ -10,6 +10,8 @@ import radical.utils as ru
 
 t_0 = time.time()
 
+
+os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://smush:key1206@ds019856.mlab.com:19856/repex_db_3'
 # ------------------------------------------------------------------------------
 #
 def void():
@@ -45,7 +47,7 @@ class ReplicaExchange(re.AppManager):
         re.AppManager.__init__(self, autoterminate=False, port=5672) 
         self.resource_desc = {"resource" : 'local.localhost',
                               "walltime" : 30,
-                              "cpus"     : 16}                                
+                              "cpus"     : 64}                                
 
         self._replicas = list()
         self._waitlist = list()
@@ -60,6 +62,8 @@ class ReplicaExchange(re.AppManager):
             self._replicas.append(replica)
 
         self._dump(msg='startup')
+
+    def execute(self):
 
         # run the replica pipelines
         self.workflow = set(self._replicas)
@@ -108,7 +112,7 @@ class ReplicaExchange(re.AppManager):
 
             self._waitlist.append(replica)
 
-            exchange_list = self._find_exchange_list(self._ex_size, self._window_size , replica)
+            exchange_list = self._find_exchange_list(self._ex_size, self._window_size , current_replica=replica)
 
             if not exchange_list:
                 # nothing to do, Suspend this replica and wait until we get more
@@ -129,13 +133,36 @@ class ReplicaExchange(re.AppManager):
 
     # --------------------------------------------------------------------------
     #
-    def _find_exchange_list(self, exchange_size, window_size, replica):
+    def _find_exchange_list(self, exchange_size, window_size, current_replica):
         '''
         This is a function that accepts as input the sorted waitlist and 
         the number of replicas needed for an exchange. It then generates sublists from 
         the sorted waitlist. These sublists contain "compatible" replicas 
         that can proceed to perform exchanges amongst themselves.
         '''
+        # if len(self._waitlist) < self._ex_size:
+
+        #     # not enough replicas to attempt exchange
+        #     return 
+        # last_range    = None
+        # exchange_list = list()
+        # self._sorted_waitlist = sorted(self._waitlist, key=lambda x: x.rid)       
+        # for rep in self._sorted_waitlist:  
+
+        #     if last_range and rep in last_range: 
+        #         continue
+        #     rid_end   = rep.rid + window_size
+        #     starting_index=self._sorted_waitlist.index(rep)
+        #     exchange_list = [self._sorted_waitlist[index] for index in range(starting_index,len(self._sorted_waitlist)) if self._sorted_waitlist[index].rid < rid_end] 
+
+        #     last_range = [r for r in exchange_list]  
+        # if len(exchange_list) < self._ex_size or replica not in exchange_list:
+        #     return
+        
+        # for rep in exchange_list:
+        #     self._waitlist.remove(rep)
+        # return exchange_list
+
         if len(self._waitlist) < self._ex_size:
 
             # not enough replicas to attempt exchange
@@ -143,22 +170,22 @@ class ReplicaExchange(re.AppManager):
         last_range    = None
         exchange_list = list()
         self._sorted_waitlist = sorted(self._waitlist, key=lambda x: x.rid)       
-        for rep in self._sorted_waitlist:  
+        for replica in self._sorted_waitlist:  
 
-            if last_range and rep in last_range: 
+            if last_range and replica in last_range: 
                 continue
-            rid_end   = rep.rid + window_size
-            starting_index=self._sorted_waitlist.index(rep)
+            rid_end   = replica.rid + window_size
+            starting_index=self._sorted_waitlist.index(replica)
             exchange_list = [self._sorted_waitlist[index] for index in range(starting_index,len(self._sorted_waitlist)) if self._sorted_waitlist[index].rid < rid_end] 
+              
+            last_range = [r for r in exchange_list]
+            if len(exchange_list) == exchange_size and current_replica in exchange_list:
+                break   
 
-            last_range = [r for r in exchange_list]  
-        if len(exchange_list) < self._ex_size or replica not in exchange_list:
-            return
-        
-        for rep in exchange_list:
-            self._waitlist.remove(rep)
+        for replica in exchange_list:
+            self._waitlist.remove(replica)
+
         return exchange_list
-
 
     # --------------------------------------------------------------------------
     #
@@ -295,7 +322,8 @@ class Replica(re.Pipeline):
 #
 if __name__ == '__main__':
 
-    exchange = ReplicaExchange(ensemble_size=64, exchange_size=8, window_size=8, md_cycles=16)
+    exchange = ReplicaExchange(ensemble_size=64, exchange_size=8, window_size=64, md_cycles=16)
+    exchange.execute()
     exchange.terminate()
 
 # ------------------------------------------------------------------------------

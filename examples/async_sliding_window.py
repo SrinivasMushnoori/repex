@@ -203,8 +203,8 @@ class Exchange(re.AppManager):
             print "sorted waitlist is: ", [replica.rid for replica in self._sorted_waitlist]
 
 
-        # Now we generate a sublist called exchange_list, within which an exchange is performed. This is done with
-        # the sliding_window function
+            # Now we generate a sublist called exchange_list, within which an exchange is performed. This is done with
+            # the sliding_window function
 
 
 
@@ -215,34 +215,24 @@ class Exchange(re.AppManager):
             
             if not exchange_list:
 
-            #print "exchange size is ", self._exchange_size, " and exchange list length is ", len(self._exchange_list)
-            # just suspend this replica and wait for the next
                 self._log.debug('=== %s suspend', replica.rid)
-                #print "replica ", replica.rid, " should suspend now"  # If this is triggered by the replica that has just added itself, it should 
-                                                                      # not repeatedly try to suspend the same replica
-                try:
-                    print "latest replica is " , self._latest_replica.rid, " and should suspend now."
-                    self._latest_replica.suspend()
-                    #print "replica ", self._latest_replica.rid, " should suspend now" 
-                except:
-                    print "replica ", replica.rid, " is already suspended, moving on"
-            else:
-                print "adding exchange stage for replicas ", [x.rid for x in exchange_list]
+                print "latest replica is " , self._latest_replica.rid, " and should suspend now."
+                self._latest_replica.suspend()
+                return
+            
+            print "adding exchange stage for replicas ", [x.rid for x in exchange_list]
 
-                replica._add_ex_stage(exchange_list)
+            replica._add_ex_stage(exchange_list)
 
-                for replica in exchange_list:
-                    try:
-                        self._sorted_waitlist.remove(replica)
-                    except:
-                        print "replica ", replica.rid, " isn't here."
+            for replica in exchange_list:
+                self._sorted_waitlist.remove(replica)
+
              
     
-                print "Replicas that have been pushed to exchange and removed from exchange list: ", [replica.rid for replica in exchange_list]
-                print "Replicas that are still in the sorted waitlist: ", [replica.rid for replica in self._sorted_waitlist]
-            
-                self._waitlist = self._sorted_waitlist
-                print "Replicas that are still in the global waitlist: ", [replica.rid for replica in self._waitlist]
+            print "Replicas that have been pushed to exchange and removed from exchange list: ", [replica.rid for replica in exchange_list]
+            print "Replicas that are still in the sorted waitlist: ", [replica.rid for replica in self._sorted_waitlist]
+            self._waitlist = self._sorted_waitlist
+            print "Replicas that are still in the global waitlist: ", [replica.rid for replica in self._waitlist]
 
     # --------------------------------------------------------------------------
     #
@@ -279,19 +269,15 @@ class Exchange(re.AppManager):
         
         last_range    = None
         exchange_list = list()
-        #print "trying to iterate over sorted_waitlist"
+
         for replica in sorted_waitlist:  
-            #print "loop entered successfully"
+
             if last_range and replica in last_range: 
                 continue
-
-            #rid_start = replica.rid    
             rid_end   = replica.rid + window_size
             starting_index=sorted_waitlist.index(replica)
-            #print starting_index, "is starting index, sleeping now"
-            #time.sleep(10)
-
             exchange_list = [sorted_waitlist[index] for index in range(starting_index,len(sorted_waitlist)) if sorted_waitlist[index].rid < rid_end] 
+           
             # create a list of replica IDs to check 
             # against to avoid duplication
             last_range = [r for r in exchange_list]  
@@ -303,6 +289,7 @@ class Exchange(re.AppManager):
         else:
             print "exchange list size is ",len(exchange_list)
             return exchange_list
+            #exchange_list = list()
 
 
 
@@ -319,7 +306,7 @@ class Exchange(re.AppManager):
 
         ### This section has an issue
 
-        for _r in replica.resume_list: 
+        for _r in replica.exchange_list: 
         
             if _r.cycle <= self._min_cycles:
                 print "adding MD stage for replica ", _r.rid
@@ -329,16 +316,12 @@ class Exchange(re.AppManager):
             # make sure we don't resume the current replica
             if replica.rid != _r.rid:
                 self._log.debug('=== %s resume', _r.rid)
-                try:
-                    _r.resume()
-                    print "added MD stage, resuming replica ", _r.rid
-                    print "Replica ", _r.rid, " with pipeline ID ",_r.name," has state history ", _r.state_history
-                    #print "Replica ", _r.rid, " with pipeline ID ",_r.name," has stages ", [plnstg.name for plnstg in _r.stages]
-                    resumed.append(_r.rid)
-                except:
-                    self._log.exception('=== %s resume failed', _r.rid)
-                    time.sleep(10)
-                    raise
+
+                _r.resume()
+                print "added MD stage, resuming replica ", _r.rid
+                print "Replica ", _r.rid, " with pipeline ID ",_r.name," has state history ", _r.state_history
+                resumed.append(_r.uid)
+
 
         # reset exchange_list, increase exchange counter
         #self._exchange_list = list()
@@ -500,9 +483,9 @@ class Replica(re.Pipeline):
 if __name__ == '__main__':
 
 
-    exchange = Exchange(size          = 2,
+    exchange = Exchange(size          = 8,
                         exchange_size = 2,   # Exchange size is how big the exchange list needs to be to move to the exchange phase
-                        window_size   = 2,   # Window size is the width of the sliding window
+                        window_size   = 8,   # Window size is the width of the sliding window
                         min_cycles    = 10, 
                         min_temp      = 300,
                         max_temp      = 320,
