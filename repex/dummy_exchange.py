@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import time
-import random
+import random, os
 
 import threading as mt
 
@@ -9,6 +9,8 @@ import radical.entk  as re
 import radical.utils as ru
 
 t_0 = time.time()
+
+os.environ['RADICAL_PILOT_DBURL'] = 'mongodb://smush:key1206@ds019856.mlab.com:19856/repex_db_3'
 
 # ------------------------------------------------------------------------------
 #
@@ -42,16 +44,16 @@ class ReplicaExchange(re.AppManager):
         self._log  = ru.Logger('radical.repex.exc')
         self._dout = open('dump.log', 'a')
 
-        re.AppManager.__init__(self, autoterminate=False, port=5672) 
-        # self.resource_desc =        self.resource_desc = {"resource"      : "xsede.bridges",
-        #                       "walltime"      : 60,
-        #                       "cpus"          : 56,
-        #                       "gpus_per_node" : 0,
-        #                       "access_schema" : "gsissh",
-        #                       "queue"         : "RM",
-        #                       "project" : "mr560ip"
+        re.AppManager.__init__(self, autoterminate=False, port=32769) 
+        self.resource_desc = {"resource"      : "xsede.bridges",
+                              "walltime"      : 60,
+                              "cpus"          : 28,
+                              "gpus_per_node" : 0,
+                              "access_schema" : "gsissh",
+                              "queue"         : "RM",
+                              "project"       : "mr560ip"
              
-        #                       }
+                              }
 
 
 
@@ -65,9 +67,9 @@ class ReplicaExchange(re.AppManager):
 
 
 
-        self.resource_desc = {"resource" : 'local.localhost',
-                              "walltime" : 30,
-                              "cpus"     : 64}                                
+        # self.resource_desc = {"resource" : 'local.localhost',
+        #                       "walltime" : 30,
+        #                       "cpus"     : 64}                                
 
         self._replicas = list()
         self._waitlist = list()
@@ -303,6 +305,7 @@ class Replica(re.Pipeline):
         '''
 
         self._cycle += 1
+        #if self._cycle >= 
         self._check_ex(self)
 
 
@@ -339,7 +342,7 @@ class Replica(re.Pipeline):
 #
 if __name__ == '__main__':
 
-    exchange = ReplicaExchange(ensemble_size=64, exchange_size=2, window_size=16, md_cycles=20)
+    exchange = ReplicaExchange(ensemble_size=28, exchange_size=2, window_size=28, md_cycles=100)
     exchange.execute()
     exchange.terminate()
 
