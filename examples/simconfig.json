@@ -1,15 +1,13 @@
+
 {
-	"replicas"       : 32,
-	"replica_cores"  : 1,
-	"cycles"         : 0,
-        "exchange_method" : "exchangeMethods/TempEx.py", 
-	"md_executable"  : "/u/sciteam/mushnoor/amber/amber14/bin/sander", 
+	"Replicas"       : 32,
+	"Replica_Cores"  : 1,
+	"Cycles"         : 0,
+    "exchange_method": "exchangeMethods/TempEx.py",
+	"md_executable"  : "/u/sciteam/mushnoor/amber/amber14/bin/sander",
 	"timesteps"      : 100,
 	"basename"       : "ace-ala",
-        "min_temp"       : 300,
-        "max_temp"       : 550
-        
-    
+    "min_temp"       : 300,
+    "max_temp"       : 550
 }
-
 
