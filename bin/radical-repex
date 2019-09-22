@@ -10,10 +10,10 @@ import radical.repex as rr
 #
 def select_sm(waitlist, criteria, replica):
     '''
-    This is a function that accepts as input the sorted waitlist and
-    the number of replicas needed for an exchange. It then generates sublists from
-    the sorted waitlist. These sublists contain "compatible" replicas
-    that can proceed to perform exchanges amongst themselves.
+    This is a function that accepts as input the sorted waitlist and the number
+    of replicas needed for an exchange. It then generates sublists from the
+    sorted waitlist. These sublists contain "compatible" replicas that can
+    proceed to perform exchanges amongst themselves.
     '''
 
     try:
@@ -158,10 +158,11 @@ def exchange_by_random():
 if __name__ == '__main__':
 
     # check what workload the replicas should run
-    if len(sys.argv) > 1:
-        wl = ru.read_json('workload_%s.json' % sys.argv[1])
-    else:
-        wl = ru.read_json('workload_sleep.json')
+    if len(sys.argv) != 2:
+        print '\n\tError: missing workload\n\tUsage: %s <workload.json>\n\n'
+        sys.exit(1)
+
+    wl = ru.read_json(sys.argv[1])
 
     # create the required number of replicas
     replicas = list()

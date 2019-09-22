@@ -76,8 +76,13 @@ class Replica(re.Pipeline):
 
         self._log.debug('=== %s add md', self.rid)
 
-        task = re.Task(from_dict=self._workload['md'])
+      # task = re.Task(from_dict=self._workload['md'])
       # task.name = 'mdtsk-%s-%s' % (self.rid, self.cycle)
+        task = re.Task()
+        for k,v in self._workload['md'].iteritems():
+            if isinstance(v, unicode):
+                v = str(v)
+            setattr(task, k, v)
 
         stage = re.Stage()
         stage.add_tasks(task)
@@ -105,7 +110,12 @@ class Replica(re.Pipeline):
                                              [r.rid for r in exchange_list])
         self._ex_list = exchange_list
 
-        task = re.Task(from_dict=self._workload['ex'])
+      # task = re.Task(from_dict=self._workload['ex'])
+        task = re.Task()
+        for k,v in self._workload['ex'].iteritems():
+            if isinstance(v, unicode):
+                v = str(v)
+            setattr(task, k, v)
         task.arguments         = [ex_alg, len(exchange_list), self._cycle]
         task.upload_input_data = [ex_alg]
 

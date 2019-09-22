@@ -1,0 +1,10 @@
+{
+    "criteria"      : {"exchange_size" : 8,
+                       "window_size"   : 8},
+    "replicas"      : 128,
+    "cycles"        : 4,
+    "md"            : {"executable"    : "/bin/sleep",
+                       "arguments"     : ["2"]},
+    "ex"            : {"executable"    : "python"}
+}
+
