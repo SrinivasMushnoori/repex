@@ -1,0 +1,186 @@
+#!/usr/bin/env python
+
+import sys
+
+import radical.utils as ru
+import radical.repex as rr
+
+
+# --------------------------------------------------------------------------
+#
+def select_sm(waitlist, criteria, replica):
+    '''
+    This is a function that accepts as input the sorted waitlist and
+    the number of replicas needed for an exchange. It then generates sublists from
+    the sorted waitlist. These sublists contain "compatible" replicas
+    that can proceed to perform exchanges amongst themselves.
+    '''
+
+    try:
+        print '================================================='
+        print 'criteria: %s' % criteria
+        print 'waitlist: %s' % [r.rid for r in waitlist]
+
+        exchange_size = criteria['exchange_size']
+        window_size   = criteria['window_size']
+
+        if len(waitlist) < exchange_size:
+            print '-------------------------------------------------'
+            return
+
+        success       = False
+        last_range    = None
+        exchange_list = list()
+
+        sorted_waitlist = sorted(waitlist, key=lambda x: x.rid)
+        for r in sorted_waitlist:
+
+            if last_range and r in last_range:
+                continue
+            end   = r.rid + window_size
+            start = sorted_waitlist.index(r)
+
+            exchange_list = [sorted_waitlist[index]
+                                for index in range(start, len(sorted_waitlist))
+                                if  sorted_waitlist[index].rid < end]
+
+            last_range = [r for r in exchange_list]
+
+            if len(exchange_list) == exchange_size and \
+                replica in exchange_list:
+                success = True
+                break
+
+        if not success:
+            # ensure that we don't return incomplete lists
+            exchange_list = list()
+
+        new_waitlist = [r for r in waitlist if r not in exchange_list]
+
+        print 'exchange: %s' % [r.rid for r in exchange_list]
+        print 'new wait: %s' % [r.rid for r in new_waitlist]
+        print '================================================='
+
+        return exchange_list, new_waitlist
+
+    except Exception as e:
+
+        print 'replica selection failed: %s' % e
+        ru.print_exception_trace()
+        print '#################################################'
+
+        return [], waitlist
+
+
+# ------------------------------------------------------------------------------
+#
+def select_by_size(waitlist, criteria, replica):
+    '''
+    replica selection algorithm: out of the list of eligible replicas, select
+    those which should be part of an exchange step.
+
+    Arguments:
+
+      - waitlist: a list of replica objects which are eligible for exchange
+      - criteria: dictionary of selection criteria to control the algorthm's
+    '''
+
+    try:
+        print '================================================='
+        print 'criteria: %s' % criteria
+        print 'waitlist: %s' % [r.rid for r in waitlist]
+
+        # get required parameters
+        ex_size = criteria['exchange_size']
+
+        # check if size of wait list suffices
+        if len(waitlist) < ex_size:
+
+            # not enough replicas to attempt exchange
+            print '-------------------------------------------------'
+            return
+
+        # we have enough replicas!  Remove all as echange candidates from the
+        # waitlist and return them!
+        exchange_list = list()
+        for r in waitlist:
+            exchange_list.append(r)
+
+        # empty the waitlist to start collecting new candidates
+        new_waitlist = list()
+
+        print 'exchange: %s' % [r.rid for r in exchange_list]
+        print 'new wait: %s' % [r.rid for r in new_waitlist]
+        print '================================================='
+
+        return exchange_list, new_waitlist
+
+
+    except Exception as e:
+
+        print 'replica selection failed: %s' % e
+        ru.print_exception_trace()
+
+        # on failure, return the unchanged waitlist and an empty selection
+        return [], waitlist
+
+
+# ------------------------------------------------------------------------------
+#
+def exchange_by_random():
+    '''
+    This method is run as workload of exchange tasks.  It will receive two
+    arguments: the number of replicas to exchange, and the cycle (?).
+    '''
+
+    import sys
+    import random
+
+    replicas = int(sys.argv[1])
+    cycle    = int(sys.argv[2])
+
+    exchange_list_1 = range(replicas)
+    exchange_list_2 = range(replicas)
+
+    random.shuffle(exchange_list_1)
+    random.shuffle(exchange_list_2)
+
+    exchangePairs = zip(exchange_list_2, exchange_list_2)
+
+    with open('exchangePairs_%d.dat' % cycle, 'w') as f:
+        for p in exchangePairs:
+            line = ' '.join(str(x) for x in p)
+            f.write(line + '\n')
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+
+    # check what workload the replicas should run
+    if len(sys.argv) > 1:
+        wl = ru.read_json('workload_%s.json' % sys.argv[1])
+    else:
+        wl = ru.read_json('workload_sleep.json')
+
+    # create the required number of replicas
+    replicas = list()
+    for i in range(wl['replicas']):
+        properties = {'rid'  : i,
+                      'temp' : 123.45 + float(i / 10),
+                      'foo'  : 'bar'}
+        replica = rr.Replica(workload=wl, properties=properties)
+        replicas.append(replica)
+
+    # create and run the replica exchange ensemble
+    exchange = rr.Exchange(replicas=replicas,
+                           replica_cycles=wl['cycles'],
+                           selection_algorithm=select_sm,
+                           selection_criteria=wl['criteria'],
+                           exchange_algorithm=exchange_by_random)
+    exchange.run()
+    exchange.terminate()
+
+
+# ------------------------------------------------------------------------------
+
