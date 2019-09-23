@@ -16,60 +16,51 @@ def select_sm(waitlist, criteria, replica):
     proceed to perform exchanges amongst themselves.
     '''
 
-    try:
-        print '================================================='
-        print 'criteria: %s' % criteria
-        print 'waitlist: %s' % [r.rid for r in waitlist]
+    print '================================================='
+    print 'criteria: %s' % criteria
+    print 'waitlist: %s' % [r.rid for r in waitlist]
 
-        exchange_size = criteria['exchange_size']
-        window_size   = criteria['window_size']
+    exchange_size = criteria['exchange_size']
+    window_size   = criteria['window_size']
 
-        if len(waitlist) < exchange_size:
-            print '-------------------------------------------------'
-            return
+    if len(waitlist) < exchange_size:
+        print '-------------------------------------------------'
+        return [], waitlist
 
-        success       = False
-        last_range    = None
+    success       = False
+    last_range    = None
+    exchange_list = list()
+
+    sorted_waitlist = sorted(waitlist, key=lambda x: x.rid)
+    for r in sorted_waitlist:
+
+        if last_range and r in last_range:
+            continue
+        end   = r.rid + window_size
+        start = sorted_waitlist.index(r)
+
+        exchange_list = [sorted_waitlist[index]
+                            for index in range(start, len(sorted_waitlist))
+                            if  sorted_waitlist[index].rid < end]
+
+        last_range = [r for r in exchange_list]
+
+        if len(exchange_list) == exchange_size and \
+            replica in exchange_list:
+            success = True
+            break
+
+    if not success:
+        # ensure that we don't return incomplete lists
         exchange_list = list()
 
-        sorted_waitlist = sorted(waitlist, key=lambda x: x.rid)
-        for r in sorted_waitlist:
+    new_waitlist = [r for r in waitlist if r not in exchange_list]
 
-            if last_range and r in last_range:
-                continue
-            end   = r.rid + window_size
-            start = sorted_waitlist.index(r)
+    print 'exchange: %s' % [r.rid for r in exchange_list]
+    print 'new wait: %s' % [r.rid for r in new_waitlist]
+    print '================================================='
 
-            exchange_list = [sorted_waitlist[index]
-                                for index in range(start, len(sorted_waitlist))
-                                if  sorted_waitlist[index].rid < end]
-
-            last_range = [r for r in exchange_list]
-
-            if len(exchange_list) == exchange_size and \
-                replica in exchange_list:
-                success = True
-                break
-
-        if not success:
-            # ensure that we don't return incomplete lists
-            exchange_list = list()
-
-        new_waitlist = [r for r in waitlist if r not in exchange_list]
-
-        print 'exchange: %s' % [r.rid for r in exchange_list]
-        print 'new wait: %s' % [r.rid for r in new_waitlist]
-        print '================================================='
-
-        return exchange_list, new_waitlist
-
-    except Exception as e:
-
-        print 'replica selection failed: %s' % e
-        ru.print_exception_trace()
-        print '#################################################'
-
-        return [], waitlist
+    return exchange_list, new_waitlist
 
 
 # ------------------------------------------------------------------------------
@@ -85,44 +76,38 @@ def select_by_size(waitlist, criteria, replica):
       - criteria: dictionary of selection criteria to control the algorthm's
     '''
 
-    try:
-        print '================================================='
-        print 'criteria: %s' % criteria
-        print 'waitlist: %s' % [r.rid for r in waitlist]
+    print '================================================='
+    print 'criteria: %s' % criteria
 
-        # get required parameters
-        ex_size = criteria['exchange_size']
+    if not waitlist:
+        return [], []
 
-        # check if size of wait list suffices
-        if len(waitlist) < ex_size:
+    print 'waitlist: %s' % [r.rid for r in waitlist]
 
-            # not enough replicas to attempt exchange
-            print '-------------------------------------------------'
-            return
+    # get required parameters
+    ex_size = criteria['exchange_size']
 
-        # we have enough replicas!  Remove all as echange candidates from the
-        # waitlist and return them!
-        exchange_list = list()
-        for r in waitlist:
-            exchange_list.append(r)
+    # check if size of wait list suffices
+    if len(waitlist) < ex_size:
 
-        # empty the waitlist to start collecting new candidates
-        new_waitlist = list()
-
-        print 'exchange: %s' % [r.rid for r in exchange_list]
-        print 'new wait: %s' % [r.rid for r in new_waitlist]
-        print '================================================='
-
-        return exchange_list, new_waitlist
-
-
-    except Exception as e:
-
-        print 'replica selection failed: %s' % e
-        ru.print_exception_trace()
-
-        # on failure, return the unchanged waitlist and an empty selection
+        # not enough replicas to attempt exchange
+        print '-------------------------------------------------'
         return [], waitlist
+
+    # we have enough replicas!  Remove all as echange candidates from the
+    # waitlist and return them!
+    exchange_list = list()
+    for r in waitlist:
+        exchange_list.append(r)
+
+    # empty the waitlist to start collecting new candidates
+    new_waitlist = list()
+
+    print 'exchange: %s' % [r.rid for r in exchange_list]
+    print 'new wait: %s' % [r.rid for r in new_waitlist]
+    print '================================================='
+
+    return exchange_list, new_waitlist
 
 
 # ------------------------------------------------------------------------------
@@ -176,7 +161,7 @@ if __name__ == '__main__':
     # create and run the replica exchange ensemble
     exchange = rr.Exchange(replicas=replicas,
                            replica_cycles=wl['cycles'],
-                           selection_algorithm=select_sm,
+                           selection_algorithm=select_by_size,
                            selection_criteria=wl['criteria'],
                            exchange_algorithm=exchange_by_random)
     exchange.run()

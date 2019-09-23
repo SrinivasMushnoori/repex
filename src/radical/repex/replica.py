@@ -1,8 +1,9 @@
 
-import random
-
 import radical.entk  as re
 import radical.utils as ru
+
+
+_task_cnt = 0
 
 
 # ------------------------------------------------------------------------------
@@ -74,7 +75,7 @@ class Replica(re.Pipeline):
     #
     def add_md_stage(self):
 
-        self._log.debug('=== %s add md', self.rid)
+        self._log.debug('%s %s add md', self.rid, self._uid)
 
       # task = re.Task(from_dict=self._workload['md'])
       # task.name = 'mdtsk-%s-%s' % (self.rid, self.cycle)
@@ -83,6 +84,10 @@ class Replica(re.Pipeline):
             if isinstance(v, unicode):
                 v = str(v)
             setattr(task, k, v)
+
+        global _task_cnt
+        task.name = 'task.%04d.md' % _task_cnt
+        _task_cnt += 1
 
         stage = re.Stage()
         stage.add_tasks(task)
@@ -98,6 +103,7 @@ class Replica(re.Pipeline):
         after an md cycle, record its completion and check for exchange
         '''
 
+        self._log.debug('%s check_exchange %s', self.rid, self._uid)
         self._cycle += 1
         self._check_ex(self)
 
@@ -106,8 +112,7 @@ class Replica(re.Pipeline):
     #
     def add_ex_stage(self, exchange_list, ex_alg):
 
-        self._log.debug('=== %s add ex: %s', self.rid,
-                                             [r.rid for r in exchange_list])
+        self._log.debug('%s add ex: %s', self.rid, [r.rid for r in exchange_list])
         self._ex_list = exchange_list
 
       # task = re.Task(from_dict=self._workload['ex'])
@@ -118,6 +123,13 @@ class Replica(re.Pipeline):
             setattr(task, k, v)
         task.arguments         = [ex_alg, len(exchange_list), self._cycle]
         task.upload_input_data = [ex_alg]
+
+        global _task_cnt
+        task.name = 'task.%04d.ex' % _task_cnt
+        _task_cnt += 1
+
+
+        self._log.debug('%s add ex: %s', self.rid, task.name)
 
         stage = re.Stage()
         stage.add_tasks(task)
@@ -132,7 +144,7 @@ class Replica(re.Pipeline):
         '''
         after an ex cycle, trigger replica resumption
         '''
-        self._log.debug('=== check resume %s', self.rid)
+        self._log.debug('%s check_resume %s', self.rid, self._uid)
         return self._check_res(self)
 
 
