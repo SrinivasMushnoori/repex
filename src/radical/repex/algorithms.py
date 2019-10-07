@@ -4,6 +4,8 @@ import radical.utils as ru
 SELECT_1D       = '1D'
 EXCHANGE_RANDOM = 'RANDOM'
 
+_log = ru.Logger('radical.repex')
+
 
 # ------------------------------------------------------------------------------
 #
@@ -19,9 +21,9 @@ def select_replicas_1D(waitlist, criteria, replica):
     '''
 
     try:
-        print '================================================='
-        print 'criteria: %s' % criteria
-        print 'waitlist: %s' % [r.rid for r in waitlist]
+        _log.debug('=================================================')
+        _log.debug('criteria: %s' % criteria)
+        _log.debug('waitlist: %s' % [r.rid for r in waitlist])
 
         # get required parameters
         ex_size = criteria['exchange_size']
@@ -30,7 +32,7 @@ def select_replicas_1D(waitlist, criteria, replica):
         if len(waitlist) < ex_size:
 
             # not enough replicas to attempt exchange
-            print '-------------------------------------------------'
+            _log.debug('-------------------------------------------------')
             return
 
         # we have enough replicas!  Remove all as echange candidates from the
@@ -42,17 +44,16 @@ def select_replicas_1D(waitlist, criteria, replica):
         # empty the waitlist to start collecting new candidates
         new_waitlist = list()
 
-        print 'exchange: %s' % [r.rid for r in exchange_list]
-        print 'new wait: %s' % [r.rid for r in new_waitlist]
-        print '================================================='
+        _log.debug('exchange: %s' % [r.rid for r in exchange_list])
+        _log.debug('new wait: %s' % [r.rid for r in new_waitlist])
+        _log.debug('=================================================')
 
         return exchange_list, new_waitlist
 
 
-    except Exception as e:
+    except Exception:
 
-        print 'replica selection failed: %s' % e
-        ru.print_exception_trace()
+        _log.exception('replica selection failed')
 
         # on failure, return the unchanged waitlist and an empty selection
         return [], waitlist
