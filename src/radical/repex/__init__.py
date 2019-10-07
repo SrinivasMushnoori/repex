@@ -2,8 +2,9 @@
 
 # ------------------------------------------------------------------------------
 #
-from .replica  import Replica
-from .exchange import Exchange
+from .replica    import Replica
+from .exchange   import Exchange
+from .algorithms import *
 
 
 # ------------------------------------------------------------------------------
