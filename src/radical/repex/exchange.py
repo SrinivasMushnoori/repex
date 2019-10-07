@@ -8,6 +8,19 @@ import threading as mt
 import radical.entk  as re
 import radical.utils as ru
 
+from . import algorithms as rxa
+
+
+_select_algs    = {
+                   rxa.SELECT_1D : rxa.select_replicas_1D
+                  }
+
+_exchange_algs  = {
+                   rxa.EXCHANGE_RANDOM : rxa.exchange_by_random
+                  }
+
+
+
 
 # ------------------------------------------------------------------------------
 #
@@ -24,20 +37,23 @@ class Exchange(re.AppManager):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self, replicas, replica_cycles,
-                       selection_algorithm, selection_criteria,
-                       exchange_algorithm):
+    def __init__(self, replicas, replica_cycles, selection_criteria):
 
         self._replicas  = replicas
         self._cycles    = replica_cycles
         self._en_size   = len(replicas)
         self._sel_crit  = selection_criteria
-        self._sel_alg   = selection_algorithm
         self._waitlist  = list()
 
+        import pprint
+        pprint.pprint(self._sel_crit)
+
+        self._sel_alg   = _select_algs  [self._sel_crit['select_alg']]
+        self._ex_alg    = _exchange_algs[self._sel_crit['exchange_alg']]
+
         for r in replicas:
-            r._initialize(check_ex  = self._check_exchange,
-                          check_res = self._check_resume)
+            r._initialize(check_ex=self._check_exchange,
+                          check_res=self._check_resume)
 
         self._lock = mt.Lock()
         self._log  = ru.Logger('radical.repex')
@@ -54,11 +70,11 @@ class Exchange(re.AppManager):
         self.workflow = set(self._replicas)
 
         # write exchange algorithm to disk (once)
-        self._ex_alg = './exchange_algorithm.py'
-        with open(self._ex_alg, 'w') as fout:
+        self._ex_alg_file = './exchange_algorithm.py'
+        with open(self._ex_alg_file, 'w') as fout:
             fout.write('#!/usr/bin/env python\n\n%s\n\n%s()\n\n' %
-                       (inspect.getsource(exchange_algorithm),
-                        exchange_algorithm.__name__))
+                       (inspect.getsource(self._ex_alg),
+                        self._ex_alg.__name__))
 
 
     # --------------------------------------------------------------------------
@@ -153,7 +169,7 @@ class Exchange(re.AppManager):
 
             # we have a set of exchange candidates.  The current replica is
             # tasked to host the exchange task.
-            replica.add_ex_stage(ex_list, self._ex_alg)
+            replica.add_ex_stage(ex_list, self._ex_alg_file)
 
 
     # --------------------------------------------------------------------------

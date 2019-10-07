@@ -1,6 +1,9 @@
 
 import radical.utils as ru
 
+SELECT_1D       = '1D'
+EXCHANGE_RANDOM = 'RANDOM'
+
 
 # ------------------------------------------------------------------------------
 #
@@ -53,6 +56,34 @@ def select_replicas_1D(waitlist, criteria, replica):
 
         # on failure, return the unchanged waitlist and an empty selection
         return [], waitlist
+
+
+# ------------------------------------------------------------------------------
+#
+def exchange_by_random():
+    '''
+    This method is run as workload of exchange tasks.  It will receive two
+    arguments: the number of replicas to exchange, and the cycle (?).
+    '''
+
+    import sys
+    import random
+
+    replicas = int(sys.argv[1])
+    cycle    = int(sys.argv[2])
+
+    exchange_list_1 = range(replicas)
+    exchange_list_2 = range(replicas)
+
+    random.shuffle(exchange_list_1)
+    random.shuffle(exchange_list_2)
+
+    exchangePairs = zip(exchange_list_2, exchange_list_2)
+
+    with open('exchangePairs_%d.dat' % cycle, 'w') as f:
+        for p in exchangePairs:
+            line = ' '.join(str(x) for x in p)
+            f.write(line + '\n')
 
 
 # ------------------------------------------------------------------------------
