@@ -78,8 +78,15 @@ class Replica(re.Pipeline):
 
       # task = re.Task(from_dict=self._workload['md'])
       # task.name = 'mdtsk-%s-%s' % (self.rid, self.cycle)
+        env  = {'RID'       : str(self.rid),
+                'SBOX'      : 'pilot://',
+                'CYCLE'     : str(self._cycle),
+                'CYCLE_0'   : '0',
+                'CYCLE_PLUS': str(self._cycle + 1)}
+        td   = ru.expand_env(self._workload['md'], env=env)
         task = re.Task()
-        for k,v in self._workload['md'].iteritems():
+
+        for k,v in td.iteritems():
             if isinstance(v, unicode):
                 v = str(v)
             setattr(task, k, v)

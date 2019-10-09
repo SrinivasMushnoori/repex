@@ -12,7 +12,8 @@ from . import algorithms as rxa
 
 
 _select_algs    = {
-                   rxa.SELECT_1D : rxa.select_replicas_1D
+                   rxa.SELECT_1D   : rxa.select_replicas_1D,
+                   rxa.SELECT_TEST : rxa.select_replicas_test
                   }
 
 _exchange_algs  = {
@@ -37,16 +38,16 @@ class Exchange(re.AppManager):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self, replicas, replica_cycles, selection_criteria):
+    def __init__(self, replicas, replica_cycles, selection_criteria,
+                       inputs, outputs):
 
         self._replicas  = replicas
         self._cycles    = replica_cycles
         self._en_size   = len(replicas)
         self._sel_crit  = selection_criteria
         self._waitlist  = list()
-
-        import pprint
-        pprint.pprint(self._sel_crit)
+        self._inputs    = inputs
+        self._outputs   = outputs
 
         self._sel_alg   = _select_algs  [self._sel_crit['select_alg']]
         self._ex_alg    = _exchange_algs[self._sel_crit['exchange_alg']]
@@ -63,6 +64,7 @@ class Exchange(re.AppManager):
         self.resource_desc = {"resource" : 'local.localhost',
                               "walltime" : 30,
                               "cpus"     : 16}
+        self.shared_data   = self._inputs
 
         self._dump(msg='startup')
 
@@ -80,8 +82,14 @@ class Exchange(re.AppManager):
     # --------------------------------------------------------------------------
     #
     def run(self):
+        '''
+        run the replica exchange pipelines, and after all is done, fetch the
+        requested output data
+        '''
 
-        return re.AppManager.run(self)
+        re.AppManager.run(self)
+
+        self.fetch_results(self._outputs)
 
 
     # --------------------------------------------------------------------------

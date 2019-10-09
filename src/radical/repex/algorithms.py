@@ -2,6 +2,7 @@
 import radical.utils as ru
 
 SELECT_1D       = '1D'
+SELECT_TEST     = 'TEST'
 EXCHANGE_RANDOM = 'RANDOM'
 
 _log = ru.Logger('radical.repex')
@@ -57,6 +58,17 @@ def select_replicas_1D(waitlist, criteria, replica):
 
         # on failure, return the unchanged waitlist and an empty selection
         return [], waitlist
+
+
+# ------------------------------------------------------------------------------
+#
+def select_replicas_test(waitlist, criteria, replica):
+
+    if len(waitlist) < criteria['exchange_size']:
+        return [], waitlist
+
+    return [r for r in waitlist], []
+
 
 
 # ------------------------------------------------------------------------------
