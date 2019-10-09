@@ -1,0 +1,36 @@
+
+{
+    "criteria"      : {"exchange_size" : 2,
+                       "window_size"   : 2,
+                       "select_alg"    : "TEST",
+                       "exchange_alg"  : "RANDOM"
+                      },
+    "replicas"      : 8,
+    "cycles"        : 2,
+    "ex"            : {"executable"    : "python"},
+
+    "md" : {
+        "name"            : "mdtsk-${RID}-${CYCLE}",
+        "arguments"       : [
+                             "-O",
+                             "-p",   "${SBOX}/prmtop",
+                             "-i",   "${SBOX}/mdin-${RID}",
+                             "-c",   "${SBOX}/inpcrd-${RID}-${CYCLE}",
+                             "-o",   "${SBOX}/output-${RID}-${CYCLE_PLUS}",
+                             "-inf", "${SBOX}/mdinfo-${RID}-${CYCLE_PLUS}",
+                             "-r",   "${SBOX}/inpcrd-${RID}-${CYCLE_PLUS}",
+                             "-x",   "${SBOX}/mdcrd-${RID}-${CYCLE_PLUS}"
+                            ],
+        "executable"      : "/tmp/sander",
+        "cpu_reqs"        : { "processes"          : 1,
+                              "threads_per_process": 1,
+                              "thread_type"        : null,
+                              "process_type"       : null}
+    },
+
+    "min_temp"  : 300,
+    "max_temp"  : 400,
+    "timesteps" : 1000,
+    "basename"  : "tests/ace-ala/"
+}
+

@@ -225,7 +225,7 @@ setup_args = {
                                  'VERSION', 'CHANGES.md', 'SDIST', sdist_name]},
   # 'setup_requires'     : ['pytest-runner'],
     'install_requires'   : ['radical.utils',
-                            'radical.entk==0.7.17'],
+                           ],
     'tests_require'      : ['pytest',
                             'pylint',
                             'flake8',
