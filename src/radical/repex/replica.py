@@ -1,5 +1,5 @@
 
-import random
+import copy
 
 import radical.entk  as re
 import radical.utils as ru
@@ -74,7 +74,7 @@ class Replica(re.Pipeline):
     #
     def add_md_stage(self):
 
-        self._log.debug('=== %s add md', self.rid)
+        self._log.debug('%s add md %s', self.rid, self._cycle)
 
       # task = re.Task(from_dict=self._workload['md'])
       # task.name = 'mdtsk-%s-%s' % (self.rid, self.cycle)
@@ -83,7 +83,7 @@ class Replica(re.Pipeline):
                 'CYCLE'     : str(self._cycle),
                 'CYCLE_0'   : '0',
                 'CYCLE_PLUS': str(self._cycle + 1)}
-        td   = ru.expand_env(self._workload['md'], env=env)
+        td   = ru.expand_env(copy.deepcopy(self._workload['md']), env=env)
         task = re.Task()
 
         for k,v in td.iteritems():
@@ -113,8 +113,8 @@ class Replica(re.Pipeline):
     #
     def add_ex_stage(self, exchange_list, ex_alg):
 
-        self._log.debug('=== %s add ex: %s', self.rid,
-                                             [r.rid for r in exchange_list])
+        self._log.debug('%s add ex: %s', self.rid, [r.rid for r
+                                                          in  exchange_list])
         self._ex_list = exchange_list
 
       # task = re.Task(from_dict=self._workload['ex'])
@@ -139,7 +139,7 @@ class Replica(re.Pipeline):
         '''
         after an ex cycle, trigger replica resumption
         '''
-        self._log.debug('=== check resume %s', self.rid)
+        self._log.debug('check resume %s', self.rid)
         return self._check_res(self)
 
 

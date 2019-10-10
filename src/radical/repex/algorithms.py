@@ -22,7 +22,6 @@ def select_replicas_1D(waitlist, criteria, replica):
     '''
 
     try:
-        _log.debug('=================================================')
         _log.debug('criteria: %s' % criteria)
         _log.debug('waitlist: %s' % [r.rid for r in waitlist])
 
@@ -33,7 +32,6 @@ def select_replicas_1D(waitlist, criteria, replica):
         if len(waitlist) < ex_size:
 
             # not enough replicas to attempt exchange
-            _log.debug('-------------------------------------------------')
             return
 
         # we have enough replicas!  Remove all as echange candidates from the
@@ -47,7 +45,6 @@ def select_replicas_1D(waitlist, criteria, replica):
 
         _log.debug('exchange: %s' % [r.rid for r in exchange_list])
         _log.debug('new wait: %s' % [r.rid for r in new_waitlist])
-        _log.debug('=================================================')
 
         return exchange_list, new_waitlist
 
@@ -68,7 +65,6 @@ def select_replicas_test(waitlist, criteria, replica):
         return [], waitlist
 
     return [r for r in waitlist], []
-
 
 
 # ------------------------------------------------------------------------------

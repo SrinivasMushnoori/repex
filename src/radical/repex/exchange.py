@@ -46,8 +46,6 @@ class Exchange(re.AppManager):
         self._en_size   = len(replicas)
         self._sel_crit  = selection_criteria
         self._waitlist  = list()
-        self._inputs    = inputs
-        self._outputs   = outputs
 
         self._sel_alg   = _select_algs  [self._sel_crit['select_alg']]
         self._ex_alg    = _exchange_algs[self._sel_crit['exchange_alg']]
@@ -60,11 +58,12 @@ class Exchange(re.AppManager):
         self._log  = ru.Logger('radical.repex')
         self._dout = open('dump.log', 'a')
 
-        re.AppManager.__init__(self, autoterminate=False, port=5672)
+        re.AppManager.__init__(self, autoterminate=True, port=5672)
         self.resource_desc = {"resource" : 'local.localhost',
                               "walltime" : 30,
                               "cpus"     : 16}
-        self.shared_data   = self._inputs
+        self.shared_data   = inputs
+        self._outputs      = outputs
 
         self._dump(msg='startup')
 
@@ -89,8 +88,6 @@ class Exchange(re.AppManager):
 
         re.AppManager.run(self)
 
-        self.fetch_results(self._outputs)
-
 
     # --------------------------------------------------------------------------
     #
@@ -98,6 +95,9 @@ class Exchange(re.AppManager):
 
         if not msg:
             msg = ''
+
+        if not self._dout:
+            return
 
         self._dout.write(' | %7.2f |' % (time.time() - self._t_0))
         for r in self._replicas:
@@ -115,10 +115,12 @@ class Exchange(re.AppManager):
 
         self._log.debug('exc term')
         self._dump(msg='terminate', special=self._replicas, glyph='=')
-        self._dout.close()
+        if self._dout:
+            self._dout.close()
+            self._dout = None
 
         # we are done!
-        self.resource_terminate()
+        re.AppManager.terminate(self)
 
 
     # --------------------------------------------------------------------------
@@ -140,13 +142,13 @@ class Exchange(re.AppManager):
                                                    criteria=self._sel_crit,
                                                    replica=replica)
             except Exception as e:
-                self._log.warn('=== selection algorithm failed: %s' % e)
+                self._log.warn('selection algorithm failed: %s' % e)
 
             # check if the user found something to exchange
             if not ex_list:
                 # nothing to do, suspend this replica and wait until we get more
                 # candidates and can try again
-                self._log.debug('=== %s no  - suspend', replica.rid)
+                self._log.debug('%s no  - suspend', replica.rid)
                 replica.suspend()
                 self._dump()
                 return
@@ -171,7 +173,7 @@ class Exchange(re.AppManager):
             # lists are valid - use them
             self._waitlist = new_wlist
 
-            self._log.debug('=== %s yes - exchange', replica.rid)
+            self._log.debug('%s yes - exchange', replica.rid)
             msg = " > %s: %s" % (replica.rid, [r.rid for r in ex_list])
             self._dump(msg=msg, special=ex_list, glyph='v')
 
@@ -185,7 +187,7 @@ class Exchange(re.AppManager):
     def _check_resume(self, replica):
 
         self._dump()
-        self._log.debug('=== %s check resume', replica.rid)
+        self._log.debug('%s check resume', replica.rid)
 
         resumed = list()  # list of resumed replica IDs
 
@@ -203,7 +205,7 @@ class Exchange(re.AppManager):
             # Make sure we don't resume the current replica
             if replica.rid != _replica.rid:
 
-                self._log.debug('=== %s resume', _replica.rid)
+                self._log.debug('%s resume', _replica.rid)
                 _replica.resume()
                 resumed.append(_replica.uid)
 
