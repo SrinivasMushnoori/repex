@@ -4,151 +4,83 @@ import glob
 import shutil
 
 # from repex import async_repex as async 
-from repex import dummy_exchange as async 
+from radical.repex import algorithms #import select_replicas_1D as rsa 
+
+
+# ------------------------------------------------------------------------------
+
+class Replica():
+
+    def __init__(self, rid):
+        self.rid=rid
+
 
 
 # ------------------------------------------------------------------------------
 #
-def set_waitlist(exchange, rids):
 
-    exchange._waitlist = list()
-    for rid in rids:
-        exchange._waitlist.append(exchange._replicas[rid])
-
+def create_replica_list(ensemble_size):
+    replica_list = []
+    for i in range(ensemble_size):
+        replica = Replica(i)
+        replica_list.append(replica)
+    return replica_list
 
 # ------------------------------------------------------------------------------
 #
-def test_ReplicaExchange():
-
-    # exchange_size:  how big the exchange list needs to be
-    #                 to move to the exchange phase
-    # window_size:    the width of the sliding window
-    exchange = async.ReplicaExchange(ensemble_size = 16,
-                                     exchange_size = 4,
-                                     window_size   = 8,
-                                     md_cycles     = 3,
-                                   # min_temp      = 300,
-                                   # max_temp      = 320,
-                                   # timesteps     = 500,
-                                   # basename      = 'ace-ala', 
-                                   # executable    = 'SANDER', 
-                                   # cores         = 1
-                                    )
-    assert len(exchange._replicas) == 16
+def test_select_replicas_1D():
+    ensemble_size = 16
+    rlist=create_replica_list(ensemble_size)
+    criteria =   {"exchange_size" : 4,
+                  "window_size"   : 4,
+                  "select_alg"    : "1D",
+                  "exchange_alg"  : "RANDOM"}
 
 
-    # assign seven replicas to waitlist
-    set_waitlist(exchange, [0, 2, 4, 5, 12, 13, 15])
-
-    old_len = len(exchange._waitlist)
-    ex_list = exchange._find_exchange_list(4, 8, exchange._replicas[0])
-
-    assert(isinstance(ex_list, list))
-    assert(len(ex_list) == 4)
-    assert(len(exchange._waitlist) == old_len - len(ex_list))
-    assert(exchange._replicas[0] in ex_list)
-
-    for r in exchange._waitlist:
-        assert(r not in ex_list)
-
-    for r in ex_list:
-        assert(r not in exchange._waitlist)
-
-
-    # assign seven replicas to waitlist with ending replicas
-    # fulfilling the criteria
-    set_waitlist(exchange, [0, 4, 14, 12, 13, 15])
-
-    old_len = len(exchange._waitlist)
-    ex_list = exchange._find_exchange_list(4, 8, exchange._replicas[12])
-
-    assert(isinstance(ex_list, list))
-    assert(len(ex_list) == 4)
-    assert(len(exchange._waitlist) == old_len - len(ex_list))  
-    assert(exchange._replicas[12] in ex_list)
-
-    for r in exchange._waitlist:
-        assert(r not in ex_list)
-
-    for r in ex_list:
-        assert(r not in exchange._waitlist)
-
-
-    # assign eight replicas to waitlist with two sets of
-    # replicas fulfilling the criteria
-    set_waitlist(exchange, [0, 2, 3, 4, 14, 12, 13, 15])
-
-    old_len = len(exchange._waitlist)
-    ex_list = exchange._find_exchange_list(4, 8, exchange._replicas[2])
-
-    assert(isinstance(ex_list, list))
-    assert([r.rid for r in ex_list] == [0, 2, 3, 4])
-    assert(len(ex_list) == 4)
-    assert(len(exchange._waitlist) == old_len - len(ex_list))  
-
-    for r in exchange._waitlist:
-        assert(r not in ex_list)
-
-    for r in ex_list:
-        assert(r not in exchange._waitlist)
-
-    old_len = len(exchange._waitlist)
-    ex_list = exchange._find_exchange_list(4, 8, exchange._replicas[12])
-
-    assert(isinstance(ex_list, list))
-    assert([r.rid for r in ex_list] == [12, 13, 14, 15]) 
-    assert(len(ex_list) == 4)
-    assert(len(exchange._waitlist) == old_len - len(ex_list)) 
-
-    for r in exchange._waitlist:
-        assert(r not in ex_list)
-
-    for r in ex_list:
-        assert(r not in exchange._waitlist)
-
-
+    assert len(rlist) == 16
+    waitlist = [rlist[1], rlist[2], rlist[4], rlist[7]]
+    replica = rlist[2]
+    [ex_list,new_wl] = algorithms.select_replicas_1D(waitlist, criteria, replica)
     # assign four replicas to waitlist
-    set_waitlist(exchange, [0, 2, 4, 5])
+    # returns new_waitlist, exchange_list
+  
 
-    ex_list = exchange._find_exchange_list(4, 8, exchange._replicas[0])
+    old_len = len(waitlist)
+    
 
     assert(isinstance(ex_list, list))
     assert(len(ex_list) == 4)
-    assert(len(exchange._waitlist)) == 0
+    assert(len(new_wl) == old_len - len(ex_list))
+    assert(replica in ex_list)
 
-    for r in exchange._waitlist:
+    for r in new_wl:
         assert(r not in ex_list)
 
     for r in ex_list:
-        assert(r not in exchange._waitlist)
+        assert(r not in new_wl)
 
 
-  # assign three replicas to waitlist
+    # assign three replicas to waitlist 
+    # this should fail, but it fails for the wron reason?
+    waitlist = [rlist[1], rlist[2], rlist[4]]
+    replica = rlist[2]
+    [ex_list,new_wl] = algorithms.select_replicas_1D(waitlist, criteria, replica) ### This test fails because the algorithm returns 
+                                                                                  ### NoneType instead of an empty ex_list.
+                                                                                  ### So clearly new_wl is not being generated either  
 
-    set_waitlist(exchange, [0, 2, 1])
+    assert(isinstance(ex_list, list))
+    assert(len(ex_list) == 0)
+    assert(len(new_wl) == old_len - len(ex_list))
+    assert(replica in ex_list)
 
-    ex_list = exchange._find_exchange_list(4, 8, exchange._replicas[0])
+    for r in new_wl:
+        assert(r not in ex_list)
 
-    assert((ex_list) is None)
+    for r in ex_list:
+        assert(r not in new_wl)
 
 
-  # assign two replicas to waitlist
-
-    set_waitlist(exchange, [0, 2])
-
-    ex_list = exchange._find_exchange_list(4, 4, exchange._replicas[0])
-
-    assert((ex_list) is None)
-
-  # assign 8 replicas to waitlist
-
-    set_waitlist(exchange, [0, 1, 2, 3, 4, 6, 7, 8, 9])
-
-    ex_list = exchange._find_exchange_list(4, 4, exchange._replicas[4])
-    ex_list_ids = [rep.rid for rep in ex_list]
-
-    assert((ex_list_ids) == [1,2,3,4])
-
+    
 
 # ------------------------------------------------------------------------------
 #
@@ -162,7 +94,7 @@ def cleanup():
 #
 if __name__ == '__main__':
 
-    test_ReplicaExchange()
+    test_select_replicas_1D()
     cleanup()
 
 
