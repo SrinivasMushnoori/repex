@@ -1,16 +1,16 @@
 
 {
     "criteria"      : {"exchange_size" : 2,
-                       "window_size"   : 2,
                        "select_alg"    : "TEST",
                        "exchange_alg"  : "RANDOM"
                       },
     "replicas"      : 4,
-    "cycles"        : 4,
+    "cycles"        : 2,
     "ex"            : {"executable"    : "python"},
 
     "md" : {
         "name"            : "mdtsk-${RID}-${CYCLE}",
+        "executable"      : "/tmp/sander",
         "arguments"       : [
                              "-O",
                              "-p",   "${SBOX}/prmtop",
@@ -21,7 +21,6 @@
                              "-r",   "${SBOX}/inpcrd-${RID}-${CYCLE_PLUS}",
                              "-x",   "${SBOX}/mdcrd-${RID}-${CYCLE_PLUS}"
                             ],
-        "executable"      : "/tmp/sander",
         "cpu_reqs"        : { "processes"          : 1,
                               "threads_per_process": 1,
                               "thread_type"        : null,

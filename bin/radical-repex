@@ -66,9 +66,7 @@ if __name__ == '__main__':
     inputs = writeInputs(wl)
 
     # specify what data to fetch after completion
-  # outputs = ['staging_area/inpcrd-0-*', 'foo']
-  # outputs = ['staging_area/']
-    outputs = ['staging_area/prmtop']
+    outputs = ['staging_area/inpcrd-0-*', 'staging_area/mdcrd-0-*']
 
     # create the required number of replicas
     replicas = list()
@@ -86,7 +84,6 @@ if __name__ == '__main__':
                            inputs=inputs,
                            outputs=outputs)
     exchange.run()
-    print "======= RUN COMPLETED"
     exchange.terminate()
 
 

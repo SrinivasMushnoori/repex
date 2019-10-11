@@ -63,7 +63,9 @@ class Exchange(re.AppManager):
                               "walltime" : 30,
                               "cpus"     : 16}
         self.shared_data   = inputs
-        self._outputs      = outputs
+        self.outputs       = outputs
+
+        self._log.debug('=== outputs: %s', self.outputs)
 
         self._dump(msg='startup')
 
