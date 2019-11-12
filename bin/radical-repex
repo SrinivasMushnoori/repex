@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 
 import radical.utils as ru
@@ -8,77 +9,44 @@ import radical.repex as rr
 
 # ------------------------------------------------------------------------------
 #
-def select_replicas_1D(waitlist, criteria, replica):
-    '''
-    replica selection algorithm: out of the list of eligible replicas, select
-    those which should be part of an exchange step.
+def writeInputs(wl):
 
-    Arguments:
+    try:
+        os.makedirs('inputs/')
+    except OSError:
+        pass
 
-      - waitlist: a list of replica objects which are eligible for exchange
-      - criteria: dictionary of selection criteria to control the algorthm's
-    '''
+    inputs = list()
+    nreps  = wl['replicas']
+    nsteps = wl['timesteps']
+    bname  = wl['basename']
+    tmin   = wl['min_temp']
+    tmax   = wl['max_temp']
+    tstep  = (tmax - tmin) / nreps
 
-    print '================================================='
-    print 'criteria: %s' % criteria
+    inputs.append('%s/prmtop' % bname)
 
-    if not waitlist:
-        return [], []
+    for i in range(nreps):
 
-    print 'waitlist: %s' % [r.rid for r in waitlist]
+        print 'create inputs for replica %d' % i
 
-    # get required parameters
-    ex_size = criteria['exchange_size']
+        temp = tmin + i * tstep
 
-    # check if size of wait list suffices
-    if len(waitlist) < ex_size:
+        with open('%s/mdin' % bname, 'r') as fin:
+            tbuffer  = fin.read()
+            tbuffer  = tbuffer.replace('@temperature@', str(temp))
+            tbuffer  = tbuffer.replace('@timesteps@',   str(nsteps))
 
-        # not enough replicas to attempt exchange
-        print '-------------------------------------------------'
-        return [], waitlist
+        fname = 'inputs/mdin-%d' % i
+        with open(fname, 'w') as fout:
+            fout.write(tbuffer)
 
-    # we have enough replicas!  Remove all as echange candidates from the
-    # waitlist and return them!
-    exchange_list = list()
-    for r in waitlist:
-        exchange_list.append(r)
+        inputs.append(fname)
 
-    # empty the waitlist to start collecting new candidates
-    new_waitlist = list()
+        os.system('cp %s/inpcrd %s/inpcrd-%d' % (bname, bname, i))
+        inputs.append('%s/inpcrd-%d'          % (bname, i))
 
-    print 'exchange: %s' % [r.rid for r in exchange_list]
-    print 'new wait: %s' % [r.rid for r in new_waitlist]
-    print '================================================='
-
-    return exchange_list, new_waitlist
-
-
-# ------------------------------------------------------------------------------
-#
-def exchange_by_random():
-    '''
-    This method is run as workload of exchange tasks.  It will receive two
-    arguments: the number of replicas to exchange, and the cycle (?).
-    '''
-
-    import sys
-    import random
-
-    replicas = int(sys.argv[1])
-    cycle    = int(sys.argv[2])
-
-    exchange_list_1 = range(replicas)
-    exchange_list_2 = range(replicas)
-
-    random.shuffle(exchange_list_1)
-    random.shuffle(exchange_list_2)
-
-    exchangePairs = zip(exchange_list_2, exchange_list_2)
-
-    with open('exchangePairs_%d.dat' % cycle, 'w') as f:
-        for p in exchangePairs:
-            line = ' '.join(str(x) for x in p)
-            f.write(line + '\n')
+    return inputs
 
 
 # ------------------------------------------------------------------------------
@@ -92,6 +60,12 @@ if __name__ == '__main__':
 
     wl = ru.read_json(sys.argv[1])
 
+    # prepare input for all replicas
+    inputs = writeInputs(wl)
+
+    # specify what data to fetch after completion
+    outputs = ['staging_area/inpcrd-0-*', 'staging_area/mdcrd-0-*']
+
     # create the required number of replicas
     replicas = list()
     for i in range(wl['replicas']):
@@ -104,9 +78,9 @@ if __name__ == '__main__':
     # create and run the replica exchange ensemble
     exchange = rr.Exchange(replicas=replicas,
                            replica_cycles=wl['cycles'],
-                           selection_algorithm=select_replicas_1D,
                            selection_criteria=wl['criteria'],
-                           exchange_algorithm=exchange_by_random)
+                           inputs=inputs,
+                           outputs=outputs)
     exchange.run()
     exchange.terminate()
 
