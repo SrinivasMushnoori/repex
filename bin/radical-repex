@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 
 import radical.utils as ru
@@ -8,30 +9,44 @@ import radical.repex as rr
 
 # ------------------------------------------------------------------------------
 #
-def exchange_by_random():
-    '''
-    This method is run as workload of exchange tasks.  It will receive two
-    arguments: the number of replicas to exchange, and the cycle (?).
-    '''
+def writeInputs(wl):
 
-    import sys
-    import random
+    try:
+        os.makedirs('inputs/')
+    except OSError:
+        pass
 
-    replicas = int(sys.argv[1])
-    cycle    = int(sys.argv[2])
+    inputs = list()
+    nreps  = wl['replicas']
+    nsteps = wl['timesteps']
+    bname  = wl['basename']
+    tmin   = wl['min_temp']
+    tmax   = wl['max_temp']
+    tstep  = (tmax - tmin) / nreps
 
-    exchange_list_1 = range(replicas)
-    exchange_list_2 = range(replicas)
+    inputs.append('%s/prmtop' % bname)
 
-    random.shuffle(exchange_list_1)
-    random.shuffle(exchange_list_2)
+    for i in range(nreps):
 
-    exchangePairs = zip(exchange_list_2, exchange_list_2)
+        print 'create inputs for replica %d' % i
 
-    with open('exchangePairs_%d.dat' % cycle, 'w') as f:
-        for p in exchangePairs:
-            line = ' '.join(str(x) for x in p)
-            f.write(line + '\n')
+        temp = tmin + i * tstep
+
+        with open('%s/mdin' % bname, 'r') as fin:
+            tbuffer  = fin.read()
+            tbuffer  = tbuffer.replace('@temperature@', str(temp))
+            tbuffer  = tbuffer.replace('@timesteps@',   str(nsteps))
+
+        fname = 'inputs/mdin-%d' % i
+        with open(fname, 'w') as fout:
+            fout.write(tbuffer)
+
+        inputs.append(fname)
+
+        os.system('cp %s/inpcrd %s/inpcrd-%d' % (bname, bname, i))
+        inputs.append('%s/inpcrd-%d'          % (bname, i))
+
+    return inputs
 
 
 # ------------------------------------------------------------------------------
@@ -45,6 +60,12 @@ if __name__ == '__main__':
 
     wl = ru.read_json(sys.argv[1])
 
+    # prepare input for all replicas
+    inputs = writeInputs(wl)
+
+    # specify what data to fetch after completion
+    outputs = ['staging_area/inpcrd-0-*', 'staging_area/mdcrd-0-*']
+
     # create the required number of replicas
     replicas = list()
     for i in range(wl['replicas']):
@@ -57,9 +78,9 @@ if __name__ == '__main__':
     # create and run the replica exchange ensemble
     exchange = rr.Exchange(replicas=replicas,
                            replica_cycles=wl['cycles'],
-                           selection_algorithm=select_replicas_1D,
                            selection_criteria=wl['criteria'],
-                           exchange_algorithm=exchange_by_random)
+                           inputs=inputs,
+                           outputs=outputs)
     exchange.run()
     exchange.terminate()
 

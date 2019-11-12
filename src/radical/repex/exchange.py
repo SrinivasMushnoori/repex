@@ -8,6 +8,20 @@ import threading as mt
 import radical.entk  as re
 import radical.utils as ru
 
+from . import algorithms as rxa
+
+
+_select_algs    = {
+                   rxa.SELECT_1D   : rxa.select_replicas_1D,
+                   rxa.SELECT_TEST : rxa.select_replicas_test
+                  }
+
+_exchange_algs  = {
+                   rxa.EXCHANGE_RANDOM : rxa.exchange_by_random
+                  }
+
+
+
 
 # ------------------------------------------------------------------------------
 #
@@ -24,56 +38,71 @@ class Exchange(re.AppManager):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self, replicas, replica_cycles,
-                       selection_algorithm, selection_criteria,
-                       exchange_algorithm):
+    def __init__(self, replicas, replica_cycles, selection_criteria,
+                       inputs, outputs):
 
         self._replicas  = replicas
         self._cycles    = replica_cycles
         self._en_size   = len(replicas)
         self._sel_crit  = selection_criteria
-        self._sel_alg   = selection_algorithm
         self._waitlist  = list()
 
+        self._sel_alg   = _select_algs  [self._sel_crit['select_alg']]
+        self._ex_alg    = _exchange_algs[self._sel_crit['exchange_alg']]
+
         for r in replicas:
-            r._initialize(check_ex  = self._check_exchange,
-                          check_res = self._check_resume)
+            r._initialize(check_ex=self._check_exchange,
+                          check_res=self._check_resume)
 
         self._lock = mt.Lock()
-        self._log  = ru.Logger('radical.repex')
-        self._dout = open('dump.log', 'a')
 
-        re.AppManager.__init__(self, autoterminate=False, port=5672)
+        re.AppManager.__init__(self, autoterminate=True, port=5672)
         self.resource_desc = {"resource" : 'local.localhost',
                               "walltime" : 30,
                               "cpus"     : 16}
+        self.shared_data   = inputs
+        self.outputs       = outputs
 
+        self._log = ru.Logger('radical.repex')
+        self._log.debug('=== outputs: %s', self.outputs)
+
+        self._dout = open('dump.log', 'a')
         self._dump(msg='startup')
 
         # run the replica pipelines
         self.workflow = set(self._replicas)
 
         # write exchange algorithm to disk (once)
-        self._ex_alg = './exchange_algorithm.py'
-        with open(self._ex_alg, 'w') as fout:
+        self._ex_alg_file = './exchange_algorithm.py'
+        with open(self._ex_alg_file, 'w') as fout:
             fout.write('#!/usr/bin/env python\n\n%s\n\n%s()\n\n' %
-                       (inspect.getsource(exchange_algorithm),
-                        exchange_algorithm.__name__))
+                       (inspect.getsource(self._ex_alg),
+                        self._ex_alg.__name__))
 
 
     # --------------------------------------------------------------------------
     #
     def run(self):
+        '''
+        run the replica exchange pipelines, and after all is done, fetch the
+        requested output data
+        '''
 
-        return re.AppManager.run(self)
+        re.AppManager.run(self)
 
 
     # --------------------------------------------------------------------------
     #
     def _dump(self, msg=None, special=None, glyph=None ):
 
+        if not self._dout:
+            return
+
         if not msg:
             msg = ''
+
+        if not self._dout:
+            return
 
         self._dout.write(' | %7.2f |' % (time.time() - self._t_0))
         for r in self._replicas:
@@ -91,18 +120,19 @@ class Exchange(re.AppManager):
 
         self._log.debug('exc term')
         self._dump(msg='terminate', special=self._replicas, glyph='=')
-        self._dout.close()
+        if self._dout:
+            self._dout.close()
+            self._dout = None
 
         # we are done!
-        self.resource_terminate()
+        re.AppManager.terminate(self)
 
 
     # --------------------------------------------------------------------------
     #
     def _check_exchange(self, replica):
 
-        # This method races when concurrently triggered by multpiple replicas,
-        # and it should be guarded by a lock.
+        # method races when concurrently triggered by multpiple replicas
         with self._lock:
 
             self._waitlist.append(replica)
@@ -116,13 +146,13 @@ class Exchange(re.AppManager):
                                                    criteria=self._sel_crit,
                                                    replica=replica)
             except Exception as e:
-                self._log.warn('=== selection algorithm failed: %s' % e)
+                self._log.exception('selection algorithm failed: %s' % e)
 
             # check if the user found something to exchange
             if not ex_list:
                 # nothing to do, suspend this replica and wait until we get more
                 # candidates and can try again
-                self._log.debug('=== %s no  - suspend', replica.rid)
+                self._log.debug('%s %s no  - suspend', replica.rid, replica._uid)
                 replica.suspend()
                 self._dump()
                 return
@@ -147,13 +177,13 @@ class Exchange(re.AppManager):
             # lists are valid - use them
             self._waitlist = new_wlist
 
-            self._log.debug('=== %s yes - exchange', replica.rid)
+            self._log.debug('%s %s yes - exchange', replica.rid, replica._uid)
             msg = " > %s: %s" % (replica.rid, [r.rid for r in ex_list])
             self._dump(msg=msg, special=ex_list, glyph='v')
 
             # we have a set of exchange candidates.  The current replica is
             # tasked to host the exchange task.
-            replica.add_ex_stage(ex_list, self._ex_alg)
+            replica.add_ex_stage(ex_list, self._ex_alg_file)
 
 
     # --------------------------------------------------------------------------
@@ -161,7 +191,7 @@ class Exchange(re.AppManager):
     def _check_resume(self, replica):
 
         self._dump()
-        self._log.debug('=== %s check resume', replica.rid)
+        self._log.debug('%s %s check resume', replica.rid, replica._uid)
 
         resumed = list()  # list of resumed replica IDs
 
@@ -179,7 +209,7 @@ class Exchange(re.AppManager):
             # Make sure we don't resume the current replica
             if replica.rid != _replica.rid:
 
-                self._log.debug('=== %s resume', _replica.rid)
+                self._log.debug('%s %s resume', _replica.rid, replica._uid)
                 _replica.resume()
                 resumed.append(_replica.uid)
 
