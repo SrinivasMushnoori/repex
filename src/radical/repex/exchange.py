@@ -55,8 +55,6 @@ class Exchange(re.AppManager):
                           check_res=self._check_resume)
 
         self._lock = mt.Lock()
-        self._log  = ru.Logger('radical.repex')
-        self._dout = open('dump.log', 'a')
 
         re.AppManager.__init__(self, autoterminate=True, port=5672)
         self.resource_desc = {"resource" : 'local.localhost',
@@ -65,8 +63,10 @@ class Exchange(re.AppManager):
         self.shared_data   = inputs
         self.outputs       = outputs
 
+        self._log = ru.Logger('radical.repex')
         self._log.debug('=== outputs: %s', self.outputs)
 
+        self._dout = open('dump.log', 'a')
         self._dump(msg='startup')
 
         # run the replica pipelines
@@ -94,6 +94,9 @@ class Exchange(re.AppManager):
     # --------------------------------------------------------------------------
     #
     def _dump(self, msg=None, special=None, glyph=None ):
+
+        if not self._dout:
+            return
 
         if not msg:
             msg = ''
@@ -129,8 +132,7 @@ class Exchange(re.AppManager):
     #
     def _check_exchange(self, replica):
 
-        # This method races when concurrently triggered by multpiple replicas,
-        # and it should be guarded by a lock.
+        # method races when concurrently triggered by multpiple replicas
         with self._lock:
 
             self._waitlist.append(replica)
@@ -144,13 +146,13 @@ class Exchange(re.AppManager):
                                                    criteria=self._sel_crit,
                                                    replica=replica)
             except Exception as e:
-                self._log.warn('selection algorithm failed: %s' % e)
+                self._log.exception('selection algorithm failed: %s' % e)
 
             # check if the user found something to exchange
             if not ex_list:
                 # nothing to do, suspend this replica and wait until we get more
                 # candidates and can try again
-                self._log.debug('%s no  - suspend', replica.rid)
+                self._log.debug('%s %s no  - suspend', replica.rid, replica._uid)
                 replica.suspend()
                 self._dump()
                 return
@@ -175,7 +177,7 @@ class Exchange(re.AppManager):
             # lists are valid - use them
             self._waitlist = new_wlist
 
-            self._log.debug('%s yes - exchange', replica.rid)
+            self._log.debug('%s %s yes - exchange', replica.rid, replica._uid)
             msg = " > %s: %s" % (replica.rid, [r.rid for r in ex_list])
             self._dump(msg=msg, special=ex_list, glyph='v')
 
@@ -189,7 +191,7 @@ class Exchange(re.AppManager):
     def _check_resume(self, replica):
 
         self._dump()
-        self._log.debug('%s check resume', replica.rid)
+        self._log.debug('%s %s check resume', replica.rid, replica._uid)
 
         resumed = list()  # list of resumed replica IDs
 
@@ -207,7 +209,7 @@ class Exchange(re.AppManager):
             # Make sure we don't resume the current replica
             if replica.rid != _replica.rid:
 
-                self._log.debug('%s resume', _replica.rid)
+                self._log.debug('%s %s resume', _replica.rid, replica._uid)
                 _replica.resume()
                 resumed.append(_replica.uid)
 

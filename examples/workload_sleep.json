@@ -9,7 +9,12 @@
     "cycles"        : 4,
     "md"            : {"executable"    : "/bin/sleep",
                        "arguments"     : ["2"]},
-    "ex"            : {"executable"    : "python"}
+    "ex"            : {"executable"    : "python"},
+
+    "min_temp"  : 300,
+    "max_temp"  : 400,
+    "timesteps" : 1000,
+    "basename"  : "tests/ace-ala/"
 }
 
 
