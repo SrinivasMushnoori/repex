@@ -32,7 +32,7 @@ def select_replicas_1D(waitlist, criteria, replica):
         if len(waitlist) < ex_size:
 
             # not enough replicas to attempt exchange
-            return
+            return [], waitlist
 
         # we have enough replicas!  Remove all as echange candidates from the
         # waitlist and return them!
