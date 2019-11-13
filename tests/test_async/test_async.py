@@ -64,6 +64,7 @@ def test_select_replicas_1D():
     # this should fail, but it fails for the wron reason?
     waitlist = [rlist[1], rlist[2], rlist[4]]
     replica = rlist[2]
+    old_len = len(waitlist)
     [ex_list,new_wl] = algorithms.select_replicas_1D(waitlist, criteria, replica) ### This test fails because the algorithm returns 
                                                                                   ### NoneType instead of an empty ex_list.
                                                                                   ### So clearly new_wl is not being generated either  
@@ -71,7 +72,7 @@ def test_select_replicas_1D():
     assert(isinstance(ex_list, list))
     assert(len(ex_list) == 0)
     assert(len(new_wl) == old_len - len(ex_list))
-    assert(replica in ex_list)
+    
 
     for r in new_wl:
         assert(r not in ex_list)
