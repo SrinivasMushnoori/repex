@@ -1,5 +1,5 @@
 
-import sys
+import os
 import time
 import inspect
 
@@ -19,8 +19,6 @@ _select_algs    = {
 _exchange_algs  = {
                    rxa.EXCHANGE_RANDOM : rxa.exchange_by_random
                   }
-
-
 
 
 # ------------------------------------------------------------------------------
@@ -56,7 +54,11 @@ class Exchange(re.AppManager):
 
         self._lock = mt.Lock()
 
-        re.AppManager.__init__(self, autoterminate=True, port=5672)
+        rmq_host = os.environ.get('RMQ_HOST', 'localhost')
+        rmq_port = os.environ.get('RMQ_PORT', 5672)
+
+        re.AppManager.__init__(self, autoterminate=True,
+                                     hostname=rmq_host, port=rmq_port)
         self.resource_desc = {"resource" : 'local.localhost',
                               "walltime" : 30,
                               "cpus"     : 16}
