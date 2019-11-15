@@ -17,6 +17,8 @@ class Replica():
 #
 def test_select_replicas():
 
+    # Create multiple sets of inputs, feed to alg, and assert results
+
     for alg in [rxa.select_replicas_1D,
                 rxa.select_replicas_test]:
         for en_size in [0, 1, 2, 4, 8, 16, 32]:
@@ -29,13 +31,10 @@ def test_select_replicas():
 
 def _test_select_replicas(alg, en_size, wl_size, ex_size):
 
+    # create a random waitlist out of the given replica list
     rlist    = [Replica(i) for i in range(en_size)]
     wlist    = random.sample(rlist, wl_size)
     criteria = {"exchange_size" : ex_size}
-
-    # Create multiple sets of inputs, feed to alg, and assert results
-
-    # create a random waitlist out of the given replica list
 
     # attempt to use each replica as active replica
     for ar in wlist:
