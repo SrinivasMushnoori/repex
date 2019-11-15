@@ -1,98 +1,69 @@
 #!/usr/bin/env python
 
-import glob
-import shutil
+import random
 
-# from repex import async_repex as async 
-from radical.repex import algorithms #import select_replicas_1D as rsa 
+from radical.repex import algorithms as rxa
 
 
 # ------------------------------------------------------------------------------
-
+#
 class Replica():
 
     def __init__(self, rid):
-        self.rid=rid
-
-
-
-# ------------------------------------------------------------------------------
-#
-
-def create_replica_list(ensemble_size):
-    replica_list = []
-    for i in range(ensemble_size):
-        replica = Replica(i)
-        replica_list.append(replica)
-    return replica_list
+        self.rid = rid
 
 
 # ------------------------------------------------------------------------------
 #
+def test_select_replicas():
+
+    for alg in [rxa.select_replicas_1D,
+                rxa.select_replicas_test]:
+        for en_size in [0, 1, 2, 4, 8, 16, 32]:
+            for wl_size in [0, 1, 2, 4, 8, 16, 32]:
+                if wl_size > en_size:
+                    continue
+                for ex_size in [0, 1, 2, 4, 8, 128]:
+                    _test_select_replicas(alg, en_size, wl_size, ex_size)
 
 
-# ------------------------------------------------------------------------------
-#
-def test_select_replicas_1D():
+def _test_select_replicas(alg, en_size, wl_size, ex_size):
 
-    ensemble_size = 16
-    ex_size = 4
+    rlist    = [Replica(i) for i in range(en_size)]
+    wlist    = random.sample(rlist, wl_size)
+    criteria = {"exchange_size" : ex_size}
 
-    rlist=create_replica_list(ensemble_size)
-    criteria =   {"exchange_size" : ex_size,
-                  "select_alg"    : "1D",
-                  "exchange_alg"  : "RANDOM"}
+    # Create multiple sets of inputs, feed to alg, and assert results
 
-    
-    assert len(rlist) == ensemble_size    
+    # create a random waitlist out of the given replica list
 
-    #### Create multiple sets of inputs, and pass them to a single loop containing asserts. 
+    # attempt to use each replica as active replica
+    for ar in wlist:
 
-    def common_asserts(waitlist, replica, ex_list, new_wl):
+        [ex_list, new_wl] = alg(wlist, criteria, ar)
+
         assert(isinstance(ex_list, list))
-        if len(ex_list) > 0:
-            assert(replica in ex_list)
-            assert(len(ex_list) == 4)
-        assert(len(new_wl) == len(waitlist) - len(ex_list))
-        for r in new_wl:
-            assert(r not in ex_list)
-        for r in ex_list:
-            assert(r not in new_wl)
+        assert(isinstance(new_wl,  list))
 
+        if ex_list:
+            assert(ar in ex_list)
+            assert(len(ex_list) == ex_size)
 
-    cases = 2
-    # assign four replicas to waitlist
-    # returns new_waitlist, exchange_list
+        else:
+            assert(wlist == new_wl)
 
-    
-    waitlists          = [[rlist[1], rlist[2], rlist[4], rlist[7]], 
-                          [rlist[1], rlist[2], rlist[4]]]
-    active_replicas    = [rlist[2],
-                          rlist[2]]
+        assert(len(new_wl) == len(wlist) - len(ex_list))
 
-
-    ########[waitlist, replica] = [[rlist[1], rlist[2], rlist[4], rlist[7]], rlist[2]]
-    
-    for i in range(cases):
-        [ex_list,new_wl] = algorithms.select_replicas_1D(waitlists[i], criteria, active_replicas[i])    
-        common_asserts(waitlists[i],active_replicas[i], ex_list, new_wl)
-
-   
-
-# ------------------------------------------------------------------------------
-#
-def cleanup():
-
-    for filename in glob.glob("re.session*"):
-        shutil.rmtree(filename) 
+        for r in new_wl : assert(r not in ex_list)
+        for r in ex_list: assert(r not in new_wl)
 
 
 # ------------------------------------------------------------------------------
 #
 if __name__ == '__main__':
 
-    test_select_replicas_1D(ensemble_size, ex_size, active_replica, waitlist)
-    cleanup()
+    test_select_replicas()
+
 
 # ------------------------------------------------------------------------------
 
