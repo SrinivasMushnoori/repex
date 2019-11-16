@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import random
+import pytest
 
 from radical.repex import algorithms as rxa
 
@@ -15,21 +16,21 @@ class Replica():
 
 # ------------------------------------------------------------------------------
 #
-def test_select_replicas():
 
-    # Create multiple sets of inputs, feed to alg, and assert results
+test_data = list()
 
-    for alg in [rxa.select_replicas_1D,
-                rxa.select_replicas_test]:
-        for en_size in [0, 1, 2, 4, 8, 16, 32]:
-            for wl_size in [0, 1, 2, 4, 8, 16, 32]:
-                if wl_size > en_size:
-                    continue
-                for ex_size in [0, 1, 2, 4, 8, 128]:
-                    _test_select_replicas(alg, en_size, wl_size, ex_size)
+for alg in [rxa.select_replicas_1D,
+            rxa.select_replicas_test]:
+    for en_size in [0, 1, 2, 4, 8, 16, 32]:
+        for wl_size in [0, 1, 2, 4, 8, 16, 32]:
+            if wl_size > en_size:
+                continue
+            for ex_size in [0, 1, 2, 4, 8, 128]:
+                test_data.append([alg, en_size, wl_size, ex_size])
 
 
-def _test_select_replicas(alg, en_size, wl_size, ex_size):
+@pytest.mark.parametrize("alg, en_size, wl_size, ex_size", test_data)
+def test_select_replicas (alg, en_size, wl_size, ex_size):
 
     # create a random waitlist out of the given replica list
     rlist    = [Replica(i) for i in range(en_size)]
