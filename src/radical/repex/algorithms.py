@@ -33,6 +33,10 @@ def select_replicas_1D(waitlist, criteria, replica):
 
             # not enough replicas to attempt exchange
             return [], waitlist
+        elif len(waitlist) > ex_size:
+            # waitlist somehow grew too large
+
+            raise ValueError('The waitlist is larger than maximum permissible exchange list size')
 
         # we have enough replicas!  Remove all as echange candidates from the
         # waitlist and return them!

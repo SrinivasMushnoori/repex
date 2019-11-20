@@ -21,11 +21,17 @@ test_data = list()
 
 for alg in [rxa.select_replicas_1D,
             rxa.select_replicas_test]:
-    for en_size in [0, 1, 2, 4, 8, 16, 32]:
-        for wl_size in [0, 1, 2, 4, 8, 16, 32]:
+    for en_size in [1, 2, 4, 8, 16, 32]:
+        for wl_size in [1, 2, 4, 8, 16, 32]:
             if wl_size > en_size:
                 continue
-            for ex_size in [0, 1, 2, 4, 8, 128]:
+            
+
+            for ex_size in [1, 2, 4, 8, 16, 32]:
+                #if wl_size > ex_size:
+                    #pytest.raises(ValueError)
+
+            #ex_size = wl_size
                 test_data.append([alg, en_size, wl_size, ex_size])
 
 
@@ -46,8 +52,12 @@ def test_select_replicas (alg, en_size, wl_size, ex_size):
         assert(isinstance(new_wl,  list))
 
         if ex_list:
-            assert(ar in ex_list)
-            assert(len(ex_list) == ex_size)
+            if wl_size > ex_size:
+                pytest.raises(ValueError)
+
+            else:
+                assert(ar in ex_list)
+                assert(len(ex_list) == ex_size)
 
         else:
             assert(wlist == new_wl)
