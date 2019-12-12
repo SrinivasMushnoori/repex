@@ -1,5 +1,6 @@
 
-import os
+import copy
+
 import time
 import inspect
 
@@ -37,7 +38,7 @@ class Exchange(re.AppManager):
     # --------------------------------------------------------------------------
     #
     def __init__(self, replicas, replica_cycles, selection_criteria,
-                       inputs, outputs):
+                       inputs, outputs, resource):
 
         self._replicas  = replicas
         self._cycles    = replica_cycles
@@ -54,20 +55,21 @@ class Exchange(re.AppManager):
 
         self._lock = mt.Lock()
 
-        rmq_host = os.environ.get('RMQ_HOST', 'localhost')
-        rmq_port = os.environ.get('RMQ_PORT', 5672)
+        rmq_host = str(resource.get('rmq_host', 'localhost'))
+        rmq_port = int(resource.get('rmq_port', '5672'))
 
         re.AppManager.__init__(self, autoterminate=True,
                                      hostname=rmq_host, port=rmq_port)
-        self.resource_desc = {"resource" : 'local.localhost',
-                              "walltime" : 30,
-                              "cpus"     : 16}
+
+        rd = copy.deepcopy(resource)
+        if 'rmq_host' in rd: del(rd['rmq_host'])
+        if 'rmq_port' in rd: del(rd['rmq_port'])
+
+        self.resource_desc = rd
         self.shared_data   = inputs
         self.outputs       = outputs
 
-        self._log = ru.Logger('radical.repex')
-        self._log.debug('=== outputs: %s', self.outputs)
-
+        self._log  = ru.Logger('radical.repex')
         self._dout = open('dump.log', 'a')
         self._dump(msg='startup')
 
