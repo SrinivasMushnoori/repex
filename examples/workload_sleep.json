@@ -1,20 +1,23 @@
 
 {
-    "criteria"      : {"exchange_size" : 8,
-                       "window_size"   : 8,
-                       "select_alg"    : "1D",
-                       "exchange_alg"  : "RANDOM"
-                      },
-    "replicas"      : 128,
-    "cycles"        : 4,
-    "md"            : {"executable"    : "/bin/sleep",
-                       "arguments"     : ["2"]},
-    "ex"            : {"executable"    : "python"},
+    "min_temp"         : 300,
+    "max_temp"         : 400,
+    "timesteps"        : 1000,
+    "basename"         : "../tests/ace-ala/",
+    "replicas"         : 128,
+    "cycles"           : 4,
 
-    "min_temp"  : 300,
-    "max_temp"  : 400,
-    "timesteps" : 1000,
-    "basename"  : "tests/ace-ala/"
+    "criteria"      : {
+        "exchange_size": 8,
+        "window_size"  : 8,
+        "select_alg"   : "./algorithm_select_all.py:select_replicas_all",
+        "exchange_alg" : "./algorithm_exchange_random.py:exchange_by_random"
+    },
+
+    "md"               : {
+        "executable"   : "/bin/sleep",
+        "arguments"    : ["2"]
+    }
 }
 
 

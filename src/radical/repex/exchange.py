@@ -12,14 +12,14 @@ import radical.utils as ru
 from . import algorithms as rxa
 
 
-_select_algs    = {
-                   rxa.SELECT_1D   : rxa.select_replicas_1D,
-                   rxa.SELECT_TEST : rxa.select_replicas_test
-                  }
+_sel_algs = {
+             rxa.SELECT_1D   : rxa.select_replicas_1D,
+             rxa.SELECT_TEST : rxa.select_replicas_test
+            }
 
-_exchange_algs  = {
-                   rxa.EXCHANGE_RANDOM : rxa.exchange_by_random
-                  }
+_exc_algs = {
+             rxa.EXCHANGE_RANDOM : rxa.exchange_by_random
+            }
 
 
 # ------------------------------------------------------------------------------
@@ -46,8 +46,20 @@ class Exchange(re.AppManager):
         self._sel_crit  = selection_criteria
         self._waitlist  = list()
 
-        self._sel_alg   = _select_algs  [self._sel_crit['select_alg']]
-        self._ex_alg    = _exchange_algs[self._sel_crit['exchange_alg']]
+        self._sel_alg   = _sel_algs.get(self._sel_crit['select_alg'])
+        self._ex_alg    = _exc_algs.get(self._sel_crit['exchange_alg'])
+
+        # if the configured algorithms are not known (not hard-coded in RX),
+        # then assume they point to user specified files and load them
+        if not self._sel_alg:
+            filename, funcname = self._sel_crit['select_alg'].split(':')
+            syms = ru.import_file(filename)
+            self._sel_alg = syms['functions'][funcname]
+
+        if not self._ex_alg:
+            filename, funcname = self._sel_crit['exchange_alg'].split(':')
+            syms = ru.import_file(filename)
+            self._ex_alg = syms['functions'][funcname]
 
         for r in replicas:
             r._initialize(check_ex=self._check_exchange,

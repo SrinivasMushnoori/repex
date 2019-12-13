@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
-
-# ------------------------------------------------------------------------------
-#
 def exchange_by_random(waitlist, criteria):
     '''
     This method will select a number of replicas to exchange
@@ -27,25 +24,5 @@ def exchange_by_random(waitlist, criteria):
     return exchanges, waitlist
 
 
-# ------------------------------------------------------------------------------
-#
-if __name__ == '__main__':
-
-    import sys
-    import pprint
-
-    import radical.utils as ru
-
-    syms = ru.import_file(__file__)
-    func = syms['functions']['exchange_by_random']
-
-    waitlist = list(range(int(sys.argv[1])))
-    criteria = {'n_pairs' : 3}
-    el, wl = func(waitlist, criteria)
-
-    pprint.pprint(el)
-    pprint.pprint(wl)
-
-
-# ------------------------------------------------------------------------------
+exchange_by_random()
 
