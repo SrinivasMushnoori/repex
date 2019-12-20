@@ -89,9 +89,7 @@ class Replica(re.Pipeline):
         td   = ru.expand_env(copy.deepcopy(self._workload['md']), env=env)
         task = re.Task()
 
-        for k,v in td.iteritems():
-            if isinstance(v, unicode):
-                v = str(v)
+        for k,v in td.items():
             setattr(task, k, v)
 
         global _task_cnt

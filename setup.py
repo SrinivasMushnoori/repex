@@ -83,18 +83,13 @@ def get_version(mod_root):
             'tag=`git describe --tags --always` 2>/dev/null ; '
             'branch=`git branch | grep -e "^*" | cut -f 2- -d " "` 2>/dev/null ; '
             'echo $tag@$branch' % src_root)
-        fout = open('/tmp/t', 'w')
-        fout.write('%s\n' % out)
-        fout.write('%s\n' % err)
-        fout.write('%s\n' % ret)
         version_detail = out.strip()
+        version_detail = version_detail.decode()
         version_detail = version_detail.replace('detached from ', 'detached-')
-        fout.write('%s\n' % version_detail)
 
         # remove all non-alphanumeric (and then some) chars
         version_detail = re.sub('[/ ]+', '-', version_detail)
         version_detail = re.sub('[^a-zA-Z0-9_+@.-]+', '', version_detail)
-        fout.write('%s\n' % version_detail)
 
         if  ret            !=  0  or \
             version_detail == '@' or \
@@ -107,7 +102,6 @@ def get_version(mod_root):
             version = '%s-%s' % (version_base, version_detail)
         else:
             version = version_base
-        fout.write('%s\n' % version)
 
         # make sure the version files exist for the runtime version inspection
         path = '%s/%s' % (src_root, mod_root)
@@ -123,14 +117,14 @@ def get_version(mod_root):
         if '--record'    in sys.argv or \
            'bdist_egg'   in sys.argv or \
            'bdist_wheel' in sys.argv    :
-          # pip install stage 2 or easy_install stage 1
-          #
-          # pip install will untar the sdist in a tmp tree.  In that tmp
-          # tree, we won't be able to derive git version tags -- so we pack the
-          # formerly derived version as ./VERSION
-            shutil.move('VERSION', 'VERSION.bak')            # backup version
-            shutil.copy('%s/VERSION' % path, 'VERSION')      # use full version
-            os.system  ('python setup.py sdist')             # build sdist
+            # pip install stage 2 or easy_install stage 1
+            #
+            # pip install will untar the sdist in a tmp tree.  In that tmp
+            # tree, we won't be able to derive git version tags -- so we pack
+            # the formerly derived version as ./VERSION
+            shutil.move("VERSION", "VERSION.bak")            # backup version
+            shutil.copy("%s/VERSION" % path, "VERSION")      # use full version
+            os.system  ("python setup.py sdist")             # build sdist
             shutil.copy('dist/%s' % sdist_name,
                         '%s/%s'   % (mod_root, sdist_name))  # copy into tree
             shutil.move('VERSION.bak', 'VERSION')            # restore version
@@ -145,9 +139,9 @@ def get_version(mod_root):
 
 
 # ------------------------------------------------------------------------------
-# check python version. we need >= 2.7, <3.x
-if  sys.hexversion < 0x02070000 or sys.hexversion >= 0x03000000:
-    raise RuntimeError('%s requires Python 2.x (2.7 or higher)' % name)
+# check python version. we need >= 3.5
+if  sys.hexversion < 0x03050000:
+    raise RuntimeError('%s requires Python 3.5 or higher' % name)
 
 
 # ------------------------------------------------------------------------------
@@ -178,12 +172,6 @@ class RunTwine(Command):
 
 # ------------------------------------------------------------------------------
 #
-if  sys.hexversion < 0x02060000 or sys.hexversion >= 0x03000000:
-    raise RuntimeError('SETUP ERROR: %s requires Python 2.6 or higher' % name)
-
-
-# ------------------------------------------------------------------------------
-#
 df = list()
 df.append(('share/%s/examples/'    % name, glob.glob('examples/*.{py,cfg}')))
 
@@ -203,14 +191,15 @@ setup_args = {
     'url'                : 'https://www.github.com/radical-cybertools/radical.repex/',
     'license'            : 'MIT',
     'keywords'           : 'radical distributed computing',
+    'python_requires'    : '>=3.5',
     'classifiers'        : [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Environment :: Console',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Utilities',
         'Topic :: System :: Distributed Computing',
         'Topic :: Scientific/Engineering',
@@ -249,4 +238,5 @@ os.system('rm -rf src/%s.egg-info' % name)
 
 
 # ------------------------------------------------------------------------------
+
 
