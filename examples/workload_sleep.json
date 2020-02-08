@@ -1,22 +1,27 @@
 
 {
-    "min_temp"         : 300,
-    "max_temp"         : 400,
-    "timesteps"        : 1000,
-    "basename"         : "../tests/ace-ala/",
-    "replicas"         : 128,
-    "cycles"           : 4,
+    "min_temp"             : 300,
+    "max_temp"             : 400,
+    "timesteps"            : 1000,
+    "basename"             : "../tests/ace-ala/",
+    "replicas"             : 128,
+    "cycles"               : 3,
 
-    "criteria"      : {
-        "exchange_size": 8,
-        "window_size"  : 8,
-        "select_alg"   : "./algorithm_select_all.py:select_replicas_all",
-        "exchange_alg" : "./algorithm_exchange_random.py:exchange_by_random"
+    "criteria" : {
+        "window_size"      : 8,
+        "exchange_size"    : 8,
+        "select_alg"       : "./algorithm_select_random.py:select_by_random",
+        "exchange_alg"     : "./algorithm_exchange_random.py:exchange_by_random",
+        "exchange_data"    : ["date.dat", "ls.dat"]
     },
 
-    "md"               : {
-        "executable"   : "/bin/sleep",
-        "arguments"    : ["2"]
+    "md" : {
+        "executable"       : "/bin/sh",
+        "arguments"        : ["-c", "sleep 2; date > date.dat; ls > ls.dat"],
+        "link_output_data" : [
+            "date.dat > pilot:///repex.%(rid)s.%(cycle)04d.date.dat",
+            "ls.dat   > pilot:///repex.%(rid)s.%(cycle)04d.ls.dat"
+        ]
     }
 }
 

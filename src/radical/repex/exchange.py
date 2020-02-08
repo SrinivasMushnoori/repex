@@ -40,14 +40,15 @@ class Exchange(re.AppManager):
     def __init__(self, replicas, replica_cycles, selection_criteria,
                        inputs, outputs, resource):
 
-        self._replicas  = replicas
-        self._cycles    = replica_cycles
-        self._en_size   = len(replicas)
-        self._sel_crit  = selection_criteria
-        self._waitlist  = list()
+        self._replicas = replicas
+        self._cycles   = replica_cycles
+        self._en_size  = len(replicas)
+        self._sel_crit = selection_criteria
+        self._waitlist = list()
 
-        self._sel_alg   = _sel_algs.get(self._sel_crit['select_alg'])
-        self._ex_alg    = _exc_algs.get(self._sel_crit['exchange_alg'])
+        self._sel_alg  = _sel_algs.get(self._sel_crit['select_alg'])
+        self._ex_alg   = _exc_algs.get(self._sel_crit['exchange_alg'])
+        self._ex_data  =               self._sel_crit['exchange_data']
 
         # if the configured algorithms are not known (not hard-coded in RX),
         # then assume they point to user specified files and load them
@@ -65,7 +66,7 @@ class Exchange(re.AppManager):
             r._initialize(check_ex=self._check_exchange,
                           check_res=self._check_resume)
 
-        self._lock = mt.Lock()
+        self._lock = ru.Lock(name='rx')
 
         rmq_host = str(resource.get('rmq_host', 'localhost'))
         rmq_port = int(resource.get('rmq_port', '5672'))
@@ -88,12 +89,34 @@ class Exchange(re.AppManager):
         # run the replica pipelines
         self.workflow = set(self._replicas)
 
+        ex_alg_pre = '''
+import sys
+
+rid     = None
+cycle   = None
+ex_list = list()
+dn_list = list()
+
+arg_mode = None
+for arg in sys.argv[1:]:
+    if   arg == '-r': arg_mode = 'rid'
+    elif arg == '-c': arg_mode = 'cycle'
+    elif arg == '-e': arg_mode = 'ex_list'
+    elif arg == '-d': arg_mode = 'dn_list'
+    else:
+        if   arg_mode == 'rid'    : rid   = arg
+        elif arg_mode == 'cycle'  : cycle = int(arg)
+        elif arg_mode == 'ex_list': ex_list.append(arg)
+        elif arg_mode == 'dn_list': dn_list.append(arg)
+
+'''
+
         # write exchange algorithm to disk (once)
         self._ex_alg_file = './exchange_algorithm.py'
         with open(self._ex_alg_file, 'w') as fout:
-            fout.write('#!/usr/bin/env python\n\n%s\n\n%s()\n\n' %
+            fout.write('#!/usr/bin/env python\n\n%s\n\n%s\n\n%s(rid, cycle, ex_list, dn_list)\n\n' %
                        (inspect.getsource(self._ex_alg),
-                        self._ex_alg.__name__))
+                        ex_alg_pre, self._ex_alg.__name__))
 
 
     # --------------------------------------------------------------------------
@@ -161,6 +184,9 @@ class Exchange(re.AppManager):
                 ex_list, new_wlist = self._sel_alg(waitlist=self._waitlist,
                                                    criteria=self._sel_crit,
                                                    replica=replica)
+                self._log.debug('=== sel: %4d -> %4d + %4d = %4d',
+                        len(self._waitlist), len(ex_list), len(new_wlist),
+                        len(ex_list) + len(new_wlist))
             except Exception as e:
                 self._log.exception('selection algorithm failed: %s' % e)
 
@@ -168,7 +194,7 @@ class Exchange(re.AppManager):
             if not ex_list:
                 # nothing to do, suspend this replica and wait until we get more
                 # candidates and can try again
-                self._log.debug('%s %s no  - suspend', replica.rid, replica._uid)
+                self._log.debug('%5s %s no  - suspend', replica.rid, replica._uid)
                 replica.suspend()
                 self._dump()
                 return
@@ -193,13 +219,13 @@ class Exchange(re.AppManager):
             # lists are valid - use them
             self._waitlist = new_wlist
 
-            self._log.debug('%s %s yes - exchange', replica.rid, replica._uid)
+            self._log.debug('%5s %s yes - exchange', replica.rid, replica._uid)
             msg = " > %s: %s" % (replica.rid, [r.rid for r in ex_list])
             self._dump(msg=msg, special=ex_list, glyph='v')
 
             # we have a set of exchange candidates.  The current replica is
             # tasked to host the exchange task.
-            replica.add_ex_stage(ex_list, self._ex_alg_file)
+            replica.add_ex_stage(ex_list, self._ex_alg_file, self._ex_data)
 
 
     # --------------------------------------------------------------------------
@@ -207,7 +233,7 @@ class Exchange(re.AppManager):
     def _check_resume(self, replica):
 
         self._dump()
-        self._log.debug('%s %s check resume', replica.rid, replica._uid)
+        self._log.debug('%5s %s check resume', replica.rid, replica._uid)
 
         resumed = list()  # list of resumed replica IDs
 
@@ -225,7 +251,7 @@ class Exchange(re.AppManager):
             # Make sure we don't resume the current replica
             if replica.rid != _replica.rid:
 
-                self._log.debug('%s %s resume', _replica.rid, replica._uid)
+                self._log.debug('%5s %s resume', _replica.rid, replica._uid)
                 _replica.resume()
                 resumed.append(_replica.uid)
 

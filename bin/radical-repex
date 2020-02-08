@@ -82,7 +82,7 @@ if __name__ == '__main__':
     # create the required number of replicas
     replicas = list()
     for i in range(wl['replicas']):
-        properties = {'rid'  : i,
+        properties = {'rid'  : 'rep.%04d' % i,
                       'temp' : 123.45 + float(i / 10),
                       'foo'  : 'bar'}
         replica = rr.Replica(workload=wl, properties=properties)
