@@ -3,21 +3,22 @@
 
 # ------------------------------------------------------------------------------
 #
-def exchange_by_random(rid, cycle, ex_list, dn_list):
+def exchange_by_random(rid, cycle, ex_list, ex_data):
     '''
     We expect the following arguments:
 
       - ID of replica running this script
       - current cycle number
       - list of replica IDs in the exchange list
-      - list of file basenames to exchange on
+      - list of filename patterns (containing `%(rid)s`)
 
     We select random pairs of replicas from the replica list and pairwise
-    exchange the file content of their `dn_list`.
+    exchange the file content of their `mdin` and `inpcrd` files
     '''
 
     import random
     random.shuffle(ex_list)
+
     while len(ex_list) >= 2:
 
         a = ex_list.pop()
@@ -25,9 +26,10 @@ def exchange_by_random(rid, cycle, ex_list, dn_list):
 
         print('%s [%04d]: %s <-> %s' % (rid, cycle, a, b))
 
-        for dn in dn_list:
-            fa = 'repex.%s.%s' % (a, dn)
-            fb = 'repex.%s.%s' % (b, dn)
+        for dname in ex_data:
+
+            fa = dname % {'rid': a}
+            fb = dname % {'rid': b}
 
             print(' %s <-> %s' % (fa, fb))
 

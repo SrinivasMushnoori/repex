@@ -4,49 +4,7 @@ import os
 import sys
 
 import radical.utils as ru
-import radical.repex as rr
-
-
-# ------------------------------------------------------------------------------
-#
-def writeInputs(wl):
-
-    try:
-        os.makedirs('inputs/')
-    except OSError:
-        pass
-
-    inputs = list()
-    nreps  = wl['replicas']
-    nsteps = wl['timesteps']
-    bname  = wl['basename']
-    tmin   = wl['min_temp']
-    tmax   = wl['max_temp']
-    tstep  = (tmax - tmin) / nreps
-
-    inputs.append('%s/prmtop' % bname)
-
-    for i in range(nreps):
-
-        print('create inputs for replica %d' % i)
-
-        temp = tmin + i * tstep
-
-        with open('%s/mdin' % bname, 'r') as fin:
-            tbuffer  = fin.read()
-            tbuffer  = tbuffer.replace('@temperature@', str(temp))
-            tbuffer  = tbuffer.replace('@timesteps@',   str(nsteps))
-
-        fname = 'inputs/mdin-%d' % i
-        with open(fname, 'w') as fout:
-            fout.write(tbuffer)
-
-        inputs.append(fname)
-
-        os.system('cp %s/inpcrd %s/inpcrd-%d' % (bname, bname, i))
-        inputs.append('%s/inpcrd-%d'          % (bname, i))
-
-    return inputs
+import radical.repex as rx
 
 
 # ------------------------------------------------------------------------------
@@ -73,27 +31,8 @@ if __name__ == '__main__':
     wl = ru.read_json(sys.argv[1])
     rs = ru.read_json(sys.argv[2])
 
-    # prepare input for all replicas
-    inputs = writeInputs(wl)
-
-    # specify what data to fetch after completion
-    outputs = ['staging_area/inpcrd-0-*', 'staging_area/mdcrd-0-*']
-
-    # create the required number of replicas
-    replicas = list()
-    for i in range(wl['replicas']):
-        properties = {'rid'  : 'rep.%04d' % i,
-                      'temp' : 123.45 + float(i / 10),
-                      'foo'  : 'bar'}
-        replica = rr.Replica(workload=wl, properties=properties)
-        replicas.append(replica)
-
     # create and run the replica exchange ensemble
-    exchange = rr.Exchange(replicas=replicas,
-                           replica_cycles=wl['cycles'],
-                           selection_criteria=wl['criteria'],
-                           inputs=inputs,
-                           outputs=outputs,
+    exchange = rx.Exchange(workload=wl,
                            resource=rs)
     exchange.run()
     exchange.terminate()
