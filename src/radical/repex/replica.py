@@ -74,7 +74,7 @@ class Replica(re.Pipeline):
 
     # --------------------------------------------------------------------------
     #
-    def add_md_stage(self, exchanged_from=None, sid=None):
+    def add_md_stage(self, exchanged_from=None, sid=None, last=False):
 
         self._cycle += 1
         self._log.debug('%5s %s add md', self.rid, self._uid)
@@ -93,28 +93,32 @@ class Replica(re.Pipeline):
         if self._cycle == 0:
             # link initial data
             link_inputs += expand_ln(self._workload.md.inputs_0,
-                                     'pilot:///%s' % self._workload.data.inputs,
-                                     'unit:///', self.rid, self.cycle)
+                         'pilot:///%s' % self._workload.data.inputs,
+                         'unit:///', self.rid, self.cycle)
         else:
 
             # get data from previous task
             t = last_task(self)
             if exchanged_from:
-                print('===========================================')
-                print(exchanged_from)
                 link_inputs += expand_ln(self._workload.md.ex_2_md,
                         'resource:///%s/pilot.0000/%s' % (sid, exchanged_from),
                         'unit:///', self.rid, self.cycle)
             else:
+                # FIXME: this apparently can't happen
                 link_inputs += expand_ln(self._workload.md.md_2_md,
-                                         t.sandbox,
-                                         'unit:///', self.rid, self.cycle)
+                         'resource:///%s/pilot.0000/%s' % (sid, t.sandbox),
+                         'unit:///', self.rid, self.cycle)
 
         copy_outputs = expand_ln(self._workload.md.outputs,
-                                 'unit:///',
-                               # 'client:///%s' % self._workload.data.ouputs,
-                                 self._workload.data.ouputs,
-                                 self.rid, self.cycle)
+                         'unit:///',
+                         'client:///%s' % self._workload.data.outputs,
+                         self.rid, self.cycle)
+
+        if last:
+            copy_outputs += expand_ln(self._workload.md.outputs_n,
+                         'unit:///',
+                         'client:///%s' % self._workload.data.outputs,
+                         self.rid, self.cycle)
 
         td['link_input_data']      = link_inputs
         td['download_output_data'] = copy_outputs

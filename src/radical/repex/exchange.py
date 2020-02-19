@@ -244,8 +244,9 @@ class Exchange(re.AppManager):
         for _replica in replica.exchange_list:
 
             if _replica.cycle <= self._cycles:
+                last = bool(_replica.cycle == self._cycles)
                 _replica.add_md_stage(exchanged_from=exchange_sbox,
-                                      sid=self.sid)
+                                      sid=self.sid, last=last)
 
             # Make sure we don't resume the current replica
             if replica.rid != _replica.rid:

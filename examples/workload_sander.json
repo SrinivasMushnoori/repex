@@ -54,6 +54,7 @@
                             "inpcrd.%(rid)s > inpcrd"],
 
       # # linked from cycle n to cycle n+1
+      # # FIXME: apparently this cannot happen
       # #                    cycle n-1      > cycle n
       # "md_2_md"        : ["mdin           > mdin",
       #                     "outcrd         > inpcrd"],
@@ -64,8 +65,8 @@
         # FIXME: not enacted yet
         "outputs"        : ["outcrd         > outcrd.%(rid)s.%(cycle)04d"],
 
-      # # only staged back from last cycle (n/a)
-      # "outputs_n"      : ["outcrd         > outcrd.%(rid)s.last"]
+        # only staged back from last cycle (n/a)
+        "outputs_n"      : ["outcrd         > outcrd.%(rid)s.last"]
     },
 
     "selection" : {
