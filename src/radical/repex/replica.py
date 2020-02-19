@@ -90,6 +90,11 @@ class Replica(re.Pipeline):
 
         link_inputs = list()
 
+        # link initial data
+        link_inputs += expand_ln(self._workload.md.inputs,
+                     'pilot:///%s' % self._workload.data.inputs,
+                     'unit:///', self.rid, self.cycle)
+
         if self._cycle == 0:
             # link initial data
             link_inputs += expand_ln(self._workload.md.inputs_0,
