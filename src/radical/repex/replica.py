@@ -131,6 +131,10 @@ class Replica(re.Pipeline):
         for k,v in td.items():
             setattr(task, k, v)
 
+        if self._workload.pre_exec:
+            if task.pre_exec: task.pre_exec.extend  (self._workload.pre_exec)
+            else            : task.pre_exec.extend = self._workload.pre_exec
+
         task.name    = '%s.%04d.md' % (self.rid, self.cycle)
         task.sandbox = '%s.%04d.md' % (self.rid, self.cycle)
 
@@ -167,6 +171,9 @@ class Replica(re.Pipeline):
         task.arguments  = [ex_alg, '-r', self.rid, '-c', self.cycle] \
                         + ['-e'] + [r.rid for r in exchange_list] \
                         + ['-d'] + [d for d in self._workload.exchange.ex_data]
+
+        if self._workload.pre_exec:
+            task.pre_exec = self._workload.pre_exec
 
         # link alg
         link_inputs = ['pilot:///%s/%s' % (self._workload.data.inputs, ex_alg)]

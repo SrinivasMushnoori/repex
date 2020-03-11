@@ -5,7 +5,8 @@
 
     "resource" : "local.localhost",
     "walltime" : 10,
-    "cpus"     : 128
+    "cpus"     : 128,
+    "pre_exec" : ['module load python']
 }
 
 

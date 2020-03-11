@@ -34,6 +34,9 @@ class Exchange(re.AppManager):
         self._resource = ru.Config(cfg=resource)
         self._replicas = replicas
 
+        # the replicas need to be aware about pre_exec directives
+        self._workload.pre_exec = self._resource.pre_exec
+
         assert(self._workload.config.replicas or self._replicas)
         assert(self._workload.config.cycles)
 
@@ -87,6 +90,7 @@ class Exchange(re.AppManager):
         rd = copy.deepcopy(self._resource)
         if 'rmq_host' in rd: del(rd['rmq_host'])
         if 'rmq_port' in rd: del(rd['rmq_port'])
+        if 'pre_exec' in rd: del(rd['pre_exec'])
 
         self.resource_desc = rd
 
