@@ -21,7 +21,7 @@ Example files can be found at: https://github.com/SrinivasMushnoori/repex.gmx/tr
 To run::
 
 
-    repex workload_gmx.json resource_local.json
+    radical-epex workload_gmx.json resource_local.json
 
 Ensure that you have the simulation files ready/prepared. 
 
