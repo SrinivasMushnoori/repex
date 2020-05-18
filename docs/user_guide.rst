@@ -23,7 +23,7 @@ The Simulation configuration file looks like::
 
 
 
-``{
+    {
     "config" : {
         # parameters for ensemble creation and execution. Self explanatory.
         "min_temp"       : 300,
@@ -118,8 +118,8 @@ The Simulation configuration file looks like::
                             "outcrd.gro  > outcrd.gro.%(rid)s"],
         # exchange happens on these
         "ex_data"        : ["outcrd.gro.%(rid)s"]
+        }
     }
-}``
 
 
 
@@ -152,14 +152,14 @@ RepEx provides an interface that enables the user to write their own exchange me
 The Resource configuration file specifies the target resource configuration::
 
 
-``{
+    {
     "rmq_host" : "localhost",
     "rmq_port" : 32769,
 
     "resource" : "local.localhost",
     "walltime" : 2880,
     "cpus"     : 8
-}``
+    }
 
 
 There are three mandatory keys here: ``resource`` , ``walltime`` and ``cpus`` . 
