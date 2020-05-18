@@ -23,7 +23,7 @@ The Simulation configuration file looks like::
 
 
 
-``{
+    {
     "config" : {
         # parameters for ensemble creation and execution. Self explanatory.
         "min_temp"       : 300,
@@ -118,8 +118,8 @@ The Simulation configuration file looks like::
                             "outcrd.gro  > outcrd.gro.%(rid)s"],
         # exchange happens on these
         "ex_data"        : ["outcrd.gro.%(rid)s"]
+        }
     }
-}``
 
 
 
@@ -152,14 +152,14 @@ RepEx provides an interface that enables the user to write their own exchange me
 The Resource configuration file specifies the target resource configuration::
 
 
-``{
+    {
     "rmq_host" : "localhost",
     "rmq_port" : 32769,
 
     "resource" : "local.localhost",
     "walltime" : 2880,
     "cpus"     : 8
-}``
+    }
 
 
 There are three mandatory keys here: ``resource`` , ``walltime`` and ``cpus`` . 
@@ -179,7 +179,7 @@ There are two components to this method: (i) reading the energy files, and (ii) 
 
 Below we see lines 115-130 the ``exchange_algorithm.py``  method, where reading the appropriate energy files is spcified.::
 
-``
+
     ######---------------THIS section reads energy files, edit appropriately for your MD engine of choice----------------------------------
 
         for fname in glob.glob('mdinfo*'):
@@ -195,20 +195,17 @@ Below we see lines 115-130 the ``exchange_algorithm.py``  method, where reading 
                     elif "EPtot" in lines[i]:
                         pot_eng = float(lines[i].split()[8])
                         energies.append(pot_eng)
-``
+
 
 Next, to find exchange pairs, we must first generate the swap matrix:
 
-``        swap_matrix = [[ 0. for j in range(replicas)] for i in range(replicas)]
-
-        for i in range(replicas):
-            for j in range(replicas):      
-                swap_matrix[i][j] = reduced_potential(temperatures[j], energies[i])
-        #print swap_matrix
+    swap_matrix = [[ 0. for j in range(replicas)] for i in range(replicas)]
+    for i in range(replicas):
+        for j in range(replicas):      
+            swap_matrix[i][j] = reduced_potential(temperatures[j], energies[i])
         return swap_matrix
-
-    swap_matrix=build_swap_matrix(replicas)
-    ``
+ 
+    
 
 The swap matrix is then employed by the ``gibbs_exchange`` function to determine exchange pairs. This may be modified depending on the flavour of replica exchange the user wishes to perform. A full description of the mathematics involved is beyond the scope of this doncumentation.
 
