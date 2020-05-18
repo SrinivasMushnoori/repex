@@ -200,12 +200,10 @@ Below we see lines 115-130 the ``exchange_algorithm.py``  method, where reading 
 Next, to find exchange pairs, we must first generate the swap matrix:
 
     swap_matrix = [[ 0. for j in range(replicas)] for i in range(replicas)]
-    
     for i in range(replicas):
         for j in range(replicas):      
             swap_matrix[i][j] = reduced_potential(temperatures[j], energies[i])
         return swap_matrix
-
  
     
 
