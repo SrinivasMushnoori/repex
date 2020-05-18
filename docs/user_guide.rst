@@ -179,7 +179,7 @@ There are two components to this method: (i) reading the energy files, and (ii) 
 
 Below we see lines 115-130 the ``exchange_algorithm.py``  method, where reading the appropriate energy files is spcified.::
 
-``
+
     ######---------------THIS section reads energy files, edit appropriately for your MD engine of choice----------------------------------
 
         for fname in glob.glob('mdinfo*'):
@@ -195,11 +195,11 @@ Below we see lines 115-130 the ``exchange_algorithm.py``  method, where reading 
                     elif "EPtot" in lines[i]:
                         pot_eng = float(lines[i].split()[8])
                         energies.append(pot_eng)
-``
+
 
 Next, to find exchange pairs, we must first generate the swap matrix:
 
-``        swap_matrix = [[ 0. for j in range(replicas)] for i in range(replicas)]
+        swap_matrix = [[ 0. for j in range(replicas)] for i in range(replicas)]
 
         for i in range(replicas):
             for j in range(replicas):      
@@ -208,7 +208,7 @@ Next, to find exchange pairs, we must first generate the swap matrix:
         return swap_matrix
 
     swap_matrix=build_swap_matrix(replicas)
-    ``
+    
 
 The swap matrix is then employed by the ``gibbs_exchange`` function to determine exchange pairs. This may be modified depending on the flavour of replica exchange the user wishes to perform. A full description of the mathematics involved is beyond the scope of this doncumentation.
 
