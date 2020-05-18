@@ -199,15 +199,14 @@ Below we see lines 115-130 the ``exchange_algorithm.py``  method, where reading 
 
 Next, to find exchange pairs, we must first generate the swap matrix:
 
-        swap_matrix = [[ 0. for j in range(replicas)] for i in range(replicas)]
-
-        for i in range(replicas):
-            for j in range(replicas):      
-                swap_matrix[i][j] = reduced_potential(temperatures[j], energies[i])
-        #print swap_matrix
+    swap_matrix = [[ 0. for j in range(replicas)] for i in range(replicas)]
+    
+    for i in range(replicas):
+        for j in range(replicas):      
+            swap_matrix[i][j] = reduced_potential(temperatures[j], energies[i])
         return swap_matrix
 
-    swap_matrix=build_swap_matrix(replicas)
+ 
     
 
 The swap matrix is then employed by the ``gibbs_exchange`` function to determine exchange pairs. This may be modified depending on the flavour of replica exchange the user wishes to perform. A full description of the mathematics involved is beyond the scope of this doncumentation.
