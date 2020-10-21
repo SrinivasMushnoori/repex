@@ -7,10 +7,12 @@ import inspect
 import radical.entk  as re
 import radical.utils as ru
 
-from .algorithms import selection_algs, exchange_algs, prepare_algs
-from .algorithms import exchange_alg_prefix
-from .replica    import Replica
-from .utils      import last_task
+from   .algorithms import selection_algs, exchange_algs, prepare_algs
+from   .algorithms import exchange_alg_prefix
+from   .replica    import Replica
+from   .utils      import last_task
+
+import .states as rxs
 
 
 # ------------------------------------------------------------------------------
