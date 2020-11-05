@@ -25,7 +25,7 @@
                              "-c", "inpcrd.gro",
                              "-o", "sys.tpr",
                              "-p", "sys.top"
-                           ],
+                           ], 
         "cpu_reqs"       : {"processes"          : 1,
                             "threads_per_process": 1,
                             "thread_type"        : null,
@@ -43,7 +43,7 @@
 
         "inputs_0"       : ["inpcrd.gro.%(rid)s > inpcrd.gro"],
 
-        "outputs"        : ["mdout.mdp > mdout.mdp.%(rid)s",
+        "outputs"        : ["mdout.mdp > mdout.mdp.%(rid)s", # Unsure why there are two instances of this as "outputs" and "outputs_n"
                             "sys.tpr   > sys.tpr.%(rid)s"],
 
         "outputs_n"      : ["mdout.mdp > mdout.mdp.%(rid)s",
@@ -58,9 +58,9 @@
                             "-e",      "sys.edr"
 
                            ],
-        "cpu_reqs"       : {"processes"          : 1,
+        "cpu_reqs"       : {"processes"          : 4,  # 1 core only if single core run. 
                             "threads_per_process": 1,
-                            "thread_type"        : null,
+                            "thread_type"        : MPI, 
                             "process_type"       : null
                            },
         "pre_exec"       : ["module purge",
@@ -102,7 +102,7 @@
                             "module load gromacs/2018_cpu"
                             ],
         
-        "inputs"         : ["inpcrd.gro.%(rid)s > inpcrd.gro",
+        "inputs"         : ["inpcrd.gro.%(rid)s > inpcrd.gro",   #This is a lot of unnecessary file movement, but it'll work for testing at least.
                             "martini_v2.2.itp.%(rid)s > martini_v2.2.itp",
                             "mdin.mdp.%(rid)s > mdin.mdp",
                             "mdout.mdp.%(rid)s > mdout.mdp",
