@@ -87,21 +87,22 @@ class Replica(re.Pipeline):
         # TODO: filter out custom keys from that dict
         td   = ru.expand_env(copy.deepcopy(self._workload['md']), env=env)
         num_tasks = len(td)
-        for i in range(num_tasks)
-        `    task = re.Task()
+        for i in range(num_tasks):
+            
+            task = re.Task(from_dict=td[i])
 
             link_inputs = list()
 
             # link initial data
-            link_inputs += expand_ln(self._workload.md.inputs,
+            link_inputs += expand_ln(td[i]['inputs'],
                         'pilot:///%s' % self._workload.data.inputs,
-                        'unit:///', self.rid, self.cycle)
+                        'unit:///', self.rid, self._cycle, i)
 
             if self._cycle == 0:
                 # link initial data
                 link_inputs += expand_ln(self._workload.md.inputs_0,
                             'pilot:///%s' % self._workload.data.inputs,
-                            'unit:///', self.rid, self.cycle)
+                            'unit:///', self.rid, self.cycle, i)
             else:
 
                 # get data from previous task
@@ -137,8 +138,8 @@ class Replica(re.Pipeline):
                 if task.pre_exec: task.pre_exec.extend  (self._workload.pre_exec)
                 else            : task.pre_exec.extend = self._workload.pre_exec
 
-            task.name    = '%s.%04d.md' % (self.rid, self.cycle)
-            task.sandbox = '%s.%04d.md' % (self.rid, self.cycle)
+            task.name    = '%s.%04d.md' % (self.rid, self.cycle, i)
+            task.sandbox = '%s.%04d.md' % (self.rid, self.cycle, i)
 
             self._log.debug('%5s add md: %s', self.rid, task.name)
 
@@ -150,7 +151,6 @@ class Replica(re.Pipeline):
                 stage.post_exec = self.check_exchange
 
             self.add_stages(stage)
-`
 
     # --------------------------------------------------------------------------
     #

@@ -18,111 +18,78 @@
         "basename"       : "FF"
     },
 
-    "md" : [{
-        "executable"     : "gmx_mpi",
-        "arguments"      : [ "grompp",
-                             "-f", "mdin.mdp",
-                             "-c", "inpcrd.gro",
-                             "-o", "sys.tpr",
-                             "-p", "sys.top"
-                           ], 
-        "cpu_reqs"       : {"processes"          : 1,
-                            "threads_per_process": 1,
-                            "thread_type"        : null,
-                            "process_type"       : null
-                           },
-        "pre_exec"       : ["module purge",
-                            "module load intel/19.3",
-                            "module load gromacs/2018_cpu"
-                            ],
+    "md" : {"inputs" : ["mdin.mdp.%(rid)s > mdin.mdp",
+                        "sys.top          > sys.top",
+                        "sys.itp          > sys.itp",
+                        "inp.ener         > inp.ener",
+                        "martini_v2.2.itp > martini_v2.2.itp"],
 
-        "inputs"         : ["mdin.mdp.%(rid)s > mdin.mdp",
-                            "sys.top          > sys.top",
-                            "sys.itp          > sys.itp",
-                            "martini_v2.2.itp > martini_v2.2.itp"],
+            # only linked for cycle 0
+            #                    inputs         > cycle 0
+            "inputs_0": ["inpcrd.gro.%(rid)s > inpcrd.gro"],
+            "ex_2_md"        : ["outcrd.gro.%(rid)s > inpcrd.gro"],
 
-        "inputs_0"       : ["inpcrd.gro.%(rid)s > inpcrd.gro"],
+            # stage back output from all cycles
+            # FIXME: not enacted yet
+            "outputs"        : ["outcrd.gro         > outcrd.gro.%(rid)s.%(cycle)04d"],
+    
+            # only staged back from last cycle (n/a)
+            "outputs_n"      : ["outcrd.gro         > outcrd.gro.%(rid)s.last"]
+           "something": [{ "executable"     : "gmx_mpi",
+                           "arguments"      : [ "grompp",
+                                                "-f", "mdin.mdp",
+                                                "-c", "inpcrd.gro",
+                                                "-o", "sys.tpr",
+                                                "-p", "sys.top"
+                                              ], 
+                           "cpu_reqs"       : {"processes"          : 1,
+                                               "threads_per_process": 1,
+                                               "thread_type"        : null,
+                                               "process_type"       : null
+                                              },
+                           "pre_exec"       : ["module purge",
+                                               "module load intel/19.3",
+                                               "module load gromacs/2018_cpu"
+                                               ],
+                   
+                          },
+                          {
+                            "executable"     : "gmx_mpi",
+                            "arguments"      : [ "mdrun",
+                                                "-s",      "sys.tpr", 
+                                                "-deffnm", "sys", 
+                                                "-c",      "outcrd.gro", 
+                                                "-e",      "sys.edr"
 
-        "outputs"        : ["mdout.mdp > mdout.mdp.%(rid)s", # Unsure why there are two instances of this as "outputs" and "outputs_n"
-                            "sys.tpr   > sys.tpr.%(rid)s"],
-
-        "outputs_n"      : ["mdout.mdp > mdout.mdp.%(rid)s",
-                            "sys.tpr   > sys.tpr.%(rid)s"]
-    },
-    {
-        "executable"     : "gmx_mpi",
-        "arguments"      : [ "mdrun",
-                            "-s",      "sys.tpr", 
-                            "-deffnm", "sys", 
-                            "-c",      "outcrd.gro", 
-                            "-e",      "sys.edr"
-
-                           ],
-        "cpu_reqs"       : {"processes"          : 4,  # 1 core only if single core run. 
-                            "threads_per_process": 1,
-                            "thread_type"        : MPI, 
-                            "process_type"       : null
-                           },
-        "pre_exec"       : ["module purge",
-                            "module load intel/19.3",
-                            "module load gromacs/2018_cpu"
-                            ],
-        
-        "inputs"         : ["mdin.mdp.%(rid)s  > mdin.mdp",
-                            "mdout.mdp.%(rid)s > mdout.mdp",
-                            "sys.tpr.%(rid)s   > sys.tpr",
-                            "sys.top           > sys.top",
-                            "sys.itp           > sys.itp",
-                            "martini_v2.2.itp  > martini_v2.2.itp"],
-
-        "inputs_0"       : ["inpcrd.gro.%(rid)s > inpcrd.gro"],
-
-        # This output is passed from the last task
-        ## "ex_2_md"        : ["outcrd.gro.%(rid)s > inpcrd.gro"],
-
-        "outputs"        : ["outcrd.gro         > outcrd.gro.%(rid)s.%(cycle)04d"],
-
-        "outputs_n"      : ["outcrd.gro         > outcrd.gro.%(rid)s.last"]
-    },
-    {
-        "executable"     : "gmx_mpi",
-        "arguments"      : [ "energy",
-                            "-f", "sys.edr", 
-                            "-b", 0.25, 
-                            "<", "inp.ener", ">", 
-                            "mdinfo"
-                           ],
-        "cpu_reqs"       : {"processes"          : 1,
-                            "threads_per_process": 1,
-                            "thread_type"        : null,
-                            "process_type"       : null
-                           },
-        "pre_exec"       : ["module purge",
-                            "module load intel/19.3",
-                            "module load gromacs/2018_cpu"
-                            ],
-        
-        "inputs"         : ["inpcrd.gro.%(rid)s > inpcrd.gro",   #This is a lot of unnecessary file movement, but it'll work for testing at least.
-                            "martini_v2.2.itp.%(rid)s > martini_v2.2.itp",
-                            "mdin.mdp.%(rid)s > mdin.mdp",
-                            "mdout.mdp.%(rid)s > mdout.mdp",
-                            "outcrd.gro.%(rid)s > outcrd.gro",
-                            "sys.cpt.%(rid)s > sys.cpt",
-                            "sys.edr.%(rid)s > sys.edr",
-                            "sys.itp.%(rid)s > sys.itp",
-                            "sys.log.%(rid)s > sys.log",
-                            "sys.top.%(rid)s > sys.top",
-                            "sys.tpr.%(rid)s > sys.tpr",
-                            "sys.xtc.%(rid)s > sys.xtc"],
-
-        "inputs_0"       : ["inpcrd.gro.%(rid)s > inpcrd.gro"],
-
-        "ex_2_md"        : ["outcrd.gro.%(rid)s > inpcrd.gro"],
-
-        "outputs"        : ["outcrd.gro         > outcrd.gro.%(rid)s.%(cycle)04d"],
-
-        "outputs_n"      : ["outcrd.gro         > outcrd.gro.%(rid)s.last"]
-    }],
+                                            ],
+                            "cpu_reqs"       : {"processes"          : 4,
+                                                "threads_per_process": 1,
+                                                "thread_type"        : "MPI", 
+                                                "process_type"       : null
+                                            },
+                            "pre_exec"       : ["module purge",
+                                                "module load intel/19.3",
+                                                "module load gromacs/2018_cpu"
+                                                ],
+                        },
+                        {
+                            "executable"     : "gmx_mpi",
+                            "arguments"      : [ "energy",
+                                                "-f", "sys.edr", 
+                                                "-b", 0.25, 
+                                                "<", "inp.ener", ">", 
+                                                "mdinfo"
+                                            ],
+                            "cpu_reqs"       : {"processes"          : 1,
+                                                "threads_per_process": 1,
+                                                "thread_type"        : null,
+                                                "process_type"       : null
+                                            },
+                            "pre_exec"       : ["module purge",
+                                                "module load intel/19.3",
+                                                "module load gromacs/2018_cpu"
+                                                ],
+                        }]},
 
     "selection" : {
         "algorithm"      : "algorithm_select_all.py:select_replicas_all",
