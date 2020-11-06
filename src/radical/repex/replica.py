@@ -86,71 +86,70 @@ class Replica(re.Pipeline):
                }
         # TODO: filter out custom keys from that dict
         td   = ru.expand_env(copy.deepcopy(self._workload['md']), env=env)
-        num_tasks = len(td)
-        for i in range(num_tasks):
-            
-            task = re.Task(from_dict=td[i])
+        sandbox = = '%s.%04d.md' % (self.rid, self.cycle)
+        link_inputs = list()
 
-            link_inputs = list()
+        # link initial data
+        link_inputs += expand_ln(self._workload.md.inputs,
+                     'pilot:///%s' % self._workload.data.inputs,
+                     sandbox, self.rid, self.cycle)
 
+        if self._cycle == 0:
             # link initial data
-            link_inputs += expand_ln(td[i]['inputs'],
-                        'pilot:///%s' % self._workload.data.inputs,
-                        'unit:///', self.rid, self._cycle, i)
+            link_inputs += expand_ln(self._workload.md.inputs_0,
+                         'pilot:///%s' % self._workload.data.inputs,
+                         sandbox, self.rid, self.cycle)
+        else:
 
-            if self._cycle == 0:
-                # link initial data
-                link_inputs += expand_ln(self._workload.md.inputs_0,
-                            'pilot:///%s' % self._workload.data.inputs,
-                            'unit:///', self.rid, self.cycle, i)
+            # get data from previous task
+            t = last_task(self)
+            if exchanged_from:
+                link_inputs += expand_ln(self._workload.md.ex_2_md,
+                        'resource:///%s/pilot.0000/%s' % (sid, exchanged_from),
+                        sandbox, self.rid, self.cycle)
             else:
+                # FIXME: this apparently can't happen
+                link_inputs += expand_ln(self._workload.md.md_2_md,
+                         'resource:///%s/pilot.0000/%s' % (sid, t.sandbox),
+                         sandbox, self.rid, self.cycle)
 
-                # get data from previous task
-                t = last_task(self)
-                if exchanged_from:
-                    link_inputs += expand_ln(self._workload.md.ex_2_md,
-                            'resource:///%s/pilot.0000/%s' % (sid, exchanged_from),
-                            'unit:///', self.rid, self.cycle)
-                else:
-                    # FIXME: this apparently can't happen
-                    link_inputs += expand_ln(self._workload.md.md_2_md,
-                            'resource:///%s/pilot.0000/%s' % (sid, t.sandbox),
-                            'unit:///', self.rid, self.cycle)
+        copy_outputs = expand_ln(self._workload.md.outputs,
+                         sandbox,
+                         'client:///%s' % self._workload.data.outputs,
+                         self.rid, self.cycle)
 
-            copy_outputs = expand_ln(self._workload.md.outputs,
-                            'unit:///',
-                            'client:///%s' % self._workload.data.outputs,
-                            self.rid, self.cycle)
+        if last:
+            copy_outputs += expand_ln(self._workload.md.outputs_n,
+                         sandbox,
+                         'client:///%s' % self._workload.data.outputs,
+                         self.rid, self.cycle)
 
-            if last:
-                copy_outputs += expand_ln(self._workload.md.outputs_n,
-                            'unit:///',
-                            'client:///%s' % self._workload.data.outputs,
-                            self.rid, self.cycle)
-
-            td['link_input_data']      = link_inputs
-            td['download_output_data'] = copy_outputs
-
-            for k,v in td.items():
+        # td['link_input_data']      = link_inputs
+        # td['download_output_data'] = copy_outputs
+        sandbox = = '%s.%04d.md' % (self.rid, self.cycle)
+        for i in range(len(td['something'])):
+            task = Task()
+            
+            for k,v in td['something'][i].items():
                 setattr(task, k, v)
 
             if self._workload.pre_exec:
                 if task.pre_exec: task.pre_exec.extend  (self._workload.pre_exec)
                 else            : task.pre_exec.extend = self._workload.pre_exec
 
-            task.name    = '%s.%04d.md' % (self.rid, self.cycle, i)
-            task.sandbox = '%s.%04d.md' % (self.rid, self.cycle, i)
-
+            task.name = '%s.%04d.%04d.md' % (self.rid, self.cycle, i)
+            task.sandbox = sandbox
+            stage = re.Stage()
+            if i == 0:
+                task.link_input_data = link_inputs
+            elif i == len(td['something']) - 1:
+                task.download_output_data = copy_outputs
+                stage.post_exec = self.check_exchange
             self._log.debug('%5s add md: %s', self.rid, task.name)
 
-            stage = re.Stage()
             stage.add_tasks(task)
-            # When we reach the last stage, we need to check if an exchange is
-            # needed
-            if i == num_tasks - 1:
-                stage.post_exec = self.check_exchange
-
             self.add_stages(stage)
+
 
     # --------------------------------------------------------------------------
     #
@@ -220,4 +219,3 @@ class Replica(re.Pipeline):
 
 
 # ------------------------------------------------------------------------------
-

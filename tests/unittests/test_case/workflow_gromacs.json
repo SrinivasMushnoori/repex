@@ -45,7 +45,7 @@
                            "cpu_reqs"       : {"processes"          : 1,
                                                "threads_per_process": 1,
                                                "thread_type"        : null,
-                                               "process_type"       : null
+                                               "process_type"       : "MPI"
                                               },
                            "pre_exec"       : ["module purge",
                                                "module load intel/19.3",
@@ -64,8 +64,8 @@
                                             ],
                             "cpu_reqs"       : {"processes"          : 4,
                                                 "threads_per_process": 1,
-                                                "thread_type"        : "MPI", 
-                                                "process_type"       : null
+                                                "thread_type"        : null, 
+                                                "process_type"       : "MPI"
                                             },
                             "pre_exec"       : ["module purge",
                                                 "module load intel/19.3",
@@ -83,7 +83,7 @@
                             "cpu_reqs"       : {"processes"          : 1,
                                                 "threads_per_process": 1,
                                                 "thread_type"        : null,
-                                                "process_type"       : null
+                                                "process_type"       : "MPI"
                                             },
                             "pre_exec"       : ["module purge",
                                                 "module load intel/19.3",
