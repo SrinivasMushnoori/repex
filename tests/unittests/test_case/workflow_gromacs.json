@@ -35,13 +35,13 @@
     
             # only staged back from last cycle (n/a)
             "outputs_n"      : ["outcrd.gro         > outcrd.gro.%(rid)s.last"]
-           "something": [{ "executable"     : "gmx_mpi",
-                           "arguments"      : [ "grompp",
-                                                "-f", "mdin.mdp",
-                                                "-c", "inpcrd.gro",
-                                                "-o", "sys.tpr",
-                                                "-p", "sys.top"
-                                              ], 
+            "description": [{ "executable"     : "gmx_mpi",
+                              "arguments"      : [ "grompp",
+                                                  "-f", "mdin.mdp",
+                                                  "-c", "inpcrd.gro",
+                                                  "-o", "sys.tpr",
+                                                  "-p", "sys.top"
+                                                ], 
                            "cpu_reqs"       : {"processes"          : 1,
                                                "threads_per_process": 1,
                                                "thread_type"        : null,
