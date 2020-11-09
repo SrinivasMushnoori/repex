@@ -1,8 +1,8 @@
 
 import copy
 
-import radical.entk  as re
 import radical.utils as ru
+import radical.entk  as re
 
 from .utils import expand_ln, last_task
 
@@ -102,7 +102,6 @@ class Replica(re.Pipeline):
                          'resource:///%s/pilot.0000/%s' % (sid, sandbox),
                          self.rid, self.cycle)
         else:
-
             # get data from previous task
             t = last_task(self)
             if exchanged_from:
@@ -113,7 +112,7 @@ class Replica(re.Pipeline):
             else:
                 # FIXME: this apparently can't happen
                 link_inputs += expand_ln(self._workload.md.md_2_md,
-                         'resource:///%s/pilot.0000/%s' % (sid, sandbox),
+                         'resource:///%s/pilot.0000/%s' % (sid, t.sandbox),
                          'resource:///%s/pilot.0000/%s' % (sid, sandbox),
                          self.rid, self.cycle)
 
@@ -131,7 +130,7 @@ class Replica(re.Pipeline):
         # td['link_input_data']      = link_inputs
         # td['download_output_data'] = copy_outputs
         for i in range(len(td['description'])):
-            task = Task()
+            task = re.Task()
             
             for k,v in td['description'][i].items():
                 setattr(task, k, v)

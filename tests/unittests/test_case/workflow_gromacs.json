@@ -34,7 +34,7 @@
             "outputs"        : ["outcrd.gro         > outcrd.gro.%(rid)s.%(cycle)04d"],
     
             # only staged back from last cycle (n/a)
-            "outputs_n"      : ["outcrd.gro         > outcrd.gro.%(rid)s.last"]
+            "outputs_n"      : ["outcrd.gro         > outcrd.gro.%(rid)s.last"],
             "description": [{ "executable"     : "gmx_mpi",
                               "arguments"      : [ "grompp",
                                                   "-f", "mdin.mdp",
@@ -50,7 +50,7 @@
                            "pre_exec"       : ["module purge",
                                                "module load intel/19.3",
                                                "module load gromacs/2018_cpu"
-                                               ],
+                                               ]
                    
                           },
                           {
@@ -70,7 +70,7 @@
                             "pre_exec"       : ["module purge",
                                                 "module load intel/19.3",
                                                 "module load gromacs/2018_cpu"
-                                                ],
+                                                ]
                         },
                         {
                             "executable"     : "gmx_mpi",
@@ -88,7 +88,7 @@
                             "pre_exec"       : ["module purge",
                                                 "module load intel/19.3",
                                                 "module load gromacs/2018_cpu"
-                                                ],
+                                                ]
                         }]},
 
     "selection" : {
