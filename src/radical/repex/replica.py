@@ -92,38 +92,38 @@ class Replica(re.Pipeline):
         # link initial data
         link_inputs += expand_ln(self._workload.md.inputs,
                      'pilot:///%s' % self._workload.data.inputs,
-                     'resource:///%s/pilot.0000/%s' % (sid, sandbox),
+                     'unit:///',
                      self.rid, self.cycle)
 
         if self._cycle == 0:
             # link initial data
             link_inputs += expand_ln(self._workload.md.inputs_0,
                          'pilot:///%s' % self._workload.data.inputs,
-                         'resource:///%s/pilot.0000/%s' % (sid, sandbox),
+                         'unit:///',
                          self.rid, self.cycle)
         else:
             # get data from previous task
             t = last_task(self)
             if exchanged_from:
                 link_inputs += expand_ln(self._workload.md.ex_2_md,
-                        'resource:///%s/pilot.0000/%s' % (sid, exchanged_from),
-                        'resource:///%s/pilot.0000/%s' % (sid, sandbox),
+                        'resource:///%s' % (exchanged_from),
+                        'unit:///',
                         self.rid, self.cycle)
             else:
                 # FIXME: this apparently can't happen
                 link_inputs += expand_ln(self._workload.md.md_2_md,
                          'resource:///%s/pilot.0000/%s' % (sid, t.sandbox),
-                         'resource:///%s/pilot.0000/%s' % (sid, sandbox),
+                         'unit:///',
                          self.rid, self.cycle)
 
         copy_outputs = expand_ln(self._workload.md.outputs,
-                         'resource:///%s/pilot.0000/%s' % (sid, sandbox),
+                         'unit:///',
                          'client:///%s' % self._workload.data.outputs,
                          self.rid, self.cycle)
 
         if last:
             copy_outputs += expand_ln(self._workload.md.outputs_n,
-                         'resource:///%s/pilot.0000/%s' % (sid, sandbox),
+                         'unit:///',
                          'client:///%s' % self._workload.data.outputs,
                          self.rid, self.cycle)
 
@@ -188,11 +188,12 @@ class Replica(re.Pipeline):
         for r in exchange_list:
 
             t = last_task(r)
+            self._log.debug('Last task path %s', t.path)
             link_inputs += expand_ln(self._workload.exchange.md_2_ex,
                                      # FIXME: how to get absolute task sbox?
                                      #        rep.0000.0000:/// ...
                                      #        i.e., use task ID as schema
-                                     'resource:///%s/pilot.0000/%s' % (sid, t.sandbox),
+                                     '%s' % t.path,
                                      'unit:///',
                                      r.rid, r.cycle)
 
@@ -200,8 +201,8 @@ class Replica(re.Pipeline):
 
         task.name    = '%s.%04d.ex' % (self.rid, self.cycle)
         task.sandbox = '%s.%04d.ex' % (self.rid, self.cycle)
-
-        self._log.debug('%5s add ex: %s', self.rid, task.name)
+        
+        self._log.debug('%5s added ex: %s, input data: %s', self.rid, task.name, task.link_input_data)
 
         stage = re.Stage()
         stage.add_tasks(task)
