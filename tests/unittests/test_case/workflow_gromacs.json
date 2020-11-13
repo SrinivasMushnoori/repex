@@ -42,13 +42,13 @@
                                                   "-o", "sys.tpr",
                                                   "-p", "sys.top"
                                                 ], 
-                           "cpu_reqs"       : {"processes"          : 1,
-                                               "threads_per_process": 1,
-                                               "thread_type"        : null,
-                                               "process_type"       : "MPI"
+                           "cpu_reqs"       : {"cpu_processes"    : 1,
+                                               "cpu_threads"      : 1,
+                                               "cpu_thread_type"  : null,
+                                               "cpu_process_type" : "MPI"
                                               },
                            "pre_exec"       : ["module purge",
-                                               "module load intel/19.3",
+                                               "module load intel/18.4",
                                                "module load gromacs/2018_cpu"
                                                ]
                    
@@ -62,13 +62,13 @@
                                                 "-e",      "sys.edr"
 
                                             ],
-                            "cpu_reqs"       : {"processes"          : 4,
-                                                "threads_per_process": 1,
-                                                "thread_type"        : null, 
-                                                "process_type"       : "MPI"
+                            "cpu_reqs"       : {"cpu_processes"    : 4,
+                                                "cpu_threads"      : 1,
+                                                "cpu_thread_type"  : null, 
+                                                "cpu_process_type" : "MPI"
                                             },
                             "pre_exec"       : ["module purge",
-                                                "module load intel/19.3",
+                                                "module load intel/18.4",
                                                 "module load gromacs/2018_cpu"
                                                 ]
                         },
@@ -80,13 +80,13 @@
                                                 "<", "inp.ener", ">", 
                                                 "mdinfo"
                                             ],
-                            "cpu_reqs"       : {"processes"          : 1,
-                                                "threads_per_process": 1,
-                                                "thread_type"        : null,
-                                                "process_type"       : "MPI"
+                            "cpu_reqs"       : {"cpu_processes"    : 1,
+                                                "cpu_threads"      : 1,
+                                                "cpu_thread_type"  : null,
+                                                "cpu_process_type" : "MPI"
                                             },
                             "pre_exec"       : ["module purge",
-                                                "module load intel/19.3",
+                                                "module load intel/18.4",
                                                 "module load gromacs/2018_cpu"
                                                 ]
                         }]},
