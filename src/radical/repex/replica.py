@@ -128,12 +128,10 @@ class Replica(re.Pipeline):
                          'client:///%s' % self._workload.data.outputs,
                          self.rid, self.cycle)
 
-        # td['link_input_data']      = link_inputs
-        # td['download_output_data'] = copy_outputs
-        for i in range(len(td['description'])):
+        for i, descr in enumerate(ru.as_list(td['description'])):
             task = re.Task()
             
-            for k,v in td['description'][i].items():
+            for k,v in descr.items():
                 setattr(task, k, v)
 
             if self._workload.pre_exec:
