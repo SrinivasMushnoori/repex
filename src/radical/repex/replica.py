@@ -34,7 +34,7 @@ class Replica(re.Pipeline):
         self._ex_list   = None  # list of replicas used in exchange step
 
         re.Pipeline.__init__(self)
-        self.name = 'p_%s' % self.rid
+        self.name = 'p.%s' % self.rid
         self._log = ru.Logger('radical.repex')
 
 
@@ -167,8 +167,8 @@ class Replica(re.Pipeline):
     #
     def add_ex_stage(self, exchange_list, ex_alg, sid):
 
-        self._log.debug('%5s add ex: %s', self.rid, [r.rid for r
-                                                           in  exchange_list])
+        self._log.debug('%5s add ex: %s', self.rid,
+                        [r.rid for r in exchange_list])
         self._ex_list = exchange_list
 
         task = re.Task()

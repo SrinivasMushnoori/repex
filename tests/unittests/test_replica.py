@@ -30,7 +30,7 @@ class TestTask(TestCase):
 
         pwd = os.path.dirname(os.path.abspath(__file__))
         wl_cfg = ru.read_json(pwd + '/test_case/workflow_gromacs.json')
-        workload =  ru.Config(cfg=wl_cfg)
+        workload = ru.Config(cfg=wl_cfg)
 
         test_rep = Replica(workload=workload)
 
@@ -102,9 +102,9 @@ class TestTask(TestCase):
 
         # Inserting second MD cycle
         ex_0 = Task()
-        ex_0.name = 'test_ex'
-        ex_0.sandbox = 'ex_0'
-        test_rep.add_md_stage(sid='test_sid', exchanged_from=ex_0)
+        ex_0.name = 'test.ex'
+        ex_0.sandbox = 'ex.0'
+        test_rep.add_md_stage(sid='test.sid', exchanged_from=ex_0)
         task0 = list(test_rep.stages[3].tasks)[0]
 
         self.assertEqual(task0.name, 'test.0001.0000.md')

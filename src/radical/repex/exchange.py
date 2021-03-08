@@ -79,7 +79,8 @@ class Exchange(re.AppManager):
         rmq_user = str(self._resource.get('rmq_user','guest'))
         rmq_pass = str(self._resource.get('rmq_pass','guest'))
         re.AppManager.__init__(self, autoterminate=True,
-                                     hostname=rmq_host, port=rmq_port, username=rmq_user, password=rmq_pass)
+                                     hostname=rmq_host, port=rmq_port,
+                                     username=rmq_user, password=rmq_pass)
 
         for r in self._replicas:
             r._initialize(check_ex=self._check_exchange,
