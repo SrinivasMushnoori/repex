@@ -47,10 +47,8 @@
                                                "cpu_thread_type"  : null,
                                                "cpu_process_type" : "MPI"
                                               },
-                           "pre_exec"       : ["module purge",
-                                               "module load intel/18.4",
-                                               "module load gromacs/2018_cpu"
-                                               ]
+                           "pre_exec"       : ["module load gromacs/2020.2-cpu",
+                                               "export GMX_MAXBACKUP=-1"]
                    
                           },
                           {
@@ -67,10 +65,8 @@
                                                 "cpu_thread_type"  : null, 
                                                 "cpu_process_type" : "MPI"
                                             },
-                            "pre_exec"       : ["module purge",
-                                                "module load intel/18.4",
-                                                "module load gromacs/2018_cpu"
-                                                ]
+                            "pre_exec"       : ["module load gromacs/2020.2-cpu",
+                                                "export GMX_MAXBACKUP=-1"]
                         },
                         {
                             "executable"     : "gmx_mpi",
@@ -85,10 +81,8 @@
                                                 "cpu_thread_type"  : null,
                                                 "cpu_process_type" : "MPI"
                                             },
-                            "pre_exec"       : ["module purge",
-                                                "module load intel/18.4",
-                                                "module load gromacs/2018_cpu"
-                                                ]
+                            "pre_exec"       : ["module load gromacs/2020.2-cpu",
+                                                "export GMX_MAXBACKUP=-1"]
                         }]},
 
     "selection" : {

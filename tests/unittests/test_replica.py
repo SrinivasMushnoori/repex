@@ -57,9 +57,8 @@ class TestTask(TestCase):
                                           'cpu_thread_type': None,
                                           'cpu_threads': 1})
         self.assertEqual(task0.executable, 'gmx_mpi')
-        self.assertEqual(task0.pre_exec, ['module purge',
-                                          'module load intel/18.4',
-                                          'module load gromacs/2018_cpu'])
+        self.assertEqual(task0.pre_exec, ["module load gromacs/2020.2-cpu",
+                                          "export GMX_MAXBACKUP=-1"])
 
         task1 = list(test_rep.stages[1].tasks)[0]
         self.assertEqual(task1.name, 'test.0000.0001.md')
@@ -75,9 +74,8 @@ class TestTask(TestCase):
                                           'cpu_thread_type': None,
                                           'cpu_threads': 1})
         self.assertEqual(task1.executable, 'gmx_mpi')
-        self.assertEqual(task1.pre_exec, ['module purge',
-                                          'module load intel/18.4',
-                                          'module load gromacs/2018_cpu'])
+        self.assertEqual(task1.pre_exec, ["module load gromacs/2020.2-cpu",
+                                          "export GMX_MAXBACKUP=-1"])
 
         task2 = list(test_rep.stages[2].tasks)[0]
         self.assertEqual(task2.name, 'test.0000.0002.md')
@@ -96,9 +94,8 @@ class TestTask(TestCase):
                                           'cpu_thread_type': None,
                                           'cpu_threads': 1})
         self.assertEqual(task2.executable, 'gmx_mpi')
-        self.assertEqual(task2.pre_exec, ['module purge',
-                                          'module load intel/18.4',
-                                          'module load gromacs/2018_cpu'])
+        self.assertEqual(task2.pre_exec, ["module load gromacs/2020.2-cpu",
+                                          "export GMX_MAXBACKUP=-1"])
 
         # Inserting second MD cycle
         ex_0 = Task()
@@ -126,9 +123,8 @@ class TestTask(TestCase):
                                           'cpu_thread_type': None,
                                           'cpu_threads': 1})
         self.assertEqual(task0.executable, 'gmx_mpi')
-        self.assertEqual(task0.pre_exec, ['module purge',
-                                          'module load intel/18.4',
-                                          'module load gromacs/2018_cpu'])
+        self.assertEqual(task0.pre_exec, ["module load gromacs/2020.2-cpu",
+                                          "export GMX_MAXBACKUP=-1"])
 
         task1 = list(test_rep.stages[4].tasks)[0]
         self.assertEqual(task1.name, 'test.0001.0001.md')
@@ -144,9 +140,8 @@ class TestTask(TestCase):
                                           'cpu_thread_type': None,
                                           'cpu_threads': 1})
         self.assertEqual(task1.executable, 'gmx_mpi')
-        self.assertEqual(task1.pre_exec, ['module purge',
-                                          'module load intel/18.4',
-                                          'module load gromacs/2018_cpu'])
+        self.assertEqual(task1.pre_exec, ["module load gromacs/2020.2-cpu",
+                                          "export GMX_MAXBACKUP=-1"])
 
         task2 = list(test_rep.stages[5].tasks)[0]
         self.assertEqual(task2.name, 'test.0001.0002.md')
@@ -165,6 +160,5 @@ class TestTask(TestCase):
                                           'cpu_thread_type': None,
                                           'cpu_threads': 1})
         self.assertEqual(task2.executable, 'gmx_mpi')
-        self.assertEqual(task2.pre_exec, ['module purge',
-                                          'module load intel/18.4',
-                                          'module load gromacs/2018_cpu'])
+        self.assertEqual(task2.pre_exec, ["module load gromacs/2020.2-cpu",
+                                          "export GMX_MAXBACKUP=-1"])
