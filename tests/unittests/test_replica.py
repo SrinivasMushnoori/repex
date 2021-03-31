@@ -27,7 +27,7 @@ class TestTask(TestCase):
     @mock.patch('radical.utils.generate_id', return_value='test')
     @mock.patch('radical.utils.Logger')
     def test_add_md_stage(self, mocked_generate_id, mocked_Logger):
-
+        self.maxDiff = None
         pwd = os.path.dirname(os.path.abspath(__file__))
         wl_cfg = ru.read_json(pwd + '/test_case/workflow_gromacs.json')
         workload = ru.Config(cfg=wl_cfg)
@@ -42,12 +42,12 @@ class TestTask(TestCase):
         self.assertEqual(task0.name, 'test.0000.0000.md')
         self.assertEqual(task0.sandbox, 'test.0000.md')
 
-        link_inputs = ['pilot:///inputs//mdin.mdp.test > unit:////mdin.mdp',
-                       'pilot:///inputs//sys.top > unit:////sys.top',
-                       'pilot:///inputs//sys.itp > unit:////sys.itp',
-                       'pilot:///inputs//inp.ener > unit:////inp.ener',
-                       'pilot:///inputs//martini_v2.2.itp > unit:////martini_v2.2.itp',
-                       'pilot:///inputs//inpcrd.gro.test > unit:////inpcrd.gro']
+        link_inputs = ['pilot:///inputs//mdin.mdp.test > task:///mdin.mdp',
+                       'pilot:///inputs//sys.top > task:///sys.top',
+                       'pilot:///inputs//sys.itp > task:///sys.itp',
+                       'pilot:///inputs//inp.ener > task:///inp.ener',
+                       'pilot:///inputs//martini_v2.2.itp > task:///martini_v2.2.itp',
+                       'pilot:///inputs//inpcrd.gro.test > task:///inpcrd.gro']
         self.assertEqual(task0.link_input_data, link_inputs)
         self.assertEqual(task0.arguments, ['grompp', '-f', 'mdin.mdp', '-c',
                                            'inpcrd.gro', '-o', 'sys.tpr', '-p',
@@ -83,8 +83,8 @@ class TestTask(TestCase):
 
         link_inputs = []
         self.assertEqual(task2.link_input_data, link_inputs)
-        download_output_data = ['unit:////outcrd.gro > \
-                                 client:///outputs//outcrd.gro.test.0000']
+        download_output_data = ['task:///outcrd.gro > ' +
+                                 'client:///outputs//outcrd.gro.test.0000']
         self.assertEqual(task2.download_output_data, download_output_data)
         self.assertEqual(task2.arguments, [ "energy", "-f", "sys.edr", "-b",
                                             0.25, "<", "inp.ener", ">",
@@ -107,13 +107,12 @@ class TestTask(TestCase):
         self.assertEqual(task0.name, 'test.0001.0000.md')
         self.assertEqual(task0.sandbox, 'test.0001.md')
 
-        link_inputs = ['pilot:///inputs//mdin.mdp.test > unit:////mdin.mdp',
-                       'pilot:///inputs//sys.top > unit:////sys.top',
-                       'pilot:///inputs//sys.itp > unit:////sys.itp',
-                       'pilot:///inputs//inp.ener > unit:////inp.ener',
-                       'pilot:///inputs//martini_v2.2.itp > \
-                        unit:////martini_v2.2.itp',
-                       'pilot:///ex_0/outcrd.gro.test > unit:////inpcrd.gro']
+        link_inputs = ['pilot:///inputs//mdin.mdp.test > task:///mdin.mdp',
+                       'pilot:///inputs//sys.top > task:///sys.top',
+                       'pilot:///inputs//sys.itp > task:///sys.itp',
+                       'pilot:///inputs//inp.ener > task:///inp.ener',
+                       'pilot:///inputs//martini_v2.2.itp > task:///martini_v2.2.itp',
+                       'pilot:///ex.0/outcrd.gro.test > task:///inpcrd.gro']
         self.assertEqual(task0.link_input_data, link_inputs)
         self.assertEqual(task0.arguments, ['grompp', '-f', 'mdin.mdp', '-c',
                                            'inpcrd.gro', '-o', 'sys.tpr', '-p',
@@ -149,8 +148,8 @@ class TestTask(TestCase):
 
         link_inputs = []
         self.assertEqual(task2.link_input_data, link_inputs)
-        download_output_data = ['unit:////outcrd.gro > \
-                                 client:///outputs//outcrd.gro.test.0001']
+        download_output_data = ['task:///outcrd.gro > ' +
+                                'client:///outputs//outcrd.gro.test.0001']
         self.assertEqual(task2.download_output_data, download_output_data)
         self.assertEqual(task2.arguments, [ "energy", "-f", "sys.edr", "-b", 
                                             0.25, "<", "inp.ener", ">",

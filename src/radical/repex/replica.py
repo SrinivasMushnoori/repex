@@ -92,14 +92,14 @@ class Replica(re.Pipeline):
         # link initial data
         link_inputs += expand_ln(self._workload.md.inputs,
                      'pilot:///%s' % self._workload.data.inputs,
-                     'unit:///',
+                     'task://',
                      self.rid, self.cycle)
 
         if self._cycle == 0:
             # link initial data
             link_inputs += expand_ln(self._workload.md.inputs_0,
                          'pilot:///%s' % self._workload.data.inputs,
-                         'unit:///',
+                         'task://',
                          self.rid, self.cycle)
         else:
             # get data from previous task
@@ -108,23 +108,23 @@ class Replica(re.Pipeline):
                 self._log.debug('Exchange from %s', exchanged_from.name)
                 link_inputs += expand_ln(self._workload.md.ex_2_md,
                         'pilot:///%s' % (exchanged_from.sandbox),
-                        'unit:///',
+                        'task://',
                         self.rid, self.cycle)
             else:
                 # FIXME: this apparently can't happen
                 link_inputs += expand_ln(self._workload.md.md_2_md,
                          'resource:///%s' % (t.sandbox),
-                         'unit:///',
+                         'task://',
                          self.rid, self.cycle)
 
         copy_outputs = expand_ln(self._workload.md.outputs,
-                         'unit:///',
+                         'task://',
                          'client:///%s' % self._workload.data.outputs,
                          self.rid, self.cycle)
 
         if last:
             copy_outputs += expand_ln(self._workload.md.outputs_n,
-                         'unit:///',
+                         'task://',
                          'client:///%s' % self._workload.data.outputs,
                          self.rid, self.cycle)
 
@@ -193,7 +193,7 @@ class Replica(re.Pipeline):
                                      #        rep.0000.0000:/// ...
                                      #        i.e., use task ID as schema
                                      'pilot:///%s' % t.sandbox,
-                                     'unit:///',
+                                     'task://',
                                      r.rid, r.cycle)
 
         task.link_input_data   = link_inputs
