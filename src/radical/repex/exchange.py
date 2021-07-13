@@ -82,9 +82,11 @@ class Exchange(re.AppManager):
 
         rmq_host = str(self._resource.get('rmq_host', 'localhost'))
         rmq_port = int(self._resource.get('rmq_port', '5672'))
-
+        rmq_user = str(self._resource.get('rmq_user','guest'))
+        rmq_pass = str(self._resource.get('rmq_pass','guest'))
         re.AppManager.__init__(self, autoterminate=True,
-                                     hostname=rmq_host, port=rmq_port)
+                                     hostname=rmq_host, port=rmq_port,
+                                     username=rmq_user, password=rmq_pass)
 
         for r in self._replicas:
             r._initialize(check_ex=self._check_exchange,
@@ -246,7 +248,7 @@ class Exchange(re.AppManager):
         msg = " < %s: %s" % (replica.rid, [r.rid for r in replica.exchange_list])
         self._dump(msg=msg, special=replica.exchange_list, glyph='^')
 
-        exchange_sbox = last_task(replica).sandbox
+        exchange = last_task(replica)
 
         # after a successfull exchange we revive all participating replicas.
         # For those replicas which did not yet reach min cycles, add an md
@@ -255,7 +257,7 @@ class Exchange(re.AppManager):
 
             if _replica.cycle <= self._cycles:
                 last = bool(_replica.cycle == self._cycles)
-                _replica.add_md_stage(exchanged_from=exchange_sbox,
+                _replica.add_md_stage(exchanged_from=exchange,
                                       sid=self.sid, last=last)
 
             # Make sure we don't resume the current replica

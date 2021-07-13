@@ -4,7 +4,7 @@ import radical.utils as ru
 
 # ------------------------------------------------------------------------------
 #
-def expand_ln(to_link, src_sbox, tgt_sbox, rid, cycle):
+def expand_ln(to_link, src_sbox, tgt_sbox, rid, cycle, task_id=None):
 
     expand = {'rid'  : rid,
               'cycle': cycle}
@@ -20,6 +20,9 @@ def expand_ln(to_link, src_sbox, tgt_sbox, rid, cycle):
             tgt = tgt.strip() % expand
         except:
             raise RuntimeError('expansion error: %s : %s : %s' % (src, tgt, expand))
+        # if task_id is None:
+        #     ret.append('%s/%s > %s/%s_%s' % (src_sbox, src, tgt_sbox, tgt, task_id))
+        # else:
         ret.append('%s/%s > %s/%s' % (src_sbox, src, tgt_sbox, tgt))
 
     return ret

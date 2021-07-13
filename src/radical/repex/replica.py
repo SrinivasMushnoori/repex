@@ -2,8 +2,8 @@
 import copy
 import time
 
-import radical.entk  as re
 import radical.utils as ru
+import radical.entk  as re
 
 from .utils import expand_ln, last_task
 
@@ -39,7 +39,7 @@ class Replica(re.Pipeline):
         self._ex_list   = None  # list of replicas used in exchange step
 
         re.Pipeline.__init__(self)
-        self.name = 'p_%s' % self.rid
+        self.name = 'p.%s' % self.rid
         self._log = ru.Logger('radical.repex')
 
 
@@ -100,65 +100,71 @@ class Replica(re.Pipeline):
                }
         # TODO: filter out custom keys from that dict
         td   = ru.expand_env(copy.deepcopy(self._workload['md']), env=env)
-        task = re.Task()
-
+        sandbox = '%s.%04d.md' % (self.rid, self.cycle)
         link_inputs = list()
 
         # link initial data
         link_inputs += expand_ln(self._workload.md.inputs,
                      'pilot:///%s' % self._workload.data.inputs,
-                     'unit:///', self.rid, self.cycle)
+                     'task://',
+                     self.rid, self.cycle)
 
         if self._cycle == 0:
             # link initial data
             link_inputs += expand_ln(self._workload.md.inputs_0,
                          'pilot:///%s' % self._workload.data.inputs,
-                         'unit:///', self.rid, self.cycle)
+                         'task://',
+                         self.rid, self.cycle)
         else:
-
             # get data from previous task
             t = last_task(self)
             if exchanged_from:
+                self._log.debug('Exchange from %s', exchanged_from.name)
                 link_inputs += expand_ln(self._workload.md.ex_2_md,
-                        'resource:///%s/pilot.0000/%s' % (sid, exchanged_from),
-                        'unit:///', self.rid, self.cycle)
+                        'pilot:///%s' % (exchanged_from.sandbox),
+                        'task://',
+                        self.rid, self.cycle)
             else:
                 # FIXME: this apparently can't happen
                 link_inputs += expand_ln(self._workload.md.md_2_md,
-                         'resource:///%s/pilot.0000/%s' % (sid, t.sandbox),
-                         'unit:///', self.rid, self.cycle)
+                         'resource:///%s' % (t.sandbox),
+                         'task://',
+                         self.rid, self.cycle)
 
         copy_outputs = expand_ln(self._workload.md.outputs,
-                         'unit:///',
+                         'task://',
                          'client:///%s' % self._workload.data.outputs,
                          self.rid, self.cycle)
 
         if last:
             copy_outputs += expand_ln(self._workload.md.outputs_n,
-                         'unit:///',
+                         'task://',
                          'client:///%s' % self._workload.data.outputs,
                          self.rid, self.cycle)
 
-        td['link_input_data']      = link_inputs
-        td['download_output_data'] = copy_outputs
+        for i, descr in enumerate(ru.as_list(td['description'])):
+            task = re.Task()
 
-        for k,v in td.items():
-            setattr(task, k, v)
+            for k,v in descr.items():
+                setattr(task, k, v)
 
-        if self._workload.pre_exec:
-            if task.pre_exec: task.pre_exec.extend  (self._workload.pre_exec)
-            else            : task.pre_exec.extend = self._workload.pre_exec
+            if self._workload.pre_exec:
+                if task.pre_exec: task.pre_exec.extend (self._workload.pre_exec)
+                else            : task.pre_exec.extend = self._workload.pre_exec
 
-        task.name    = '%s.%04d.md' % (self.rid, self.cycle)
-        task.sandbox = '%s.%04d.md' % (self.rid, self.cycle)
+            task.name = '%s.%04d.%04d.md' % (self.rid, self.cycle, i)
+            task.sandbox = sandbox
+            stage = re.Stage()
+            if i == 0:
+                task.link_input_data = link_inputs
+            elif i == len(td['description']) - 1:
+                task.download_output_data = copy_outputs
+                stage.post_exec = self.check_exchange
+            self._log.debug('%5s add md: %s', self.rid, task.name)
 
-        self._log.debug('%5s add md: %s', self.rid, task.name)
+            stage.add_tasks(task)
+            self.add_stages(stage)
 
-        stage = re.Stage()
-        stage.add_tasks(task)
-        stage.post_exec = self.check_exchange
-
-        self.add_stages(stage)
         self._prof.prof('add_md_stop', uid=self.rid)
 
 
@@ -180,9 +186,9 @@ class Replica(re.Pipeline):
     def add_ex_stage(self, exchange_list, ex_alg, sid):
 
         self._prof.prof('add_ex_start', uid=self.rid)
+        self._log.debug('%5s add ex: %s', self.rid,
+                        [r.rid for r in exchange_list])
 
-        self._log.debug('%5s add ex: %s', self.rid, [r.rid for r
-                                                           in  exchange_list])
         self._ex_list = exchange_list
 
         task = re.Task()
@@ -201,12 +207,13 @@ class Replica(re.Pipeline):
         for r in exchange_list:
 
             t = last_task(r)
+            self._log.debug('Exchage: %s, Task Name: %s Sandbox %s', r.name, t.name, t.sandbox)
             link_inputs += expand_ln(self._workload.exchange.md_2_ex,
                                      # FIXME: how to get absolute task sbox?
                                      #        rep.0000.0000:/// ...
                                      #        i.e., use task ID as schema
-                                     'resource:///%s/pilot.0000/%s' % (sid, t.sandbox),
-                                     'unit:///',
+                                     'pilot:///%s' % t.sandbox,
+                                     'task://',
                                      r.rid, r.cycle)
 
         task.link_input_data   = link_inputs
@@ -214,7 +221,7 @@ class Replica(re.Pipeline):
         task.name    = '%s.%04d.ex' % (self.rid, self.cycle)
         task.sandbox = '%s.%04d.ex' % (self.rid, self.cycle)
 
-        self._log.debug('%5s add ex: %s', self.rid, task.name)
+        self._log.debug('%5s added ex: %s, input data: %s', self.rid, task.name, task.link_input_data)
 
         stage = re.Stage()
         stage.add_tasks(task)
@@ -241,4 +248,3 @@ class Replica(re.Pipeline):
 
 
 # ------------------------------------------------------------------------------
-
