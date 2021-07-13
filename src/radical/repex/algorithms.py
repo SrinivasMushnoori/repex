@@ -36,7 +36,8 @@ def select_replicas_1D(waitlist, criteria, replica):
         elif len(waitlist) > ex_size:
             # waitlist somehow grew too large
 
-            raise ValueError('The waitlist is larger than maximum permissible exchange list size')
+            raise ValueError('The waitlist is larger than maximum permissible'
+                             'exchange list size')
 
         # we have enough replicas!  Remove all as echange candidates from the
         # waitlist and return them!
@@ -100,4 +101,65 @@ def exchange_by_random():
 
 
 # ------------------------------------------------------------------------------
+#
+exchange_alg_prefix = '''
+#!/usr/bin/env python
 
+import sys
+
+
+# ------------------------------------------------------------------------------
+#
+# exchange algorithm
+#
+%s
+
+
+# ------------------------------------------------------------------------------
+#
+# exchange algorithm call context
+#
+if __name__ == '__main__':
+
+    rid     = None
+    cycle   = None
+    ex_list = list()
+    ex_data = list()
+
+    arg_mode = None
+    for arg in sys.argv[1:]:
+        if   arg == '-r': arg_mode = 'rid'
+        elif arg == '-c': arg_mode = 'cycle'
+        elif arg == '-e': arg_mode = 'ex_list'
+        elif arg == '-d': arg_mode = 'ex_data'
+        else:
+            if   arg_mode == 'rid'    : rid   = arg
+            elif arg_mode == 'cycle'  : cycle = int(arg)
+            elif arg_mode == 'ex_list': ex_list.append(arg)
+            elif arg_mode == 'ex_data': ex_data.append(arg)
+
+    # call the exchange algorithm inserted above
+    %s(rid, cycle, ex_list, ex_data)
+
+
+# ------------------------------------------------------------------------------
+
+'''
+
+
+# ------------------------------------------------------------------------------
+#
+selection_algs = {
+        SELECT_1D   : select_replicas_1D,
+        SELECT_TEST : select_replicas_test
+}
+
+exchange_algs = {
+        EXCHANGE_RANDOM : exchange_by_random
+}
+
+prepare_algs = {
+}
+
+
+# ------------------------------------------------------------------------------
