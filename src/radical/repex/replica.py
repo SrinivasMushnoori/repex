@@ -130,13 +130,15 @@ class Replica(re.Pipeline):
 
         for i, descr in enumerate(ru.as_list(td['description'])):
             task = re.Task()
-            
+
             for k,v in descr.items():
                 setattr(task, k, v)
 
             if self._workload.pre_exec:
-                if task.pre_exec: task.pre_exec.extend  (self._workload.pre_exec)
-                else            : task.pre_exec.extend = self._workload.pre_exec
+                if task.pre_exec:
+                    task.pre_exec.extend(self._workload.pre_exec)
+                else:
+                    task.pre_exec.extend = self._workload.pre_exec
 
             task.name = '%s.%04d.%04d.md' % (self.rid, self.cycle, i)
             task.sandbox = sandbox
@@ -187,7 +189,8 @@ class Replica(re.Pipeline):
         for r in exchange_list:
 
             t = last_task(r)
-            self._log.debug('Exchage: %s, Task Name: %s Sandbox %s', r.name, t.name, t.sandbox)
+            self._log.debug('Exchage: %s, Task Name: %s Sandbox %s', r.name,
+                             t.name, t.sandbox)
             link_inputs += expand_ln(self._workload.exchange.md_2_ex,
                                      # FIXME: how to get absolute task sbox?
                                      #        rep.0000.0000:/// ...
@@ -200,8 +203,9 @@ class Replica(re.Pipeline):
 
         task.name    = '%s.%04d.ex' % (self.rid, self.cycle)
         task.sandbox = '%s.%04d.ex' % (self.rid, self.cycle)
-        
-        self._log.debug('%5s added ex: %s, input data: %s', self.rid, task.name, task.link_input_data)
+
+        self._log.debug('%5s added ex: %s, input data: %s', self.rid,
+                        task.name, task.link_input_data)
 
         stage = re.Stage()
         stage.add_tasks(task)
@@ -221,3 +225,4 @@ class Replica(re.Pipeline):
 
 
 # ------------------------------------------------------------------------------
+

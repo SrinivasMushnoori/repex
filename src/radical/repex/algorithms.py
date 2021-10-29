@@ -86,8 +86,8 @@ def exchange_by_random():
     replicas = int(sys.argv[1])
     cycle    = int(sys.argv[2])
 
-    exchange_list_1 = range(replicas)
-    exchange_list_2 = range(replicas)
+    exchange_list_1 = list(range(replicas))
+    exchange_list_2 = list(range(replicas))
 
     random.shuffle(exchange_list_1)
     random.shuffle(exchange_list_2)

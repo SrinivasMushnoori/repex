@@ -193,10 +193,11 @@ class Exchange(re.AppManager):
                 self._log.exception('selection algorithm failed: %s' % e)
 
             # check if the user found something to exchange
-            if not ex_list:
+            if not ex_list or not new_wlist:
                 # nothing to do, suspend this replica and wait until we get more
                 # candidates and can try again
-                self._log.debug('%5s %s no  - suspend', replica.rid, replica._uid)
+                self._log.debug('%5s %s no  - suspend',
+                                replica.rid, replica._uid)
                 replica.suspend()
                 self._dump()
                 return
@@ -239,7 +240,8 @@ class Exchange(re.AppManager):
 
         resumed = list()  # list of resumed replica IDs
 
-        msg = " < %s: %s" % (replica.rid, [r.rid for r in replica.exchange_list])
+        msg = " < %s: %s" % (replica.rid,
+                             [r.rid for r in replica.exchange_list])
         self._dump(msg=msg, special=replica.exchange_list, glyph='^')
 
         exchange = last_task(replica)
