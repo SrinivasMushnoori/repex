@@ -7,10 +7,12 @@ import inspect
 import radical.entk  as re
 import radical.utils as ru
 
-from .algorithms import selection_algs, exchange_algs, prepare_algs
-from .algorithms import exchange_alg_prefix
-from .replica    import Replica
-from .utils      import last_task
+from   .algorithms import selection_algs, exchange_algs, prepare_algs
+from   .algorithms import exchange_alg_prefix
+from   .replica    import Replica
+from   .utils      import last_task
+
+import .states as rxs
 
 
 # ------------------------------------------------------------------------------
@@ -29,6 +31,10 @@ class Exchange(re.AppManager):
     # --------------------------------------------------------------------------
     #
     def __init__(self, workload, resource, replicas=None):
+
+        self._uid  = ru.generate_id('rx')
+        self._prof = ru.Profiler('radical.repex')
+        self._prof.prof('create', uid=self._uid)
 
         self._workload = ru.Config(cfg=workload)
         self._resource = ru.Config(cfg=resource)
@@ -85,7 +91,7 @@ class Exchange(re.AppManager):
         for r in self._replicas:
             r._initialize(check_ex=self._check_exchange,
                           check_res=self._check_resume,
-                          sid=self.sid)
+                          sid=self.sid, prof=self._prof)
 
         self._lock = ru.Lock(name='rx')
 

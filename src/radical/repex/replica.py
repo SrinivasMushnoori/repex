@@ -1,5 +1,6 @@
 
 import copy
+import time
 
 import radical.utils as ru
 import radical.entk  as re
@@ -29,6 +30,10 @@ class Replica(re.Pipeline):
 
         self._rid       = ru.generate_id('rep.%(counter)04d', ru.ID_CUSTOM)
 
+        # this is inefficient at scale...
+        self._prof      = ru.Profiler('radical.entk')
+        self._prof.prof('create', uid=self._rid)
+
         self._props     = properties
         self._cycle     = -1    # increased when adding md stage
         self._ex_list   = None  # list of replicas used in exchange step
@@ -40,7 +45,7 @@ class Replica(re.Pipeline):
 
     # --------------------------------------------------------------------------
     #
-    def _initialize(self, check_ex, check_res, sid):
+    def _initialize(self, check_ex, check_res, sid, prof):
         '''
         This method should only be called by the Exchange class upon
         initialization.
@@ -52,23 +57,31 @@ class Replica(re.Pipeline):
         # add an initial md stage
         self.add_md_stage(sid=sid)
 
+        self._prof.close()  # switch to the global profiler
+        self._prof = prof
+
+        self._prof.prof('init', uid=self.rid)
+
 
     # --------------------------------------------------------------------------
     #
     @property
-    def rid(self):        return self._rid
+    def rid(self):
+        return self._rid
 
     @property
-    def cycle(self):      return self._cycle
+    def cycle(self):
+        return self._cycle
 
     @property
-    def properties(self): return self._props
+    def properties(self):
+        return self._props
+
 
     # --------------------------------------------------------------------------
     #
     @property
     def exchange_list(self):
-
         return self._ex_list
 
 
@@ -76,6 +89,7 @@ class Replica(re.Pipeline):
     #
     def add_md_stage(self, exchanged_from=None, sid=None, last=False):
 
+        self._prof.prof('add_md_start', uid=self.rid)
         self._cycle += 1
         self._log.debug('%5s %s add md', self.rid, self._uid)
 
@@ -153,6 +167,8 @@ class Replica(re.Pipeline):
             stage.add_tasks(task)
             self.add_stages(stage)
 
+        self._prof.prof('add_md_stop', uid=self.rid)
+
 
     # --------------------------------------------------------------------------
     #
@@ -161,16 +177,20 @@ class Replica(re.Pipeline):
         after an md cycle, record its completion and check for exchange
         '''
 
+        self._prof.prof('chk_ex_start', uid=self.rid)
         self._log.debug('%5s check_exchange %s', self.rid, self._uid)
         self._check_ex(self)
+        self._prof.prof('chk_ex_stop', uid=self.rid)
 
 
     # --------------------------------------------------------------------------
     #
     def add_ex_stage(self, exchange_list, ex_alg, sid):
 
+        self._prof.prof('add_ex_start', uid=self.rid)
         self._log.debug('%5s add ex: %s', self.rid,
                         [r.rid for r in exchange_list])
+
         self._ex_list = exchange_list
 
         task = re.Task()
@@ -204,14 +224,15 @@ class Replica(re.Pipeline):
         task.name    = '%s.%04d.ex' % (self.rid, self.cycle)
         task.sandbox = '%s.%04d.ex' % (self.rid, self.cycle)
 
-        self._log.debug('%5s added ex: %s, input data: %s', self.rid,
-                        task.name, task.link_input_data)
+        self._log.debug('%5s added ex: %s, input data: %s',
+                        self.rid, task.name, task.link_input_data)
 
         stage = re.Stage()
         stage.add_tasks(task)
         stage.post_exec = self.check_resume
 
         self.add_stages(stage)
+        self._prof.prof('add_ex_stop', uid=self.rid)
 
 
     # --------------------------------------------------------------------------
@@ -220,8 +241,14 @@ class Replica(re.Pipeline):
         '''
         after an ex cycle, trigger replica resumption
         '''
+
+        self._prof.prof('chk_res_start', uid=self.rid, msg=ret)
         self._log.debug('%5s check_resume %s', self.rid, self._uid)
-        return self._check_res(self)
+        ret = self._check_res(self)
+
+        self._prof.prof('chk_res_stop', uid=self.rid, msg=ret)
+        return ret
+
 
 
 # ------------------------------------------------------------------------------
