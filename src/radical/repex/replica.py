@@ -1,6 +1,5 @@
 
 import copy
-import time
 
 import radical.utils as ru
 import radical.entk  as re
@@ -95,19 +94,13 @@ class Replica(re.Pipeline):
 
       # task = re.Task(from_dict=self._workload['md'])
       # task.name = 'mdtsk-%s-%s' % (self.rid, self.cycle)
-        env  = {'REPEX_RID'   : str(self.rid),
-                'REPEX_CYCLE' : str(self.cycle),
-               }
-        # TODO: filter out custom keys from that dict
-        td   = ru.expand_env(copy.deepcopy(self._workload['md']), env=env)
-        sandbox = '%s.%04d.md' % (self.rid, self.cycle)
+        sandbox     = '%s.%04d.md' % (self.rid, self.cycle)
         link_inputs = list()
 
         # link initial data
         link_inputs += expand_ln(self._workload.md.inputs,
                      'pilot:///%s' % self._workload.data.inputs,
-                     'task://',
-                     self.rid, self.cycle)
+                     'task://', self.rid, self.cycle)
 
         if self._cycle == 0:
             # link initial data
@@ -142,10 +135,19 @@ class Replica(re.Pipeline):
                          'client:///%s' % self._workload.data.outputs,
                          self.rid, self.cycle)
 
-        for i, descr in enumerate(ru.as_list(td['description'])):
-            task = re.Task()
+        # TODO: filter out custom keys from that dict before deepcopy
+        env   = {'REPEX_RID'   : str(self.rid),
+                 'REPEX_CYCLE' : str(self.cycle)}
+        tds   = copy.deepcopy(self._workload['md']['descriptions'])
+        first = 0
+        last  = len(tds) - 1
+        for idx, td in enumerate(tds):
 
-            for k,v in descr.items():
+            stage = re.Stage()
+            task  = re.Task()
+            td    = ru.expand_env(td, env=env)
+
+            for k,v in td.items():
                 setattr(task, k, v)
 
             if self._workload.pre_exec:
@@ -154,18 +156,19 @@ class Replica(re.Pipeline):
                 else:
                     task.pre_exec.extend = self._workload.pre_exec
 
-            task.name = '%s.%04d.%04d.md' % (self.rid, self.cycle, i)
+            task.name    = '%s.%04d.%02d.md' % (self.rid, self.cycle, idx)
             task.sandbox = sandbox
-            stage = re.Stage()
-            if i == 0:
+
+            if idx == first:
                 task.link_input_data = link_inputs
-            elif i == len(td['description']) - 1:
+
+            if idx == last:
                 task.download_output_data = copy_outputs
                 stage.post_exec = self.check_exchange
-            self._log.debug('%5s add md: %s', self.rid, task.name)
 
             stage.add_tasks(task)
             self.add_stages(stage)
+            self._log.debug('%5s add md: %s', self.rid, task.name)
 
         self._prof.prof('add_md_stop', uid=self.rid)
 
@@ -216,10 +219,9 @@ class Replica(re.Pipeline):
                                      #        rep.0000.0000:/// ...
                                      #        i.e., use task ID as schema
                                      'pilot:///%s' % t.sandbox,
-                                     'task://',
-                                     r.rid, r.cycle)
+                                     'task://', r.rid, r.cycle)
 
-        task.link_input_data   = link_inputs
+        task.link_input_data = link_inputs
 
         task.name    = '%s.%04d.ex' % (self.rid, self.cycle)
         task.sandbox = '%s.%04d.ex' % (self.rid, self.cycle)
@@ -242,13 +244,13 @@ class Replica(re.Pipeline):
         after an ex cycle, trigger replica resumption
         '''
 
-        self._prof.prof('chk_res_start', uid=self.rid, msg=ret)
+        self._prof.prof('chk_res_start', uid=self.rid)
         self._log.debug('%5s check_resume %s', self.rid, self._uid)
         ret = self._check_res(self)
+        self._log.debug('%5s check_resume %s: %s', self.rid, self._uid, ret)
 
         self._prof.prof('chk_res_stop', uid=self.rid, msg=ret)
         return ret
-
 
 
 # ------------------------------------------------------------------------------

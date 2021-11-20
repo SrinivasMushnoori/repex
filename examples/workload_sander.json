@@ -25,24 +25,25 @@
 
     "md" : {
         # workload for the MD stage (task dscription + data dependencies)
-        "executable"     : "sander",
-        "arguments"      : [
-                            "-O",
-                            "-p",   "prmtop",
-                            "-i",   "mdin",
-                            "-c",   "inpcrd",
-                            "-o",   "outcrd",
-                            "-inf", "mdinfo",
-                            "-r",   "inpcrd",
-                            "-x",   "mdcrd"
-                           ],
-        "cpu_reqs"       : {"processes"          : 1,
-                            "threads_per_process": 1,
-                            "thread_type"        : null,
-                            "process_type"       : null
-                           },
-
-        "post_exec"      : ["echo true"],
+        "descriptions" : [{
+            "executable"     : "sander",
+            "arguments"      : [
+                                "-O",
+                                "-p",   "prmtop",
+                                "-i",   "mdin",
+                                "-c",   "inpcrd",
+                                "-o",   "outcrd",
+                                "-inf", "mdinfo",
+                                "-r",   "inpcrd",
+                                "-x",   "mdcrd"
+                               ],
+            "cpu_reqs"       : {"processes"          : 1,
+                                "threads_per_process": 1,
+                                "thread_type"        : null,
+                                "process_type"       : null
+                               },
+            "post_exec"      : ["echo true"]
+        }],
 
         # always linked
         #                   inputs          > cycle n

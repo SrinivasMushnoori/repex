@@ -197,7 +197,7 @@ class Exchange(re.AppManager):
                 self._log.exception('selection algorithm failed: %s' % e)
 
             # check if the user found something to exchange
-            if not ex_list or not new_wlist:
+            if not ex_list:
                 # nothing to do, suspend this replica and wait until we get more
                 # candidates and can try again
                 self._log.debug('%5s %s no  - suspend',

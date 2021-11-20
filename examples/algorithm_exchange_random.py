@@ -24,8 +24,6 @@ def exchange_by_random(rid, cycle, ex_list, ex_data):
         a = ex_list.pop()
         b = ex_list.pop()
 
-        print('%s [%04d]: %s <-> %s' % (rid, cycle, a, b))
-
         for dname in ex_data:
 
             fa = dname % {'rid': a}

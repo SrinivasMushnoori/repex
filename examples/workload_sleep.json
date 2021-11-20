@@ -25,8 +25,10 @@
 
     "md" : {
         # workload for the MD stage (task dscription + data dependencies)
-        "executable"    : "/bin/sh",
-        "arguments"     : ["-c", "sleep 2; cat input.dat > output.dat"],
+        "descriptions" : [{
+            "executable"    : "/bin/sh",
+            "arguments"     : ["-c", "sleep 2; cat input.dat > output.dat"]
+        }],
         "inputs_0"      : ["mdin.%(rid)s       > input.dat"],
         "md_2_md"       : ["output.dat         > input.dat"],
         "ex_2_md"       : ["output.%(rid)s.dat > input.dat"],
