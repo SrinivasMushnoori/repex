@@ -2,49 +2,49 @@
 {
     "config" : {
         # parameters for ensemble creation and execution
-        "min_temp"      : 300,
-        "max_temp"      : 400,
-        "timesteps"     : 1000,
-        "replicas"      : 128,
-        "cycles"        : 3
+        "min_temp"       : 300,
+        "max_temp"       : 400,
+        "timesteps"      : 1000,
+        "replicas"       : 128,
+        "cycles"         : 3
     },
 
     "data" : {
         # input data dir to be staged, output data to be fetched
         # same paths are used within pilot sandbox
         # FIXME: allow $SID placeholder
-        "inputs"        : "inputs/",
-        "outputs"       : "outputs/"
+        "inputs"         : "inputs/",
+        "outputs"        : "outputs/"
     },
 
-    "prepare"           : {
+    "prepare"            : {
         # what to run to prepare input data for all replicas
-        "algorithm"     : "examples/workload_md.py:prepare_md",
-        "basename"      : "tests/ace-ala/"
+        "algorithm"      : "examples/workload_md.py:prepare_md",
+        "basename"       : "tests/ace-ala/"
     },
 
     "md" : {
         # workload for the MD stage (task dscription + data dependencies)
         "descriptions" : [{
-            "executable"    : "/bin/sh",
-            "arguments"     : ["-c", "sleep 2; cat input.dat > output.dat"]
+            "executable"     : "/bin/sh",
+            "arguments"      : ["-c", "sleep 2; cat input.dat > output.dat"]
         }],
-        "inputs_0"      : ["mdin.%(rid)s       > input.dat"],
-        "md_2_md"       : ["output.dat         > input.dat"],
-        "ex_2_md"       : ["output.%(rid)s.dat > input.dat"],
-        "outputs"       : ["output.dat > output.%(rid)s.%(cycle)04d.dat"]
+        "inputs_0"       : ["mdin.%(rid)s       > input.dat"],
+        "md_2_md"        : ["output.dat         > input.dat"],
+        "ex_2_md"        : ["output.%(rid)s.dat > input.dat"],
+        "outputs"        : ["output.dat > output.%(rid)s.%(cycle)04d.dat"]
     },
 
     "selection" : {
-        "algorithm"     : "examples/algorithm_select_random.py:select_by_random",
-        "exchange_size" : 8
+        "algorithm"      : "examples/algorithm_select_random.py:select_by_random",
+        "exchange_size"  : 8
     },
 
     "exchange" : {
         # workload for the EX stage (algorithm + data dependencies)
-        "algorithm"     : "examples/algorithm_exchange_random.py:exchange_by_random",
-        "md_2_ex"       : ["output.dat > output.%(rid)s.dat"],
-        "ex_data"       : ["output.%(rid)s.dat"]
+        "algorithm"      : "examples/algorithm_exchange_random.py:exchange_by_random",
+        "md_2_ex"        : ["output.dat > output.%(rid)s.dat"],
+        "ex_data"        : ["output.%(rid)s.dat"]
     }
 }
 
