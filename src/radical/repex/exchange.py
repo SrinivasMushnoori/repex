@@ -190,7 +190,7 @@ class Exchange(re.AppManager):
                         waitlist=self._waitlist,
                         criteria=self._workload.selection,
                         replica=replica)
-                self._log.debug('=== sel: %4d -> %4d + %4d = %4d',
+                self._log.debug('sel: %4d -> %4d + %4d = %4d',
                         len(self._waitlist), len(ex_list), len(new_wlist),
                         len(ex_list) + len(new_wlist))
             except Exception as e:
@@ -207,15 +207,23 @@ class Exchange(re.AppManager):
 
                 # waiting for more replicas only makes sense if any others are
                 # still in `SCHEDULING` state
+                states = dict()
                 for r in self._replicas:
-                    if r.state == re.states.SCHEDULING:
-                        return
-                # we did not find any active replics, thus need to finish (a new
-                # exchange will never happen)
+                    if r.state not in states: states[r.state] = 1
+                    else                    : states[r.state] += 1
+                self._log.debug('=== %s', ['%s=%s' % (k, v) for k, v in states.items()])
+
+                if states.get(re.states.SCHEDULING):
+                    # some more replicas are active - wait for those to complete
+                    # the exchange list
+                    return
+
+                # did not find any active replics, thus the exchange list will
+                # never grow and a new exchange will never happen - terminate
                 self._log.warn('=== terminating due to lack of active replicas')
                 raise RuntimeError('terminating due to lack of active replicas')
 
-            # Seems we got something - make sure its valid:  exchange list and
+            # Seems we got an exchange list - check it: exchange list and
             # new wait list must be proper partitions of the original waitlist:
             #   - make sure no replica is lost
             #   - make sure that replicas are not in both lists
@@ -274,7 +282,8 @@ class Exchange(re.AppManager):
             if replica.rid != _replica.rid:
 
                 self._log.debug('%5s %s resume', _replica.rid, replica._uid)
-                _replica.resume()
+                if _replica.state == re.states.SUSPENDED:
+                    _replica.resume()
                 resumed.append(_replica.uid)
 
         return resumed
