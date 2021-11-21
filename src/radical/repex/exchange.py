@@ -204,12 +204,22 @@ class Exchange(re.AppManager):
                                 replica.rid, replica._uid)
                 replica.suspend()
                 self._dump()
-                return
+
+                # waiting for more replicas only makes sense if any others are
+                # still in `SCHEDULING` state
+                for r in self._replicas:
+                    if r.state == re.states.SCHEDULING:
+                        return
+                # we did not find any active replics, thus need to finish (a new
+                # exchange will never happen)
+                self._log.warn('=== terminating due to lack of active replicas')
+                raise RuntimeError('terminating due to lack of active replicas')
 
             # Seems we got something - make sure its valid:  exchange list and
             # new wait list must be proper partitions of the original waitlist:
             #   - make sure no replica is lost
             #   - make sure that replicas are not in both lists
+            assert(new_wlist is not None)
             missing = len(self._waitlist) - len(ex_list) - len(new_wlist)
             if missing:
                 raise ValueError('%d replicas went missing' % missing)
