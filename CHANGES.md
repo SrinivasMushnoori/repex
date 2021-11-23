@@ -7,6 +7,24 @@
             issues?q=is%3Aissue+is%3Aopen+
 
 
+v0.73.0 Release                                                       2019-11-22
+--------------------------------------------------------------------------------
+
+  - add example for external exchange alg select_by_random()
+  - add rx profile events
+  - fix data staging
+  - expose RMQ_HOST/RMQ_PORT
+  - extract write_inputs script
+  - fix alg return type
+  - fix data staging logic, termination logic (allow empty waitlists)
+  - Getting ready for full testing
+  - linting
+  - modify test for wl_size>ex_size
+  - support pre_exec
+  - Syncing repex with latest RCT changes.
+  - terminate when running out of replicas
+
+
 v0.72.0 Release                                                       2019-09-22
 --------------------------------------------------------------------------------
 
