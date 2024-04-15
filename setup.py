@@ -20,8 +20,9 @@ from setuptools import setup, Command, find_namespace_packages
 
 
 # ------------------------------------------------------------------------------
-name     = 'radical.repex'
-mod_root = 'src/radical/repex/'
+base     = 'repex'
+name     = 'radical.%s'      % base
+mod_root = 'src/radical/%s/' % base
 
 # ------------------------------------------------------------------------------
 #
@@ -47,6 +48,8 @@ mod_root = 'src/radical/repex/'
 sdist_level = int(os.environ.get('SDIST_LEVEL', 0))
 os.environ['SDIST_LEVEL'] = str(sdist_level + 1)
 
+root = os.path.dirname(__file__) or '.'
+
 
 # ------------------------------------------------------------------------------
 #
@@ -65,7 +68,7 @@ def sh_callout(cmd):
 #
 #   - version:          1.2.3            - is used for installation
 #   - version_detail:  v1.2.3-9-g0684b06 - is used for debugging
-#   - version is read from VERSION file in src_root, which then is copied to
+#   - version is read from VERSION file in root, which then is copied to
 #     module dir, and is getting installed from there.
 #   - version_detail is derived from the git tag, and only available when
 #     installed from git.  That is stored in mod_root/VERSION in the install
@@ -86,12 +89,8 @@ def get_version(_mod_root):
         _sdist_name     = None
 
         # get version from './VERSION'
-        src_root = os.path.dirname(__file__)
-        if not src_root:
-            src_root = '.'
-
-        with open(src_root + '/VERSION', 'r', encoding='utf-8') as f:
-            _version_base = f.readline().strip()
+        with open('%s/VERSION' % root, 'r', encoding='utf-8') as fin:
+            _version_base = fin.readline().strip()
 
         # attempt to get version detail information from git
         # We only do that though if we are in a repo root dir,
@@ -105,7 +104,7 @@ def get_version(_mod_root):
             'test -z `git rev-parse --show-prefix` || exit -1; '
             'tag=`git describe --tags --always` 2>/dev/null ; '
             'branch=`git branch | grep -e "^*" | cut -f 2- -d " "` 2>/dev/null ; '
-            'echo $tag@$branch' % src_root)
+            'echo $tag@$branch' % root)
         _version_detail = out.strip()
         _version_detail = _version_detail.decode()
         _version_detail = _version_detail.replace('detached from ', 'detached-')
@@ -127,16 +126,20 @@ def get_version(_mod_root):
             _version = _version_base
 
         # make sure the version files exist for the runtime version inspection
-        _path = '%s/%s' % (src_root, _mod_root)
-        with open(_path + '/VERSION', 'w', encoding='utf-8') as f:
-            f.write(_version_base + '\n')
-            f.write(_version      + '\n')
+        _path = '%s/%s' % (root, _mod_root)
+        with open(_path + '/VERSION', 'w', encoding='utf-8') as fout:
+            fout.write(_version_base + '\n')
+            fout.write(_version      + '\n')
 
         _sdist_name = '%s-%s.tar.gz' % (name, _version_base)
       # _sdist_name = _sdist_name.replace('/', '-')
       # _sdist_name = _sdist_name.replace('@', '-')
       # _sdist_name = _sdist_name.replace('#', '-')
       # _sdist_name = _sdist_name.replace('_', '-')
+
+        # setuptools 69.5 does changes naming scheme
+        if not os.path.isfile('%s/%s' % (_path, _sdist_name)):
+            _sdist_name = '%s-%s.tar.gz' % (name.replace('.', '_'), _version_base)
 
         if '--record'    in sys.argv or \
            'bdist_egg'   in sys.argv or \
@@ -153,8 +156,8 @@ def get_version(_mod_root):
                         '%s/%s'   % (_mod_root, _sdist_name))  # copy into tree
             shutil.move('VERSION.bak', 'VERSION')              # restore version
 
-        with open(_path + '/SDIST', 'w', encoding='utf-8') as f:
-            f.write(_sdist_name + '\n')
+        with open(_path + '/SDIST', 'w', encoding='utf-8') as fout:
+            fout.write(_sdist_name + '\n')
 
         return _version_base, _version_detail, _sdist_name, _path
 
@@ -188,15 +191,14 @@ class RunTwine(Command):
 #
 # This copies the contents like examples/ dir under sys.prefix/share/$name
 # It needs the MANIFEST.in entries to work.
-base = 'share/%s' % name
-df = [('%s/' % base, glob.glob('examples/*.{py,cfg}'))]
+df = [('share/%s/' % name, glob.glob('examples/*.{py,cfg}'))]
 
 
 # ------------------------------------------------------------------------------
 #
 setup_args = {
     'name'               : name,
-    'namespace_packages' : ['radical'],
+  # 'namespace_packages' : ['radical'],
     'version'            : version,
     'description'        : 'RADICAL Replica Exchange Framework.',
     'author'             : 'RADICAL Group at Rutgers University',
@@ -235,21 +237,10 @@ setup_args = {
                             'pylint',
                             'flake8',
                             'coverage',
-                            'mock==2.0.0.',
+                            'mock==2.0.0',
                            ],
     'test_suite'         : '%s.tests' % name,
     'zip_safe'           : False,
-  # 'build_sphinx'       : {
-  #     'source-dir'     : 'docs/',
-  #     'build-dir'      : 'docs/build',
-  #     'all_files'      : 1,
-  # },
-  # 'upload_sphinx'      : {
-  #     'upload-dir'     : 'docs/build/html',
-  # },
-    # This copies the contents of the examples/ dir under
-    # sys.prefix/share/$name
-    # It needs the MANIFEST.in entries to work.
     'data_files'         : df,
     'cmdclass'           : {'upload': RunTwine},
 }
@@ -268,4 +259,6 @@ if sdist_level == 0:
     os.system('rm -vf  %s/VERSION'      % path)
     os.system('rm -vf  %s/SDIST'        % path)
 
+
+# ------------------------------------------------------------------------------
 
