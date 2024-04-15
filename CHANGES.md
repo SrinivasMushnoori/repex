@@ -7,7 +7,7 @@
             issues?q=is%3Aissue+is%3Aopen+
 
 
-1.50.0 Release                                                        2024-04-15
+1.51.0 Release                                                        2024-04-15
 --------------------------------------------------------------------------------
 
   - fix for setuptools upgrade
@@ -85,3 +85,5 @@ Version 0.0.1 release                                                 2014-10-31
 
 --------------------------------------------------------------------------------
 
+  - (HEAD -> master, origin/devel, origin/HEAD, devel) fix the fix
+  - devel version bump
