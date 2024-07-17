@@ -9,17 +9,21 @@ from .algorithms import *
 
 # ------------------------------------------------------------------------------
 #
-import os
-import radical.utils as ru
+import os            as _os
+import radical.utils as _ru
 
-pwd  = os.path.dirname (__file__)
-root = "%s" % pwd
-version_short, version_detail, version_base, \
-        version_branch, sdist_name, sdist_path = ru.get_version(paths=[root])
-version = version_short
 
-logger = ru.Logger('radical.repex')
-logger.info('radical.repex        version: %s' % version_detail)
+# ------------------------------------------------------------------------------
+#
+# get version info
+#
+_mod_root = _os.path.dirname (__file__)
+
+version_short, version_base, version_branch, version_tag, version_detail \
+             = _ru.get_version(_mod_root)
+version      = version_short
+__version__  = version_detail
+
 
 # ------------------------------------------------------------------------------
 
