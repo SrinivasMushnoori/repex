@@ -1,6 +1,15 @@
 
 
 # ------------------------------------------------------------------------------
+# we *first* import radical.utils, so that the monkeypatching of the logger has
+# a chance to kick in before the logging module is pulled by any other 3rd party
+# module, and also to monkeypatch `os.fork()` for the `atfork` functionality
+#
+import os            as _os
+import radical.utils as _ru
+
+
+# ------------------------------------------------------------------------------
 #
 from .replica    import Replica
 from .exchange   import Exchange
@@ -9,17 +18,15 @@ from .algorithms import *
 
 # ------------------------------------------------------------------------------
 #
-import os
-import radical.utils as ru
+# get version info
+#
+_mod_root = _os.path.dirname (__file__)
 
-pwd  = os.path.dirname (__file__)
-root = "%s" % pwd
-version_short, version_detail, version_base, \
-        version_branch, sdist_name, sdist_path = ru.get_version(paths=[root])
-version = version_short
+version_short, version_base, version_branch, version_tag, version_detail \
+             = _ru.get_version(_mod_root)
+version      = version_short
+__version__  = version_detail
 
-logger = ru.Logger('radical.repex')
-logger.info('radical.repex        version: %s' % version_detail)
 
 # ------------------------------------------------------------------------------
 
