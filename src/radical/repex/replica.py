@@ -106,8 +106,7 @@ class Replica(re.Pipeline):
             # link initial data
             link_inputs += expand_ln(self._workload.md.inputs_0,
                          'pilot:///%s' % self._workload.data.inputs,
-                         'task://',
-                         self.rid, self.cycle)
+                         'task://', self.rid, self.cycle)
         else:
             # get data from previous task
             t = last_task(self)
@@ -115,8 +114,7 @@ class Replica(re.Pipeline):
                 self._log.debug('Exchange from %s', exchanged_from.name)
                 link_inputs += expand_ln(self._workload.md.ex_2_md,
                         'pilot:///%s' % (exchanged_from.sandbox),
-                        'task://',
-                        self.rid, self.cycle)
+                        'task://', self.rid, self.cycle)
             else:
                 # FIXME: this apparently can't happen
                 link_inputs += expand_ln(self._workload.md.md_2_md,
@@ -196,7 +194,8 @@ class Replica(re.Pipeline):
 
         self._ex_list = exchange_list
 
-        task = re.Task()
+        uid  = '%s.%04d.ex' % (self.rid, self.cycle)
+        task = re.Task({'uid' : uid})
         task.executable = 'python3'
         task.arguments  = [ex_alg, '-r', self.rid, '-c', self.cycle] \
                         + ['-e'] + [r.rid for r in exchange_list] \
@@ -223,8 +222,8 @@ class Replica(re.Pipeline):
 
         task.link_input_data = link_inputs
 
-        task.name    = '%s.%04d.ex' % (self.rid, self.cycle)
-        task.sandbox = '%s.%04d.ex' % (self.rid, self.cycle)
+        task.name    = task.uid
+        task.sandbox = task.uid
 
         self._log.debug('%5s added ex: %s, input data: %s',
                         self.rid, task.name, task.link_input_data)

@@ -1,16 +1,19 @@
 
 
 # ------------------------------------------------------------------------------
+# we *first* import radical.utils, so that the monkeypatching of the logger has
+# a chance to kick in before the logging module is pulled by any other 3rd party
+# module, and also to monkeypatch `os.fork()` for the `atfork` functionality
 #
-from .replica    import Replica
-from .exchange   import Exchange
-from .algorithms import *
+import os            as _os
+import radical.utils as _ru
 
 
 # ------------------------------------------------------------------------------
 #
-import os            as _os
-import radical.utils as _ru
+from .replica    import Replica
+from .exchange   import Exchange
+from .algorithms import *
 
 
 # ------------------------------------------------------------------------------
