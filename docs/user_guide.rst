@@ -67,22 +67,6 @@ The Resource configuration file specifies the target resource configuration::
 
 There are three mandatory keys here: ``resource`` , ``walltime`` and ``cpus`` . Additionally, the locations of the MD Engine executable and python executable need to be specified. 
 
-If you are running RepEx on a remote HPC cluster (see `here <https://radicalpilot.readthedocs.io/en/latest/machconf.html#pre-configured-resources>`_ for supported resources) you will need additional entries in the resconfig file::
-
-
-    "resource"      : "local.localhost",
-    "md_executable" : "/home/scm177/mantel/AMBER/amber14/bin/sander",
-    "py_executable" : "/home/scm177/VirtualEnvs/Env_RepEx/bin/python",
-    "pre_exec"      : "export amber_md_eng=14", 
-    "walltime"      : 60,
-    "cpus"          : 4,
-    "gpus_per_node" : 0,
-    "access_schema" : "<access_schema_here>",
-    "queue"         : "<queue_name_here>",
-    "project"       : "<allocation_number_here>"
-
-See above link for more information on these additional entries.
-
 *3. Defining the Exchange Method:*
 
 Below is the ``Temperature Exchange`` method, as an illustration::
