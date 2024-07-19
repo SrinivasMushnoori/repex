@@ -1,0 +1,89 @@
+
+{
+    "config" : {
+        # parameters for ensemble creation and execution
+        "min_temp"       : 300,
+        "max_temp"       : 400,
+        "timesteps"      : 1000,
+        "replicas"       : 128,
+        "cycles"         : 3
+    },
+
+    "data" : {
+        # input data dir to be staged, output data to be fetched
+        # same paths are used within pilot sandbox
+        # FIXME: allow $SID placeholder
+        "inputs"         : "inputs/",
+        "outputs"        : "outputs/"
+    },
+
+    "prepare"            : {
+        # what to run to prepare input data for all replicas
+        "algorithm"      : "examples/workload_md.py:prepare_md",
+        "basename"       : "tests/ace-ala/"
+    },
+
+    "md" : {
+        # workload for the MD stage (task dscription + data dependencies)
+        "descriptions" : [{
+            "executable"     : "sander",
+            "arguments"      : [
+                                "-O",
+                                "-p",   "prmtop",
+                                "-i",   "mdin",
+                                "-c",   "inpcrd",
+                                "-o",   "outcrd",
+                                "-inf", "mdinfo",
+                                "-r",   "inpcrd",
+                                "-x",   "mdcrd"
+                               ],
+            "cpu_reqs"       : {"processes"          : 1,
+                                "threads_per_process": 1,
+                                "thread_type"        : null,
+                                "process_type"       : null
+                               },
+            "post_exec"      : ["echo true"]
+        }],
+
+        # always linked
+        #                   inputs          > cycle n
+        "inputs"         : ["prmtop         > prmtop"],
+
+        # only linked for cycle 0
+        #                    inputs         > cycle 0
+        "inputs_0"       : ["mdin.%(rid)s   > mdin",
+                            "inpcrd.%(rid)s > inpcrd"],
+
+      # # linked from cycle n to cycle n+1
+      # # FIXME: apparently this cannot happen
+      # #                    cycle n-1      > cycle n
+      # "md_2_md"        : ["mdin           > mdin",
+      #                     "outcrd         > inpcrd"],
+
+        "ex_2_md"        : ["outcrd.%(rid)s > inpcrd"],
+
+        # stage back output from all cycles
+        # FIXME: not enacted yet
+        "outputs"        : ["outcrd         > outcrd.%(rid)s.%(cycle)04d"],
+
+        # only staged back from last cycle (n/a)
+        "outputs_n"      : ["outcrd         > outcrd.%(rid)s.last"]
+    },
+
+    "selection" : {
+        "algorithm"      : "examples/algorithm_select_random.py:select_by_random",
+        "exchange_size"  : 8
+    },
+
+    "exchange" : {
+        # workload for the EX stage (algorithm + data dependencies)
+        "algorithm"      : "examples/algorithm_exchange_random.py:exchange_by_random",
+        # for each replica in ex_list
+        #                    md file > exchange file
+        "md_2_ex"        : ["mdinfo  > mdinfo.%(rid)s",
+                            "outcrd  > outcrd.%(rid)s"],
+        # exchange happens on these
+        "ex_data"        : ["outcrd.%(rid)s"]
+    }
+}
+
