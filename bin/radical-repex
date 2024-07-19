@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+import radical.utils as ru
+import radical.repex as rx
+
+
+# ------------------------------------------------------------------------------
+#
+def usage(msg):
+
+    print()
+    if msg:
+        print('\terror: %s' % msg)
+    print('\tusage: %s <workload> <resource>\n' % sys.argv[0])
+
+    if msg: sys.exit(1)
+    else  : sys.exit(0)
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+
+    # check what workload the replicas should run
+    if len(sys.argv) != 3:
+        usage('incorrect usage')
+
+    wl = ru.read_json(sys.argv[1])
+    rs = ru.read_json(sys.argv[2])
+
+    # create and run the replica exchange ensemble
+    exchange = rx.Exchange(workload=wl,
+                           resource=rs)
+    exchange.run()
+    exchange.terminate()
+
+
+# ------------------------------------------------------------------------------
+

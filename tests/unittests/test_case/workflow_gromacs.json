@@ -1,0 +1,99 @@
+
+{
+    "config" : {
+        "min_temp"       : 300,
+        "max_temp"       : 400,
+        "timesteps"      : 10,
+        "replicas"       : 4,
+        "cycles"         : 3
+    },
+
+    "data" : {
+        "inputs"         : "inputs/",
+        "outputs"        : "outputs/"
+    },
+
+    "prepare"            : {
+        "algorithm"      : "workload_md.py:prepare_md",
+        "basename"       : "FF"
+    },
+
+    "md" : {"inputs" : ["mdin.mdp.%(rid)s > mdin.mdp",
+                        "sys.top          > sys.top",
+                        "sys.itp          > sys.itp",
+                        "inp.ener         > inp.ener",
+                        "martini_v2.2.itp > martini_v2.2.itp"],
+
+            # only linked for cycle 0
+            #                    inputs         > cycle 0
+            "inputs_0": ["inpcrd.gro.%(rid)s > inpcrd.gro"],
+            "ex_2_md"        : ["outcrd.gro.%(rid)s > inpcrd.gro"],
+
+            # stage back output from all cycles
+            # FIXME: not enacted yet
+            "outputs"        : ["outcrd.gro         > outcrd.gro.%(rid)s.%(cycle)04d"],
+    
+            # only staged back from last cycle (n/a)
+            "outputs_n"      : ["outcrd.gro         > outcrd.gro.%(rid)s.last"],
+            "description": [{ "executable"     : "gmx_mpi",
+                              "arguments"      : [ "grompp",
+                                                  "-f", "mdin.mdp",
+                                                  "-c", "inpcrd.gro",
+                                                  "-o", "sys.tpr",
+                                                  "-p", "sys.top"
+                                                ], 
+                           "cpu_reqs"       : {"cpu_processes"    : 1,
+                                               "cpu_threads"      : 1,
+                                               "cpu_thread_type"  : null,
+                                               "cpu_process_type" : "MPI"
+                                              },
+                           "pre_exec"       : ["module load gromacs/2020.2-cpu",
+                                               "export GMX_MAXBACKUP=-1"]
+                   
+                          },
+                          {
+                            "executable"     : "gmx_mpi",
+                            "arguments"      : [ "mdrun",
+                                                "-s",      "sys.tpr", 
+                                                "-deffnm", "sys", 
+                                                "-c",      "outcrd.gro", 
+                                                "-e",      "sys.edr"
+
+                                            ],
+                            "cpu_reqs"       : {"cpu_processes"    : 4,
+                                                "cpu_threads"      : 1,
+                                                "cpu_thread_type"  : null, 
+                                                "cpu_process_type" : "MPI"
+                                            },
+                            "pre_exec"       : ["module load gromacs/2020.2-cpu",
+                                                "export GMX_MAXBACKUP=-1"]
+                        },
+                        {
+                            "executable"     : "gmx_mpi",
+                            "arguments"      : [ "energy",
+                                                "-f", "sys.edr", 
+                                                "-b", 0.25, 
+                                                "<", "inp.ener", ">", 
+                                                "mdinfo"
+                                            ],
+                            "cpu_reqs"       : {"cpu_processes"    : 1,
+                                                "cpu_threads"      : 1,
+                                                "cpu_thread_type"  : null,
+                                                "cpu_process_type" : "MPI"
+                                            },
+                            "pre_exec"       : ["module load gromacs/2020.2-cpu",
+                                                "export GMX_MAXBACKUP=-1"]
+                        }]},
+
+    "selection" : {
+        "algorithm"      : "algorithm_select_all.py:select_replicas_all",
+        "exchange_size"  : 4
+    },
+
+    "exchange" : {
+        "algorithm"      : "algorithm_exchange_random.py:exchange_by_temperature",
+        "md_2_ex"        : ["mdinfo  > mdinfo.%(rid)s",
+                            "outcrd.gro  > outcrd.gro.%(rid)s"],
+        "ex_data"        : ["outcrd.gro.%(rid)s"]
+    }
+}
