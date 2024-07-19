@@ -8,7 +8,7 @@ Welcome to the RepEx documentation!
 
 RepEx is a flexible, scalable, extensible replica exchange package. It is being developed by the Computational Hybrid Soft Materials Laboratory with support from the NSF's `MolSSI <https://molssi.org/>`_ initiative. 
 
-`GitHub page <https://github.com/SrinivasMushnoori/RepEx_3.0>`_
+`GitHub page <https://github.com/radical-cybertools/radical.repex>`_
 
 
 .. toctree::
@@ -19,6 +19,4 @@ RepEx is a flexible, scalable, extensible replica exchange package. It is being 
    installation
    user_guide
    examples
-   developer_api
-
 

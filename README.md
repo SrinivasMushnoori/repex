@@ -1,6 +1,12 @@
 
 <img src="https://travis-ci.org/radical-cybertools/radical.repex.svg?branch=master" alt="Travis CI"/>
 
+# RepEx v3.0
+
+## THIS IS NOW DEPRECATED. 
+Current version: https://github.com/radical-cybertools/radical.repex
+
+
 # ReplicaExchange
 
 Replica-Exchange (RE) is a family of simulation techniques used to enhance
